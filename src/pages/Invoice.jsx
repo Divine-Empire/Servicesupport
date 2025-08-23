@@ -1,0 +1,1484 @@
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import { Modal } from "../components/ui/modal";
+import { storage } from "../lib/storage";
+import { useToast } from "../hooks/use-toast";
+import { Loader2Icon, LoaderIcon } from "lucide-react";
+
+export default function Invoice() {
+  const [activeTab, setActiveTab] = useState("pending");
+  const [pendingTickets, setPendingTickets] = useState([]);
+  const [historyTickets, setHistoryTickets] = useState([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [searchItem, setSearchItem] = useState("");
+  const { toast } = useToast();
+
+  const [masterData, setMasterData] = useState({});
+
+  const [pendingData, setPendingData] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [headersData, setHeaddersData] = useState([]);
+
+  const sheet_url =
+    "https://script.google.com/macros/s/AKfycbxt4qSlLeddlVhPcM_ogBkdQzIIgtW8G1i9p2ClwhEkkceLYM29l8ceFA5Ijd1SxNj73g/exec";
+  const Sheet_Id = "141vnE00frQTRx_bjHG2Zf0IslX5WUwe1Ho6UxJB1UVI";
+
+  const fetchData = async () => {
+    setFetchLoading(true); // start loading
+    try {
+      const response = await fetch(`${sheet_url}?sheet=Ticket_Enquiry`);
+      const json = await response.json();
+
+      if (json.success && Array.isArray(json.data)) {
+        // Process the data to match your requirements
+        const allData = json.data.slice(6).map((row, index) => ({
+          id: index + 1,
+          timeStemp: row[0],
+          ticketId: row[1], // Column A (assuming this is Ticket id)
+          clientName: row[2], // Column C
+          phoneNumber: row[3], // Column D
+          emailAddress: row[4], // Column E
+          category: row[5], // Column F
+          priority: row[6], // Column G
+          title: row[7], // Column H
+          description: row[8], // Column I
+          planned1: row[9], // Column J
+          actual1: row[10], // Column K
+
+          delay1: row[11], // Delay1
+          callType: row[12], // Call type
+          requirementServiceCategory: row[13], // Enquiry Type (first one)
+          videoCall: row[14], // Enquiry Type (first one)
+
+          sourceOfEnquiry: row[15], // Source of enquiry
+          enquiryReceiverName: row[16], // Enquiry Receiver Name
+          warrantyCheck: row[17], // Warranty Check
+          billNumberInput: row[18], // Bill Number Input
+
+          billAttachmentFile: row[19], // Bill Number Input
+
+          machineName: row[20], // Machine Name
+          enquiryType: row[21], // Enquiry Type (second one)
+          siteName: row[22], // Site Name
+          companyName: row[23], // Company Name
+          gstAddress: row[24], // GST Address
+          siteAddress: row[25], // Site Address
+          state: row[26], // State
+          pinCode: row[27], // PIN Code
+          engineerAssign: row[28], // Engineer Name
+          serviceLocation: row[29], // Service Location
+          uploadChallan: row[30],
+
+          planned2: row[31],
+          actual2: row[32],
+          delay2: row[33],
+          videoCallServicesSolve: row[34],
+          afterVideoCallGenerateOTP: row[35],
+          otpVarificationStatus: row[36],
+
+          planned3: row[37],
+          actual3: row[38],
+          delay3: row[39],
+          quotationNo: row[40],
+          basicAmount: row[41],
+          totalAmoutWithTex: row[42],
+          quotationPdfLink: row[43],
+          quotationShareByPersonName: row[44],
+          ShareThrough: row[45],
+          quotationremarks: row[46],
+
+          planned4: row[47],
+          actual4: row[48],
+          stage: row[50],
+          paymentTerm: row[51],
+          acceptanceVia: row[52],
+          acceptanceAttachemntFile: row[53],
+          paymentMode: row[54],
+          seniorApproval: row[55],
+          approvalAttachmentFile: row[56],
+          whatDidTheCustomerSay: row[57],
+          nextAction: row[58],
+          nextDateOfCall: row[59],
+          followUpRemarks: row[60],
+
+          planned5: row[61],
+          actual5: row[62],
+          delay5: row[63],
+          dateOfVisit: row[64],
+          transportation: row[65],
+
+          planned6: row[66],
+          actual6: row[67],
+          spareDetails: row[69],
+          dnCopyFileUpload: row[70],
+          dnNumber: row[71],
+          serviceAssets: row[72],
+          equipmentName: row[73],
+          attachment: row[74],
+          machineReceiverName: row[75],
+          machineReceiverNumber: row[76],
+          challanAttachment: row[77],
+          invoiceStatus: row[78],
+
+          planned7: row[79],
+          actual7: row[80],
+          delay7: row[81],
+          travelDate: row[82],
+          returnDate: row[83],
+          destinationInput: row[84],
+          purposeOfTravel: row[85],
+          amount: row[86],
+
+          planned8: row[87],
+          actual8: row[88],
+          delay8: row[89],
+          nameSiniorBy: row[90],
+
+          planned9: row[91],
+          actual9: row[92],
+          delay9: row[93],
+          sitevisitName: row[94],
+          lastBalance: row[95],
+          payRightNow: row[96],
+          billFile: row[97],
+          siteVisitByAccountRemarks: row[98],
+
+          planned10: row[99],
+          actual10: row[100],
+          delay10: row[101],
+          sitevisitDate: row[102],
+          otpVerification: row[103],
+          verificationStatus: row[104],
+
+          planned11: row[105],
+          actual11: row[106],
+          delay11: row[107],
+          serviceReportFile: row[108],
+          engineerRemarks: row[109],
+          quatationReceive: row[110],
+
+          planned12: row[111],
+          actual12: row[112],
+          delay12: row[113],
+        }));
+
+        // Filter data based on your conditions
+
+        // console.log("Alldata", allData);
+
+        const pending = allData.filter(
+          (item) => item.planned12 !== "" && item.actual12 === ""
+        );
+        // console.log("pending", pending);
+
+        setPendingData(pending);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data");
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  const fetchMasterSheet = async () => {
+    try {
+      const response = await fetch(`${sheet_url}?sheet=Master`);
+      const result = await response.json();
+
+      if (result.success && result.data && result.data.length > 0) {
+        const headers = result.data[0]; // First row contains headers
+        const structuredData = {};
+
+        // Initialize each header with an empty array
+        headers.forEach((header) => {
+          structuredData[header] = [];
+        });
+
+        // Process each data row (skip the header row)
+        result.data.slice(1).forEach((row) => {
+          row.forEach((value, index) => {
+            const header = headers[index];
+            // Handle cases where value might be null/undefined or not a string
+            if (value !== null && value !== undefined) {
+              const stringValue = String(value).trim(); // Convert to string and trim
+              if (stringValue !== "") {
+                structuredData[header].push(stringValue);
+              }
+            }
+          });
+        });
+
+        // Remove duplicates from each array
+        Object.keys(structuredData).forEach((key) => {
+          structuredData[key] = [...new Set(structuredData[key])];
+        });
+
+        // console.log("Structured Master Data:", structuredData);
+        setMasterData([structuredData]); // Wrap in array as per your requested format
+      }
+    } catch (error) {
+      console.error("Error fetching master data:", error);
+      toast.error("Failed to load master data");
+    }
+  };
+
+  const fetchInvoiceSheet = async () => {
+    setFetchLoading(true); // start loading
+    try {
+      const response = await fetch(`${sheet_url}?sheet=Invoice`);
+      const json = await response.json();
+
+      setHeaddersData(json);
+
+      if (json.success && Array.isArray(json.data)) {
+        // Process the data to match your requirements
+        const allData = json.data.slice(6).map((row, index) => ({
+          id: index + 1,
+          timeStemp: row[0], // Timestamp
+          ticketId: row[1], // Ticket ID
+          quotationNo: row[2], // Quotation No.(input)
+          clientName: row[3], // Client Name
+          phoneNumber: row[4], // Phone Number
+          emailAddress: row[5], // Email Address
+          invoiceCategory: row[6], // Email Address
+          companyName: row[7], // Company Name
+          quotationPdfLink: row[8], // Quotation Pdf link
+          
+          invoicePostedBy: row[9], // Invoice Posted By(Drop-Down)
+          invoiceNoNABL: row[10], // Invoice No (NABL) (Manual)
+          invoiceNoSERVICE: row[11], // Invoice No (SERVICE)
+          invoiceNoSPARE: row[12], // Invoice No (SPARE)
+          spareInvoice: row[13], // SPARE INVOICE
+          serviceInvoice: row[14], // SERVICE INVOICE
+          nablInvoice: row[15], // NABL INVOICE
+          nonNabl: row[16], // NON NABL
+          invoiceAmountNABLBasic: row[17], // Invoice Amount NABL (Basic)
+          invoiceAmountNABLGst: row[18], // Invoice Amount NABL (gst)
+          totalInvoiceAmtNonNABLBasic: row[19], // Total Invoice Amt NON NABL BASIC
+          totalInvoiceAmtNonNABLGst: row[20], // Total Invoice Amt NON NABL gst
+          serviceAmountBasic: row[21], // Service Amount (Basic)
+          
+          totalServiceAmtSpare: row[22], // Total Service Amt (spare)
+          totalServiceAmtSpareGst: row[23], // Total Service Amt (spare) gst
+          
+          attachmentService: row[24], // Attachment Service
+          attachmentSpear: row[25], // Attachment Spear
+          attachmentNABL: row[26], // Attachment NABL
+
+
+          billNo: row[27], // Attachment NABL
+          billFile: row[28], // Attachment NABL
+          basicAmount: row[29], // Attachment NABL
+          totalAmountWithTex: row[30], // Attachment NABL
+
+
+
+          
+        }));
+
+        // Filter data based on your conditions
+
+        // console.log("Alldata", allData);
+
+        const history = allData;
+        setHistoryData(history);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data");
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMasterSheet();
+    fetchData();
+    fetchInvoiceSheet();
+  }, []);
+
+  useEffect(() => {
+    const tickets = storage.getTickets();
+    const pending = tickets.filter(
+      (t) => t.status === "engineer-approval-completed"
+    );
+    const history = tickets.filter((t) => t.status === "invoice-completed");
+
+    setPendingTickets(pending);
+    setHistoryTickets(history);
+  }, []);
+
+  const handleInvoiceClick = (ticket) => {
+    setSelectedTicket(ticket);
+    setFormData({
+      ticketId: ticket.ticketId,
+      quotationNo: ticket.quotationNo || `QT-${ticket.id}`,
+      clientName: ticket.clientName,
+      phoneNumber: ticket.phoneNumber,
+      emailAddress: ticket.emailAddress || "",
+      category: ticket.category || "",
+      companyName: ticket.companyName || "",
+      quotationPdfLink: ticket.quotationPdfLink || "",
+
+      invoicePostedBy: "",
+      invoiceNoNABL: "",
+      invoiceNoSERVICE: "",
+      invoiceNoSPARE: "",
+      spareInvoice: "",
+      serviceInvoice: "",
+      nablInvoice: "",
+      nonNabl: "",
+      invoiceAmountNABLBasic: "",
+      invoiceAmountNABLGst: "",
+      totalInvoiceAmtNonNABLBasic: "",
+      totalInvoiceAmtNonNABLGst: "",
+      serviceAmountBasic: "",
+      serviceAmountGST: "",
+      totalServiceAmtSpare: "",
+      totalServiceAmtSpareGst: "",
+      totalAmtWithGST: "",
+      attachmentService: "",
+      attachmentSpear: "",
+      attachmentNABL: "",
+    });
+    setShowInvoiceModal(true);
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const uploadImageToDrive = async (file) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      const base64Data = await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result.split(",")[1];
+          resolve(result);
+        };
+        reader.onerror = () => {
+          reject(new Error("Failed to read file"));
+        };
+      });
+
+      const uploadResponse = await fetch(`${sheet_url}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "uploadFile",
+          fileName: `Invoice_${selectedTicket?.ticketId}_${Date.now()}.jpg`,
+          base64Data: base64Data,
+          mimeType: file.type,
+          folderId: "1lxOxL-OK3kUrYan8T6LVkIBbElLAEKxk",
+        }),
+      });
+
+      const result = await uploadResponse.json();
+      if (!result.success) {
+        console.error("Upload error:", result.error);
+        toast({
+          title: "Error",
+          description: "Failed to upload image to Google Drive",
+          variant: "destructive",
+        });
+        return { success: false, error: result.error };
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+      return { success: false, error: "Failed to upload image" };
+    }
+  };
+
+  function generateSixDigitNumber() {
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      // Generate a random digit between 0 and 9
+      const digit = Math.floor(Math.random() * 10);
+      result += digit.toString();
+    }
+    return result;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // First fetch the headers to understand column order
+      // const headersResponse = await fetch(`${sheet_url}?sheet=Invoice`);
+      // const headersData = await headersResponse.json();
+
+      // if (!headersData.success || !headersData.data) {
+      //   throw new Error("Could not fetch headers");
+      // }
+
+      // Find the header row (look for "Timestamp" in first column)
+      const headerRowIndex = headersData.data.findIndex(
+        (row) => row[0] === "Timestamp"
+      );
+
+      if (headerRowIndex === -1) {
+        throw new Error("Could not find header row in data");
+      }
+
+      const headers = headersData.data[headerRowIndex];
+
+      // Handle file uploads
+      let attachmentServicefileUrl = "";
+      let attachmentSpearServicefileUrl = "";
+      let attachmentNABLServicefileUrl = "";
+
+      if (formData.attachmentService) {
+        const uploadResult = await uploadImageToDrive(
+          formData.attachmentService
+        );
+        if (!uploadResult.success)
+          throw new Error(uploadResult.error || "Failed to upload image");
+        attachmentServicefileUrl = uploadResult.fileUrl;
+      }
+
+      if (formData.attachmentSpear) {
+        const uploadResult = await uploadImageToDrive(formData.attachmentSpear);
+        if (!uploadResult.success)
+          throw new Error(uploadResult.error || "Failed to upload image");
+        attachmentSpearServicefileUrl = uploadResult.fileUrl;
+      }
+
+      if (formData.attachmentNABL) {
+        const uploadResult = await uploadImageToDrive(formData.attachmentNABL);
+        if (!uploadResult.success)
+          throw new Error(uploadResult.error || "Failed to upload image");
+        attachmentNABLServicefileUrl = uploadResult.fileUrl;
+      }
+
+      const sixDigitNumber = generateSixDigitNumber();
+
+      // Create the complete ticket object with all fields
+      const newTicket = {
+        Timestamp: formatDateTime(new Date()),
+        "Ticket ID": selectedTicket.ticketId,
+        "Quotation No.(input)": formData.quotationNo,
+        "Client Name": formData.clientName,
+        "Phone Number": formData.phoneNumber,
+        "Email Address": formData.emailAddress,
+        "Category": formData.category,
+        "Company Name": formData.companyName,
+        "Quotation Pdf link": formData.quotationPdfLink,
+        
+        "Invoice Posted By(Drop-Down)": formData.invoicePostedBy,
+        "Invoice No (NABL) (Manual)": formData.invoiceNoNABL,
+        "Invoice No (SERVICE)": formData.invoiceNoSERVICE,
+        "Invoice No (SPARE)": formData.invoiceNoSPARE,
+        "SPARE INVOICE": formData.spareInvoice,
+        "SERVICE INVOICE": formData.serviceInvoice,
+        "NABL INVOICE": formData.nablInvoice,
+        "NON NABL": formData.nonNabl,
+        "Invoice Amount NABL (Basic)": formData.invoiceAmountNABLBasic,
+        "Invoice Amount NABL (gst)": formData.invoiceAmountNABLGst,
+        "Total Invoice Amt NON NABL BASIC":
+          formData.totalInvoiceAmtNonNABLBasic,
+        "Total Invoice Amt NON NABL gst": formData.totalInvoiceAmtNonNABLGst,
+        "Service Amount (Basic)": formData.serviceAmountBasic,
+
+        "Total Service Amt (spare)": formData.totalServiceAmtSpare,
+        "Total Service Amt (spare) gst": formData.totalServiceAmtSpareGst,
+        
+        "Attachment Service": attachmentServicefileUrl,
+        "Attachment Spear": attachmentSpearServicefileUrl,
+        "Attachment NABL": attachmentNABLServicefileUrl,
+        "Bill NO": selectedTicket.billNumberInput,
+        "Bill Copy": selectedTicket.billFile,
+        "Basic Amount": selectedTicket.basicAmount,
+        "Total Amount with tex": selectedTicket.totalAmoutWithTex,
+        OTP: sixDigitNumber,
+      };
+
+      // Build rowData in exact same order as headers
+      const rowData = headers.map((header) => {
+        // Return empty string if header doesn't exist in newTicket
+        return newTicket[header] || "";
+      });
+
+      const response = await fetch(sheet_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          sheetName: "Invoice",
+          action: "insert",
+          rowData: JSON.stringify(rowData),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
+
+        // Add to history with all the new data
+        setHistoryData((prevHistory) => [
+          {
+            ...newTicket,
+            id: selectedTicket.id, // Keep the same ID for consistency
+            timeStemp: newTicket["Timestamp"],
+            ticketId: newTicket["Ticket ID"],
+            quotationNo: newTicket["Quotation No.(input)"],
+            clientName: newTicket["Client Name"],
+            phoneNumber: newTicket["Phone Number"],
+            emailAddress: newTicket["Email Address"],
+            category: newTicket["Category"],
+            companyName: newTicket["Company Name"],
+            quotationPdfLink: newTicket["Quotation Pdf link"],
+
+            invoicePostedBy: newTicket["Invoice Posted By(Drop-Down)"],
+            invoiceNoNABL: newTicket["Invoice No (NABL) (Manual)"],
+            invoiceNoSERVICE: newTicket["Invoice No (SERVICE)"],
+            invoiceNoSPARE: newTicket["Invoice No (SPARE)"],
+            spareInvoice: newTicket["SPARE INVOICE"],
+            serviceInvoice: newTicket["SERVICE INVOICE"],
+            nablInvoice: newTicket["NABL INVOICE"],
+            nonNabl: newTicket["NON NABL"],
+            invoiceAmountNABLBasic: newTicket["Invoice Amount NABL (Basic)"],
+            invoiceAmountNABLGst: newTicket["Invoice Amount NABL (gst)"],
+            totalInvoiceAmtNonNABLBasic:
+              newTicket["Total Invoice Amt NON NABL BASIC"],
+            totalInvoiceAmtNonNABLGst:
+              newTicket["Total Invoice Amt NON NABL gst"],
+            serviceAmountBasic: newTicket["Service Amount (Basic)"],
+            
+            totalServiceAmtSpare: newTicket["Total Service Amt (spare)"],
+            totalServiceAmtSpareGst: newTicket["Total Service Amt (spare) gst"],
+           
+            attachmentService: newTicket["Attachment Service"],
+            attachmentSpear: newTicket["Attachment Spear"],
+            attachmentNABL: newTicket["Attachment NABL"],
+            billNo: newTicket["Bill NO"],
+            billFile: newTicket["Bill Copy"],
+            basicAmount: newTicket["Basic Amount"],
+            totalAmoutWithTex: newTicket["Total Amount with tex"],
+            otpVarificationStatus: newTicket["OTP"],
+          },
+          ...prevHistory,
+        ]);
+
+        setShowInvoiceModal(false);
+        setFormData({
+          clientName: "",
+          phoneNumber: "",
+          emailAddress: "",
+          category: "",
+          priority: "",
+          title: "",
+          description: "",
+          date: new Date().toISOString().split("T")[0],
+        });
+
+        toast({
+          title: "Success",
+          description: `Submitted successfully`,
+        });
+      } else {
+        throw new Error(result.error || "Failed to save ticket");
+      }
+    } catch (error) {
+      console.error("Error submitting ticket:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save ticket. Data stored locally.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+      setShowInvoiceModal(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatDateTime = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const seconds = String(d.getSeconds()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  const filteredPendingData = pendingData
+    .filter((item) => {
+      const phoneNumberStr = String(item.phoneNumber || "");
+      const matchesSearch =
+        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+      // const matchesParty =
+      //   filterParty === "all" || item.partyName === filterParty;
+      // return matchesSearch && matchesParty;
+      return matchesSearch;
+    })
+    .reverse();
+
+  const filteredHistoryData = historyData
+    .filter((item) => {
+      const phoneNumberStr = String(item.phoneNumber || "");
+      const matchesSearch =
+        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+      // const matchesParty =
+      //   filterParty === "all" || item.partyName === filterParty;
+      // return matchesSearch && matchesParty;
+      return matchesSearch;
+    })
+    .reverse();
+
+  // console.log("filteredPendingData", filteredPendingData);
+  // console.log("filteredHistoryData", filteredHistoryData);
+
+  // console.log("filteredHistoryData", filteredHistoryData);
+
+  return (
+    <div className="space-y-6">
+      {/* Filter Options */}
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="w-full">
+              <Label
+                htmlFor="searchFilter"
+                className="text-sm font-medium text-blue-700"
+              >
+                Search (Client, Company, Phone)
+              </Label>
+              <div className="relative mt-1">
+                <Input
+                  id="searchFilter"
+                  placeholder="Search by client, company or phone..."
+                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                  data-testid="input-search-filter"
+                  onChange={(e) => setSearchItem(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs */}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+          <TabsTrigger
+            value="pending"
+            data-testid="tab-pending"
+            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+          >
+            Pending ({filteredPendingData.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            data-testid="tab-history"
+            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+          >
+            History ({filteredHistoryData.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardHeader>
+              <CardTitle className="text-blue-800">Pending Invoices</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative overflow-x-auto">
+                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Action
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Email Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation Pdf Link
+                        </th>
+                        
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-blue-100">
+                      {filteredPendingData.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={9}
+                            className="text-center py-8 bg-white"
+                            data-testid="text-no-pending"
+                          >
+                            {fetchLoading ? (
+                              <div className="flex justify-center items-center text-blue-700">
+                                <LoaderIcon className="animate-spin w-8 h-8" />
+                              </div>
+                            ) : (
+                              <h1 className="text-blue-700">
+                                No pending invoices found.
+                              </h1>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredPendingData.map((ticket, ind) => (
+                          <tr
+                            key={ind}
+                            className={
+                              ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            }
+                          >
+                            <td className="px-4 py-3">
+                              <Button
+                                size="sm"
+                                onClick={() => handleInvoiceClick(ticket)}
+                                variant="outline"
+                                className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 hover:from-blue-100 hover:to-indigo-100 hover:text-blue-700 transition-all duration-300 border border-blue-200 hover:border-blue-300 rounded-lg px-3 py-1.5 shadow-sm hover:shadow-md group"
+                                data-testid={`button-invoice-${ticket.ticketId}`}
+                              >
+                                <span className="font-medium">Invoice</span>
+                              </Button>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
+                              {ticket.ticketId}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.quotationNo}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.emailAddress || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || "N/A"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {ticket.quotationPdfLink ? (
+                                <a
+                                  href={ticket.quotationPdfLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                            
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardHeader>
+              <CardTitle className="text-blue-800">Invoice History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative overflow-x-auto">
+                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Email Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation PDF
+                        </th>
+                        {/* <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Advance Attachment
+                        </th> */}
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Posted By(Drop-Down)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice No (NABL) (Manual)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice No (SERVICE)
+                        </th>                        
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice No (SPARE)
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          SPARE INVOICE
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          SERVICE INVOICE
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          NABL INVOICE
+                        </th>
+
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          NON NABL
+                        </th>
+
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Amount NABL (Basic)
+                        </th>
+
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Amount NABL (gst)
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                         Total Invoice Amt NON NABL BASIC
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Total Invoice Amt NON NABL gst
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Amount (Basic)
+                        </th>
+
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Total Service Amt (spare)
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Total Service Amt (spare) gst
+                        </th>
+                        
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Attachment Service
+                        </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Attachment Spear
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Attachment NABL
+                        </th>
+
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Bill NO
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Bill File
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                         Basic Amount
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Total Amount with tex
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-blue-100">
+                      {filteredHistoryData.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={28}
+                            className="text-center py-8 bg-white"
+                            data-testid="text-no-history"
+                          >
+                            {fetchLoading ? (
+                              <div className="flex justify-center items-center text-blue-700">
+                                <LoaderIcon className="animate-spin w-8 h-8" />
+                              </div>
+                            ) : (
+                              <h1 className="text-blue-700">
+                                No invoice history found.
+                              </h1>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredHistoryData.map((ticket, ind) => (
+                          <tr
+                            key={ind}
+                            className={
+                              ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            }
+                          >
+                            <td className="px-4 py-3 font-medium text-blue-800">
+                              {ticket.ticketId || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.quotationNo || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.emailAddress || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoiceCategory || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || "N/A"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {ticket.quotationPdfLink ? (
+                                <a
+                                  href={ticket.quotationPdfLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                           
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoicePostedBy || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoiceNoNABL || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoiceNoSERVICE || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoiceNoSPARE || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.spareInvoice || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceInvoice || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.nablInvoice || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.nonNabl || "N/A"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.invoiceAmountNABLBasic || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.invoiceAmountNABLGst || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.totalInvoiceAmtNonNABLBasic || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.totalInvoiceAmtNonNABLGst || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.serviceAmountBasic || "0"}
+                            </td>
+                           
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.totalServiceAmtSpare || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.totalServiceAmtSpareGst || "0"}
+                            </td>
+                            
+                            <td className="px-4 py-3">
+                              {ticket.attachmentService ? (
+                                <a
+                                  href={ticket.attachmentService}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {ticket.attachmentSpear ? (
+                                <a
+                                  href={ticket.attachmentSpear}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {ticket.attachmentNABL ? (
+                                <a
+                                  href={ticket.attachmentNABL}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.billNo || "0"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.billFile ? (
+                                <a
+                                  href={ticket.billFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.basicAmount || "0"}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.totalAmountWithTex || "0"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Invoice Modal */}
+      <Modal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        title="Create Invoice"
+        size="4xl"
+      >
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto"
+        >
+          {/* Pre-filled fields */}
+          <div>
+            <Label>Ticket ID</Label>
+            <Input
+              value={formData.ticketId || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Quotation No.</Label>
+            <Input
+              value={formData.quotationNo || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Client Name</Label>
+            <Input
+              value={formData.clientName || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Phone Number</Label>
+            <Input
+              value={formData.phoneNumber || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Email Address</Label>
+            <Input
+              value={formData.emailAddress || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Company Name</Label>
+            <Input
+              value={formData.companyName || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+
+          {/* Editable fields */}
+          <div>
+            <Label>Invoice Posted By *</Label>
+            <Input
+              placeholder="Posted by"
+              value={formData.invoicePostedBy || ""}
+              onChange={(e) =>
+                handleInputChange("invoicePostedBy", e.target.value)
+              }
+              data-testid="input-posted-by"
+            />
+          </div>
+          <div>
+            <Label>Invoice No (NABL)</Label>
+            <Input
+              placeholder="NABL invoice number"
+              value={formData.invoiceNoNABL || ""}
+              onChange={(e) =>
+                handleInputChange("invoiceNoNABL", e.target.value)
+              }
+              data-testid="input-nabl-invoice"
+            />
+          </div>
+          <div>
+            <Label>Invoice No (SERVICE)</Label>
+            <Input
+              placeholder="Service invoice number"
+              value={formData.invoiceNoSERVICE || ""}
+              onChange={(e) =>
+                handleInputChange("invoiceNoSERVICE", e.target.value)
+              }
+              data-testid="input-service-invoice"
+            />
+          </div>
+          <div>
+            <Label>Invoice No (SPARE)</Label>
+            <Input
+              placeholder="Spare invoice number"
+              value={formData.invoiceNoSPARE || ""}
+              onChange={(e) =>
+                handleInputChange("invoiceNoSPARE", e.target.value)
+              }
+              data-testid="input-spare-invoice"
+            />
+          </div>
+          <div>
+            <Label>Invoice Amount NABL (Basic)</Label>
+            <Input
+              type="number"
+              placeholder="NABL basic amount"
+              value={formData.invoiceAmountNABLBasic || ""}
+              onChange={(e) =>
+                handleInputChange("invoiceAmountNABLBasic", e.target.value)
+              }
+              data-testid="input-nabl-basic"
+            />
+          </div>
+          <div>
+            <Label>Invoice Amount NABL (GST)</Label>
+            <Input
+              type="number"
+              placeholder="NABL GST amount"
+              value={formData.invoiceAmountNABLGst || ""}
+              onChange={(e) =>
+                handleInputChange("invoiceAmountNABLGst", e.target.value)
+              }
+              data-testid="input-nabl-gst"
+            />
+          </div>
+          <div>
+            <Label>Service Amount (Basic)</Label>
+            <Input
+              type="number"
+              placeholder="Service basic amount"
+              value={formData.serviceAmountBasic || ""}
+              onChange={(e) =>
+                handleInputChange("serviceAmountBasic", e.target.value)
+              }
+              data-testid="input-service-basic"
+            />
+          </div>
+          {/* <div>
+            <Label>Service Amount (GST)</Label>
+            <Input
+              type="number"
+              placeholder="Service GST amount"
+              value={formData.serviceAmountGST || ""}
+              onChange={(e) =>
+                handleInputChange("serviceAmountGST", e.target.value)
+              }
+              data-testid="input-service-gst"
+            />
+          </div> */}
+          <div>
+            <Label>Total Service Amt (Spare)</Label>
+            <Input
+              type="number"
+              placeholder="Spare amount"
+              value={formData.totalServiceAmtSpare || ""}
+              onChange={(e) =>
+                handleInputChange("totalServiceAmtSpare", e.target.value)
+              }
+              data-testid="input-spare-amount"
+            />
+          </div>
+          {/* <div>
+            <Label>TOTAL AMT WITH GST *</Label>
+            <Input
+              type="number"
+              placeholder="Total amount with GST"
+              value={formData.totalAmtWithGST || ""}
+              onChange={(e) =>
+                handleInputChange("totalAmtWithGST", e.target.value)
+              }
+              data-testid="input-total-gst"
+            />
+          </div> */}
+          <div>
+            <Label>Attachment Service</Label>
+            <Input
+              type="file"
+              onChange={(e) =>
+                handleInputChange("attachmentService", e.target.files[0] || "")
+              }
+              data-testid="input-attachment-service"
+            />
+          </div>
+          <div>
+            <Label>Attachment Spare</Label>
+            <Input
+              type="file"
+              onChange={(e) =>
+                handleInputChange("attachmentSpear", e.target.files[0] || "")
+              }
+              data-testid="input-attachment-spare"
+            />
+          </div>
+          <div>
+            <Label>Attachment NABL</Label>
+            <Input
+              type="file"
+              onChange={(e) =>
+                handleInputChange("attachmentNABL", e.target.files[0] || "")
+              }
+              data-testid="input-attachment-nabl"
+            />
+          </div>
+
+          <div>
+            <Label>SPARE INVOICE</Label>
+            <Input
+              placeholder="Spare invoice details"
+              value={formData.spareInvoice || ""}
+              onChange={(e) =>
+                handleInputChange("spareInvoice", e.target.value)
+              }
+              data-testid="input-spare-invoice-details"
+            />
+          </div>
+          <div>
+            <Label>SERVICE INVOICE</Label>
+            <Input
+              placeholder="Service invoice details"
+              value={formData.serviceInvoice || ""}
+              onChange={(e) =>
+                handleInputChange("serviceInvoice", e.target.value)
+              }
+              data-testid="input-service-invoice-details"
+            />
+          </div>
+          <div>
+            <Label>NABL INVOICE</Label>
+            <Input
+              placeholder="NABL invoice details"
+              value={formData.nablInvoice || ""}
+              onChange={(e) => handleInputChange("nablInvoice", e.target.value)}
+              data-testid="input-nabl-invoice-details"
+            />
+          </div>
+          <div>
+            <Label>NON NABL</Label>
+            <Input
+              placeholder="Non-NABL details"
+              value={formData.nonNabl || ""}
+              onChange={(e) => handleInputChange("nonNabl", e.target.value)}
+              data-testid="input-non-nabl"
+            />
+          </div>
+          <div>
+            <Label>Total Invoice Amt NON NABL BASIC</Label>
+            <Input
+              type="number"
+              placeholder="Non-NABL basic amount"
+              value={formData.totalInvoiceAmtNonNABLBasic || ""}
+              onChange={(e) =>
+                handleInputChange("totalInvoiceAmtNonNABLBasic", e.target.value)
+              }
+              data-testid="input-non-nabl-basic"
+            />
+          </div>
+          <div>
+            <Label>Total Invoice Amt NON NABL GST</Label>
+            <Input
+              type="number"
+              placeholder="Non-NABL GST amount"
+              value={formData.totalInvoiceAmtNonNABLGst || ""}
+              onChange={(e) =>
+                handleInputChange("totalInvoiceAmtNonNABLGst", e.target.value)
+              }
+              data-testid="input-non-nabl-gst"
+            />
+          </div>
+          <div>
+            <Label>Total Service Amt (spare) GST</Label>
+            <Input
+              type="number"
+              placeholder="Spare GST amount"
+              value={formData.totalServiceAmtSpareGst || ""}
+              onChange={(e) =>
+                handleInputChange("totalServiceAmtSpareGst", e.target.value)
+              }
+              data-testid="input-spare-gst"
+            />
+          </div>
+
+          <div className="md:col-span-2 flex space-x-4 pt-4">
+            <Button
+              type="submit"
+              data-testid="button-submit-invoice"
+              className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
+            >
+              {isSubmitting && <Loader2Icon className="animate-spin" />}
+              Submit
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowInvoiceModal(false)}
+              data-testid="button-cancel-invoice"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}

@@ -29,7 +29,7 @@ const navigation = [
   { name: "Site Visit Plan", href: "/siteplan", icon: MapPin },
   { name: "Warehouse1", href: "/warehouse1", icon: Warehouse },
   { name: "TADA", href: "/tada", icon: Plane },
-  { name: "Expense Approval By Sinior", href: "/sitevisit", icon: Wrench },
+  { name: "Expense Approval By Senior", href: "/sitevisit", icon: Wrench },
   {
     name: "Expense Approval By Accountant",
     href: "/sitevisitbyaccount",

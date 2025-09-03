@@ -674,16 +674,11 @@ export default function Invoice() {
 
       if (result.success) {
         // setTickets([...tickets, newTicket]);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+        setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
         toast({
           title: "Success",
           description: "Ticket details Cancle successfully",

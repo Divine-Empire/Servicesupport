@@ -477,7 +477,7 @@ export default function Warehouse1() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Warehouse1", // Enquiry Type (second one)
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -498,23 +498,23 @@ export default function Warehouse1() {
 
       if (result.success) {
         // setTickets([...tickets, newTicket]);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+        setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
+
+        setAllPendingData((prevAllPending) =>
+          prevAllPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
         setShowPlanModal(false);
+        setIsCancelled(false);
         toast({
           title: "Success",
           description: "Ticket details Cancle successfully",
         });
-        setShowPlanModal(false);
-        setIsCancelled(false);
       } else {
         throw new Error(result.error || "Failed to save ticket");
       }
@@ -573,13 +573,13 @@ export default function Warehouse1() {
       const fillteredPending = pendingData.filter(
         (item) => item.serviceLocation === "On-Site"
       );
-      const fillteredHistory = pendingData.filter(
+      const fillteredHistory = historyData.filter(
         (item) => item.serviceLocation === "On-Site"
       );
       setAllPendingData(fillteredPending);
       setAllHistoryData(fillteredHistory);
     }
-  }, [activeServiceTab]);
+  }, [activeServiceTab, pendingData, historyData]);
 
   const filteredPendingData = allPendingData
     .filter((item) => {

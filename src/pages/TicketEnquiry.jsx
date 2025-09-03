@@ -84,7 +84,7 @@ const TicketEnquiry = () => {
           return ticket;
         });
 
-        console.log("Formatted tickets:", formattedTickets);
+        // console.log("Formatted tickets:", formattedTickets);
         setTickets(formattedTickets);
       } else {
         toast({
@@ -666,7 +666,7 @@ const TicketEnquiry = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      tickets.map((ticket, index) => (
+                      [...tickets].reverse().map((ticket, index) => (
                         <TableRow
                           key={index}
                           className={

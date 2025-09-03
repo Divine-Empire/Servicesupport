@@ -546,7 +546,7 @@ export default function ClientDetails() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Client Details",
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -567,22 +567,28 @@ export default function ClientDetails() {
 
       if (result.success) {
         // setTickets([...tickets, newTicket]);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+        // fetchData();
+        // setFormData({
+        //   clientName: "",
+        //   phoneNumber: "",
+        //   emailAddress: "",
+        //   category: "",
+        //   priority: "",
+        //   title: "",
+        //   description: "",
+        //   date: new Date().toISOString().split("T")[0],
+        // });
+        setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
+        setShowDetailsModal(false);
+        setIsCancelled(false);
         toast({
           title: "Success",
           description: "Ticket details Cancle successfully",
         });
-        setShowDetailsModal(false);
-        setIsCancelled(false);
       } else {
         throw new Error(result.error || "Failed to save ticket");
       }

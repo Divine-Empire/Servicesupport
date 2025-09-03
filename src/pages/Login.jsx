@@ -38,7 +38,7 @@ const Login = () => {
         "Site Visit Plan",
         "Warehouse1",
         "TADA",
-        "Expense Approval By Sinior",
+        "Expense Approval By Senior",
         "Expense Approval By Accountant",
         "Site Visit (Verification OTP)",
         "Engineer",

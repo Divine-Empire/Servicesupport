@@ -308,106 +308,11 @@ export default function Quotation() {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   setIsSubmitting(true); // Start loading
-  //   let fileUrl = "";
-
-  //   if (formData.quotationPdfLink) {
-  //     const uploadResult = await uploadImageToDrive(formData.quotationPdfLink);
-  //     if (!uploadResult.success) {
-  //       throw new Error(uploadResult.error || "Failed to upload image");
-  //     }
-  //     fileUrl = uploadResult.fileUrl;
-  //   }
-
-  //   const currentDateTime = formatDateTime(new Date());
-  //   // console.log("currentDateTime", currentDateTime);
-  //   const id = selectedTicket?.id;
-
-  //   try {
-  //     const response = await fetch(sheet_url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //       },
-  //       body: new URLSearchParams({
-  //         sheetId: Sheet_Id,
-  //         sheetName: "Ticket_Enquiry",
-  //         action: "update",
-  //         rowIndex: (id + 6).toString(),
-  //         columnData: JSON.stringify({
-  //           AM: currentDateTime,
-  //           AO: formData.quotationNo || "", // Call Type
-  //           AP: formData.basicAmount,
-  //           AQ: formData.totalAmountWithTax || "", // Source of Enquiry
-  //           AR: fileUrl || "", // Enquiry Receiver Name
-  //           AS: formData.quotationShareBy || "", // Warranty Check
-  //           AT:  "Mail", // Bill Number Input
-  //           AU: formData.remarks || "", // Machine Name
-  //         }),
-  //       }).toString(),
-  //     });
-
-  //     const result = await response.json();
-  //     if (!result.success) {
-  //       throw new Error(result.error || "Failed to update Google Sheet");
-  //     }
-
-  //     if (result.success) {
-  //       setPendingData((prevPending) =>
-  //         prevPending.filter(
-  //           (ticket) => ticket.ticketId !== selectedTicket.ticketId
-  //         )
-  //       );
-  //       setHistoryData((prevHistory) => [
-  //         {
-  //           ...selectedTicket,
-  //           actual3: currentDateTime,
-  //           quotationNo: formData.quotationNo,
-  //           basicAmount: formData.basicAmount,
-  //           totalAmountWithTax: formData.totalAmountWithTax,
-  //           quotationPdfLink: fileUrl,
-  //           quotationShareBy: formData.quotationShareBy,
-  //           shareThrough: formData.shareThrough,
-  //           remarks: formData.remarks,
-  //         },
-  //         ...prevHistory,
-  //       ]);
-
-  //       toast({
-  //         title: "Success",
-  //         description: "Ticket details saved successfully",
-  //       });
-  //       setShowQuotationModal(false);
-  //       // fetchTickets(); // Refresh the ticket list
-  //     } else {
-  //       throw new Error(result.error || "Failed to save ticket details");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error submitting ticket:", error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to save ticket details",
-  //       variant: "destructive",
-  //     });
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // if (!formData.clientName || !formData.phoneNumber || !formData.title) {
-    //   toast({
-    //     title: "Error",
-    //     description: "Please fill in all required fields",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
+    
 
     setIsSubmitting(true);
     let fileUrl = "";
@@ -544,22 +449,17 @@ export default function Quotation() {
 
       if (result.success) {
         // setTickets([...tickets, newTicket]);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+       setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
+        setShowQuotationModal(false);
+        setIsCancelled(false);
         toast({
           title: "Success",
           description: "Ticket details Cancle successfully",
         });
-        setShowQuotationModal(false);
-        setIsCancelled(false);
       } else {
         throw new Error(result.error || "Failed to save ticket");
       }

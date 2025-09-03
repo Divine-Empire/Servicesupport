@@ -308,22 +308,29 @@ export default function VideoCallSolution() {
 
       if (result.success) {
         // setTickets([...tickets, newTicket]);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+        // setFormData({
+        //   clientName: "",
+        //   phoneNumber: "",
+        //   emailAddress: "",
+        //   category: "",
+        //   priority: "",
+        //   title: "",
+        //   description: "",
+        //   date: new Date().toISOString().split("T")[0],
+        // });
+
+
+        setPendingData((prevPending) =>
+          prevPending.filter(
+            (ticket) => ticket.ticketId !== selectedTicket.ticketId
+          )
+        );
+        setShowSolutionModal(false);
+        setIsCancelled(false);
         toast({
           title: "Success",
           description: "Ticket details Cancle successfully",
         });
-        setShowSolutionModal(false);
-        setIsCancelled(false);
       } else {
         throw new Error(result.error || "Failed to save ticket");
       }

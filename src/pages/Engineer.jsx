@@ -554,6 +554,8 @@ export default function Engineer() {
     })
     .reverse();
 
+    console.log("SelectedTicket",selectedTicket);
+
   return (
     <div className="space-y-6">
       {/* Filter Options */}
@@ -872,7 +874,7 @@ export default function Engineer() {
           <div>
             <Label>Ticket ID</Label>
             <Input
-              value={formData.ticketId || ""}
+              value={selectedTicket?.ticketId || ""}
               disabled
               className="bg-slate-50"
             />
@@ -880,7 +882,7 @@ export default function Engineer() {
           <div>
             <Label>Client Name</Label>
             <Input
-              value={formData.clientName || ""}
+              value={selectedTicket?.clientName || ""}
               disabled
               className="bg-slate-50"
             />
@@ -888,7 +890,7 @@ export default function Engineer() {
           <div>
             <Label>Phone Number</Label>
             <Input
-              value={formData.phoneNumber || ""}
+              value={selectedTicket?.phoneNumber || ""}
               disabled
               className="bg-slate-50"
             />
@@ -896,7 +898,7 @@ export default function Engineer() {
           <div>
             <Label>Machine Name</Label>
             <Input
-              value={formData.machineName || ""}
+              value={selectedTicket?.machineName || ""}
               disabled
               className="bg-slate-50"
             />
@@ -907,7 +909,7 @@ export default function Engineer() {
               <div>
                 <Label>Travel Date</Label>
                 <Input
-                  value={formatDate(formData.travelDate) || ""}
+                  value={formatDate(selectedTicket?.travelDate) || ""}
                   disabled
                   className="bg-slate-50"
                 />
@@ -916,7 +918,7 @@ export default function Engineer() {
                 <div className="flex-1">
                   <Label>Return Date</Label>
                   <Input
-                    value={formatDate(formData.returnDate) || ""}
+                    value={formatDate(selectedTicket?.returnDate) || ""}
                     className="bg-slate-50"
                     readOnly
                   />
@@ -936,7 +938,7 @@ export default function Engineer() {
               <div>
                 <Label>Quatation Pdf Link</Label>
                 <Input
-                  value={formatDate(formData.quotationPdfLink) || ""}
+                  value={selectedTicket?.quotationPdfLink || ""}
                   disabled
                   className="bg-slate-50"
                 />

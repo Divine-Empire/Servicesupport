@@ -357,9 +357,9 @@ export default function Conformation() {
           action: "update",
           rowIndex: (id + 6).toString(),
           columnData: JSON.stringify({
-            BL: currentDateTime,
-            BN: formData.courierReceivedByClient || "",
-            BO: formData.personName || "",
+            BO: currentDateTime,
+            BQ: formData.courierReceivedByClient || "",
+            BR: formData.personName || "",
           }),
         }).toString(),
       });
@@ -1198,36 +1198,15 @@ export default function Conformation() {
                 <Label className="text-sm font-medium text-gray-700">
                   Person Name <span className="text-red-500">*</span>
                 </Label>
-                <Select
-                  onValueChange={(value) =>
-                    handleInputChange("personName", value)
+                <Input
+                  placeholder="Enter Person Name"
+                  value={formData.personName || ""}
+                  onChange={(e) =>
+                    handleInputChange("personName", e.target.value)
                   }
-                >
-                  <SelectTrigger
-                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    data-testid="select-person-name"
-                  >
-                    <SelectValue placeholder="Select person" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
-                    {masterData.length > 0 &&
-                    masterData[0]["Name(Drop-Down)"] ? (
-                      masterData[0]["Name(Drop-Down)"].map((item, ind) => (
-                        <SelectItem
-                          key={ind}
-                          value={item}
-                          className="hover:bg-blue-50 focus:bg-blue-50"
-                        >
-                          {item}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="Loading" disabled>
-                        Loading options...
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  data-testid="input-destination-address"
+                />
               </div>
 
               <div className="md:col-span-2 flex justify-end space-x-4 pt-6">

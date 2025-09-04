@@ -261,6 +261,14 @@ export default function AccountVerification() {
 
     setIsSubmitting(true); // Start loading
 
+    if (
+      formData.otp.toString() !== selectedTicket.otp.toString()
+    ) {
+      alert("Wrong OPT, Please Enter Right OTP");
+      setIsSubmitting(false);
+      return;
+    }
+
     let fileUrl = "";
 
     if (formData.serviceReportFile) {
@@ -290,10 +298,6 @@ export default function AccountVerification() {
           rowIndex: (id + 6).toString(),
           columnData: JSON.stringify({
             AG: currentDateTime,
-            AJ:
-              formData.otp.toString() === selectedTicket.otp.toString()
-                ? "yes"
-                : "no",
           }),
         }).toString(),
       });
@@ -487,6 +491,7 @@ export default function AccountVerification() {
             rowIndex: (id + 6).toString(),
             columnData: JSON.stringify({
               AI: sixDigitNumber1,
+              AJ: "Regenerated OTP",
             }),
           }).toString(),
         });
@@ -497,6 +502,11 @@ export default function AccountVerification() {
         }
   
         if (result.success) {
+          setSelectedTicket((prev) => ({
+          ...prev,
+          otp: sixDigitNumber1,
+        }));
+
           toast({
             title: "Success",
             description: "OTP sent successfully",

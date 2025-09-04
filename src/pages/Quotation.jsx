@@ -37,6 +37,8 @@ export default function Quotation() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
 
+  const [quotationData,setQuotationData] = useState([]);
+
   const [pendingData, setPendingData] = useState([]);
   const [historyData, setHistoryData] = useState([]);
   const [fetchLoading, setFetchLoading] = useState(false);
@@ -45,7 +47,7 @@ export default function Quotation() {
   const [isCancelled, setIsCancelled] = useState(false);
   const { toast } = useToast();
 
-  // console.log("masterData", masterData);
+  console.log("quotationData", quotationData);
 
   const sheet_url =
     "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
@@ -183,8 +185,42 @@ export default function Quotation() {
     }
   };
 
+
+
+
+  const fetchQuotationSheet = async () => {
+    try {
+      const response = await fetch(`${sheet_url}?sheet=Quotation`);
+      const result = await response.json();
+
+      if (result.success && result.data && result.data.length > 0) {
+        const headers = result.data[0]; // First row contains headers
+        const formattedData = result.data.slice(1).map((row) => {
+          const obj = {};
+          headers.forEach((header, index) => {
+            // Convert header to camelCase or another JS-friendly format if needed
+            const key = header.toLowerCase().replace(/\s+/g, "_");
+            obj[key] = row[index] || null; // Handle empty cells
+          });
+          return obj;
+        });
+
+        // console.log("Formatted data:", formattedData);
+        setQuotationData(formattedData);
+      } else {
+        console.log("No data available");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching master data:", error);
+      toast.error("Failed to load master data");
+      throw error; // Re-throw if you want calling code to handle it
+    }
+  };
+
   useEffect(() => {
     fetchMasterSheet();
+    fetchQuotationSheet();
     fetchData();
   }, []);
 
@@ -532,7 +568,7 @@ export default function Quotation() {
             data-testid="tab-history"
             className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
           >
-            History({filteredHistoryData?.length})
+            History({quotationData?.length})
           </TabsTrigger>
         </TabsList>
 
@@ -728,7 +764,7 @@ export default function Quotation() {
                             </div>
                           </td>
                         </tr>
-                      ) : filteredHistoryData.length === 0 ? (
+                      ) : quotationData.length === 0 ? (
                         <tr>
                           <td
                             colSpan={7}
@@ -741,7 +777,7 @@ export default function Quotation() {
                           </td>
                         </tr>
                       ) : (
-                        filteredHistoryData.map((ticket, ind) => (
+                        [...quotationData].reverse().map((ticket, ind) => (
                           <tr
                             key={ind}
                             className={
@@ -749,27 +785,27 @@ export default function Quotation() {
                             }
                           >
                             <td className="px-4 py-3 font-medium text-blue-800">
-                              {ticket.ticketId}
+                              {ticket.ticket_id}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
+                              {ticket.client_name}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              ₹{ticket.basicAmount || "0"}
+                              ₹{ticket.basic_amount || "0"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              ₹{ticket.totalAmountWithTax || "0"}
+                              ₹{ticket.total_amount_with_tex || "0"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.quotationShareByPersonName || "N/A"}
+                              {ticket["quotation_share_by_(person_name)_"] || "N/A"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.ShareThrough || "N/A"}
+                              {ticket.share_through || "N/A"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.quotationPdfLink ? (
+                              {ticket.quotation_pdf_link ? (
                                 <a
-                                  href={ticket.quotationPdfLink}
+                                  href={ticket.quotation_pdf_link}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:text-blue-800 hover:underline"

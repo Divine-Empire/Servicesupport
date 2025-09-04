@@ -298,8 +298,8 @@ export default function TADA() {
           rowIndex: (id + 6).toString(),
           columnData: JSON.stringify({
             CC: currentDateTime,
-            CE: formData.travelDate,
-            CF: formData.returnDate || "",
+            CE: formatDateTime(formData.travelDate),
+            CF: formatDateTime(formData.returnDate || ""),
             CG: formData.destination || "",
             CH: formData.purposeOfTravel || "",
             CI: formData.amount || "",

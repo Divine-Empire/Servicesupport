@@ -610,7 +610,7 @@ export default function Warehouse1() {
     .reverse();
 
   //   console.log("filteredPendingData", filteredPendingData);
-  // console.log("filteredHistoryData", filteredHistoryData);
+  console.log("filteredHistoryData", filteredHistoryData);
 
   //   console.log("selectedTicket", selectedTicket);
 
@@ -859,7 +859,7 @@ export default function Warehouse1() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="history">
+        {/* <TabsContent value="history">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <CardTitle className="text-blue-800">
@@ -1026,6 +1026,202 @@ export default function Warehouse1() {
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.invoiceStatus || "N/A"}
                             </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent> */}
+
+        <TabsContent value="history">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardHeader>
+              <CardTitle className="text-blue-800">
+                Site Visit Plan History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative overflow-x-auto">
+                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Ticket ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Machine Name
+                        </th>
+
+                        {/* Show these columns only for On-Site tab */}
+                        {activeServiceTab === "onsite" && (
+                          <>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Spare Details
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              DN Copy file upload
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              DN Number
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Service Assets
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Equipment Name
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Attachment
+                            </th>
+                          </>
+                        )}
+
+                        {/* Show these columns only for Warehouse tab */}
+                        {activeServiceTab === "warehouse" && (
+                          <>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Machine Receiver Name
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Machine Receiver Number
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Challan Attachment
+                            </th>
+                            <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                              Invoice Status
+                            </th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-blue-100">
+                      {filteredHistoryData.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={activeServiceTab === "warehouse" ? 8 : 14}
+                            className="text-center py-8 bg-white"
+                            data-testid="text-no-history"
+                          >
+                            {fetchLoading ? (
+                              <div className="flex justify-center items-center text-blue-700">
+                                <LoaderIcon className="animate-spin w-8 h-8" />
+                              </div>
+                            ) : (
+                              <h1 className="text-blue-700">
+                                No site visit plan history found.
+                              </h1>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredHistoryData.map((ticket, indx) => (
+                          <tr
+                            key={indx}
+                            className={
+                              indx % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            }
+                          >
+                            <td className="px-4 py-3 font-medium text-blue-800">
+                              {ticket.ticketId}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.machineName || "N/A"}
+                            </td>
+
+                            {/* Show these columns only for On-Site tab */}
+                            {activeServiceTab === "onsite" && (
+                              <>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.spareDetails || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.dnCopyFileUpload ? (
+                                    <a
+                                      href={ticket.dnCopyFileUpload}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.dnNumber || "N/A"}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {ticket.serviceAssets || "N/A"}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.equipmentName || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.attachment ? (
+                                    <a
+                                      href={ticket.attachment}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+                              </>
+                            )}
+
+                            {/* Show these columns only for Warehouse tab */}
+                            {activeServiceTab === "warehouse" && (
+                              <>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.machineReceiverName || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.machineReceiverNumber || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.challanAttachment ? (
+                                    <a
+                                      href={ticket.challanAttachment}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      View
+                                    </a>
+                                  ) : (
+                                    "N/A"
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-blue-900">
+                                  {ticket.invoiceStatus || "N/A"}
+                                </td>
+                              </>
+                            )}
                           </tr>
                         ))
                       )}

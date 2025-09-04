@@ -313,8 +313,18 @@ export default function AccountablityApproval() {
     //   return;
     // }
 
-    setIsSubmitting(true);
+    
+    if(formData.hardCopyStatus && !formData.hardCopyAttachment){
+      alert("Please Upload Hard Copy");
+      return ;
+    }
 
+    if(formData.softCopyStatus && !formData.softCopyAttachment){
+      alert("Please Upload Soft Copy");
+      return ;
+    }
+    
+    setIsSubmitting(true);
     let hardCopyAttachmentFile = "";
     let softCopyAttachmentFile = "";
 
@@ -472,7 +482,7 @@ export default function AccountablityApproval() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Accountability Approval", // Enquiry Type (second one)
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -1096,7 +1106,11 @@ export default function AccountablityApproval() {
                   <input
                     type="checkbox"
                     id="hardCopyStatus"
-                    checked={formData.hardCopyStatus || false}
+                    checked={
+                      selectedTicket?.hardCopyAttachment ||
+                      formData?.hardCopyStatus ||
+                      false
+                    }
                     onChange={(e) =>
                       handleInputChange("hardCopyStatus", e.target.checked)
                     }
@@ -1104,9 +1118,19 @@ export default function AccountablityApproval() {
                   />
                   <Label
                     htmlFor="hardCopyStatus"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 flex items-center gap-5"
                   >
-                    Hard Copy Status
+                    <h1>Hard Copy Status</h1>
+                    {selectedTicket?.hardCopyAttachment && (
+                      <a
+                        href={selectedTicket?.hardCopyAttachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                      >
+                        View
+                      </a>
+                    )}
                   </Label>
                 </div>
                 {formData.hardCopyStatus && (
@@ -1114,17 +1138,25 @@ export default function AccountablityApproval() {
                     <Label className="text-sm font-medium text-gray-700">
                       Hard Copy Attachment
                     </Label>
-                    <Input
-                      type="file"
-                      onChange={(e) =>
-                        handleInputChange(
-                          "hardCopyAttachment",
-                          e.target.files[0] || ""
-                        )
-                      }
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      data-testid="input-hard-copy-attachment"
-                    />
+                    {selectedTicket.hardCopyAttachment ? (
+                      <Input
+                        value={selectedTicket.hardCopyAttachment}
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        data-testid="input-hard-copy-attachment"
+                      />
+                    ) : (
+                      <Input
+                        type="file"
+                        onChange={(e) =>
+                          handleInputChange(
+                            "hardCopyAttachment",
+                            e.target.files[0] || ""
+                          )
+                        }
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        data-testid="input-hard-copy-attachment"
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -1135,17 +1167,31 @@ export default function AccountablityApproval() {
                   <input
                     type="checkbox"
                     id="softCopyStatus"
-                    checked={formData.softCopyStatus || false}
+                    checked={
+                      selectedTicket?.softCopyAttachment ||
+                      formData?.softCopyStatus ||
+                      false
+                    }
                     onChange={(e) =>
                       handleInputChange("softCopyStatus", e.target.checked)
                     }
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <Label
-                    htmlFor="softCopyStatus"
-                    className="text-sm font-medium text-gray-700"
+                    htmlFor="hardCopyStatus"
+                    className="text-sm font-medium text-gray-700 flex items-center gap-5"
                   >
-                    Soft Copy Status
+                    <h1>Soft Copy Status</h1>
+                    {selectedTicket?.softCopyAttachment && (
+                      <a
+                        href={selectedTicket?.softCopyAttachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                      >
+                        View
+                      </a>
+                    )}
                   </Label>
                 </div>
                 {formData.softCopyStatus && (
@@ -1153,17 +1199,25 @@ export default function AccountablityApproval() {
                     <Label className="text-sm font-medium text-gray-700">
                       Soft Copy Attachment
                     </Label>
-                    <Input
-                      type="file"
-                      onChange={(e) =>
-                        handleInputChange(
-                          "softCopyAttachment",
-                          e.target.files[0] || ""
-                        )
-                      }
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                      data-testid="input-soft-copy-attachment"
-                    />
+                    {selectedTicket.softCopyAttachment ? (
+                      <Input
+                        value={selectedTicket.softCopyAttachment}
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        data-testid="input-hard-copy-attachment"
+                      />
+                    ) : (
+                      <Input
+                        type="file"
+                        onChange={(e) =>
+                          handleInputChange(
+                            "softCopyAttachment",
+                            e.target.files[0] || ""
+                          )
+                        }
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        data-testid="input-soft-copy-attachment"
+                      />
+                    )}
                   </div>
                 )}
               </div>

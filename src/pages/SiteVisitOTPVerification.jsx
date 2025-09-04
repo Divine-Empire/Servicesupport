@@ -289,18 +289,24 @@ export default function EngineerApproval() {
 
     setIsSubmitting(true); // Start loading
 
+    if (!formData.siteVisitDate) {
+      alert("Please Select Site Visit Date");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (
+      formData?.otpVerification?.toString() !==
+      selectedTicket?.otpVerification?.toString()
+    ) {
+      alert("Wrong OPT, Please Enter Right OTP");
+      setIsSubmitting(false);
+      return;
+    }
+
     const currentDateTime = formatDateTime(new Date());
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
-
-    console.log(
-      "selectedTicket.otpVerification.toString()",
-      selectedTicket?.otpVerification?.toString()
-    );
-    console.log(
-      "formData.otpVerification.toString()",
-      formData?.otpVerification?.toString()
-    );
 
     try {
       const response = await fetch(sheet_url, {
@@ -316,11 +322,6 @@ export default function EngineerApproval() {
           columnData: JSON.stringify({
             CW: currentDateTime,
             CY: formData.siteVisitDate,
-            DA:
-              formData?.otpVerification?.toString() ===
-              selectedTicket?.otpVerification?.toString()
-                ? "yes"
-                : "no",
           }),
         }).toString(),
       });
@@ -393,7 +394,7 @@ export default function EngineerApproval() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Site Visit OTP Verification", // Enquiry Type (second one)
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -514,6 +515,7 @@ export default function EngineerApproval() {
           rowIndex: (id + 6).toString(),
           columnData: JSON.stringify({
             CZ: sixDigitNumber1,
+            DA: "Regenerated OTP",
           }),
         }).toString(),
       });
@@ -524,6 +526,11 @@ export default function EngineerApproval() {
       }
 
       if (result.success) {
+        setSelectedTicket((prev) => ({
+          ...prev,
+          otpVerification: sixDigitNumber1,
+        }));
+
         toast({
           title: "Success",
           description: "OTP sent successfully",

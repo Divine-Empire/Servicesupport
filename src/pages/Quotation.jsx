@@ -738,6 +738,12 @@ export default function Quotation() {
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Basic Amount
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -751,6 +757,9 @@ export default function Quotation() {
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation PDF
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Remarks
                         </th>
                       </tr>
                     </thead>
@@ -791,6 +800,12 @@ export default function Quotation() {
                               {ticket.client_name}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.phone_number}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket["quotation_no."]}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               ₹{ticket.basic_amount || "0"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
@@ -815,6 +830,10 @@ export default function Quotation() {
                               ) : (
                                 "N/A"
                               )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.remarks || "N/A"}
                             </td>
                           </tr>
                         ))

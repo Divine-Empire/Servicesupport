@@ -192,6 +192,21 @@ export default function VideoCallSolution() {
 
     setIsSubmitting(true); // Start loading
 
+    if(!formData.videoCallServicesSolve){
+      alert("Please Select Video Call Services");
+      setIsSubmitting(false);
+      return ;
+    }
+
+    if (
+        formData.otpVerification.toString() !==
+        selectedTicket.afterVideoCallGenerateOTP.toString()
+      ) {
+        alert("Wrong OPT, Please Enter Right OTP");
+        setIsSubmitting(false);
+        return;
+      }
+
     const currentDateTime = formatDateTime(new Date());
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
@@ -211,12 +226,6 @@ export default function VideoCallSolution() {
             AG: currentDateTime,
 
             AI: formData.videoCallServicesSolve,
-
-            AK:
-              formData.otpVerification.toString() ===
-              selectedTicket.afterVideoCallGenerateOTP.toString()
-                ? "Yes"
-                : "No", // Enquiry Receiver Name
           }),
         }).toString(),
       });
@@ -225,6 +234,8 @@ export default function VideoCallSolution() {
       if (!result.success) {
         throw new Error(result.error || "Failed to update Google Sheet");
       }
+
+      
 
       if (result.success) {
         setPendingData((prevPending) =>
@@ -287,7 +298,7 @@ export default function VideoCallSolution() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Video Call Solution", // Enquiry Type (second one)
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -318,7 +329,6 @@ export default function VideoCallSolution() {
         //   description: "",
         //   date: new Date().toISOString().split("T")[0],
         // });
-
 
         setPendingData((prevPending) =>
           prevPending.filter(
@@ -420,6 +430,7 @@ export default function VideoCallSolution() {
           rowIndex: (id + 6).toString(),
           columnData: JSON.stringify({
             AJ: sixDigitNumber1,
+            AK: "Regenerated OTP",
           }),
         }).toString(),
       });
@@ -430,6 +441,10 @@ export default function VideoCallSolution() {
       }
 
       if (result.success) {
+        setSelectedTicket(prev => ({
+        ...prev,
+        afterVideoCallGenerateOTP: sixDigitNumber1
+      }));
         toast({
           title: "Success",
           description: "OTP sent successfully",

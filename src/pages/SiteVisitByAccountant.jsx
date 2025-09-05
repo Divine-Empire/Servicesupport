@@ -394,6 +394,17 @@ export default function SiteVisitByAccountant() {
     }
   };
 
+
+ function generateSixDigitNumber() {
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      const digit = Math.floor(Math.random() * 10);
+      result += digit.toString();
+    }
+    return result;
+  }
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -412,6 +423,8 @@ export default function SiteVisitByAccountant() {
     const currentDateTime = formatDateTime(new Date());
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
+
+    const sixDigitNumber1 = generateSixDigitNumber();
 
     try {
       const response = await fetch(sheet_url, {
@@ -432,6 +445,7 @@ export default function SiteVisitByAccountant() {
             CS: formData.payRightNow || "",
             CT: fileUrl || "",
             CU: formData.remarks || "",
+            CZ: sixDigitNumber1,
           }),
         }).toString(),
       });

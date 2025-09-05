@@ -26,6 +26,7 @@ import Warehouse1 from './pages/Warehouse1';
 import AccountablityApproval from './pages/AccountablityApproval';
 import CalibrationCertificate from './pages/CalibrationCertificate';
 import Conformation from './pages/Conformation';
+import Cancle from './pages/Cancle';
 
 function App() {
   return (

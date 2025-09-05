@@ -49,7 +49,7 @@ const Login = () => {
         "Accountability & Approvals",
         "Calibration Certificate",
         "Conformation",
-        "Cancle"
+        "Cancel"
       ];
 
       let pagesss = "";
@@ -100,8 +100,8 @@ const Login = () => {
         navigate("/calibrationCertificate");
       }else if (pagesss === "Conformation") {
         navigate("/conformation");
-      }else if (pagesss === "Cancle") {
-        navigate("/cancle");
+      }else if (pagesss === "Cancel") {
+        navigate("/cancel");
       }
 
       // Redirect based on role if needed

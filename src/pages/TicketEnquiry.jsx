@@ -165,14 +165,6 @@ const TicketEnquiry = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  function generateSixDigitNumber() {
-    let result = "";
-    for (let i = 0; i < 6; i++) {
-      const digit = Math.floor(Math.random() * 10);
-      result += digit.toString();
-    }
-    return result;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -208,9 +200,6 @@ const TicketEnquiry = () => {
 
       const headers = headersData.data[headerRowIndex];
 
-      const sixDigitNumber1 = generateSixDigitNumber();
-      const sixDigitNumber2 = generateSixDigitNumber();
-
       const newTicket = {
         Timestamp: formatDateTime(new Date()),
         "Ticket ID": `TN-${String(tickets.length + 1).padStart(3, "0")}`,
@@ -221,8 +210,6 @@ const TicketEnquiry = () => {
         Priority: formData.priority,
         Title: formData.title,
         Description: formData.description,
-        "After video call generate a OTP": sixDigitNumber1,
-        "Otp Verification": sixDigitNumber2,
         ColumnAData: formatDateTime(new Date()),
       };
 

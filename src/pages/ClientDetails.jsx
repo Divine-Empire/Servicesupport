@@ -326,6 +326,15 @@ export default function ClientDetails() {
     }
   };
 
+  function generateSixDigitNumber() {
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      const digit = Math.floor(Math.random() * 10);
+      result += digit.toString();
+    }
+    return result;
+  }
+
   // console.log("selectedTicket",selectedTicket);
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -431,6 +440,8 @@ export default function ClientDetails() {
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
 
+    const sixDigitNumber1 = generateSixDigitNumber();
+
     try {
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -465,6 +476,7 @@ export default function ClientDetails() {
             AC: formData.engineerAssign || "", // Engineer Name
             AD: formData.serviceLocation || "", // Service Location
             AE: fileUrl || "N/A", // Upload Challan
+            AJ: sixDigitNumber1,
           }),
         }).toString(),
       });

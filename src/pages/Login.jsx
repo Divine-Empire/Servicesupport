@@ -48,7 +48,8 @@ const Login = () => {
         "Calibration",
         "Accountability & Approvals",
         "Calibration Certificate",
-        "Conformation"
+        "Conformation",
+        "Cancle"
       ];
 
       let pagesss = "";
@@ -73,13 +74,15 @@ const Login = () => {
         navigate("/followup");
       } else if (pagesss === "Site Visit Plan") {
         navigate("/siteplan");
-      } else if (pagesss === "TADA") {
+      } else if (pagesss === "Warehouse1") {
+        navigate("/warehouse1");
+      }else if (pagesss === "TADA") {
         navigate("/tada");
-      } else if (pagesss === "Site Visit By Sinior") {
+      } else if (pagesss === "Expense Approval By Senior") {
         navigate("/sitevisit");
-      } else if (pagesss === "Site Visit By Accountant") {
+      }else if (pagesss === "Expense Approval By Accountant") {
         navigate("/sitevisitbyaccount");
-      } else if (pagesss === "Site Visit (Verification OTP)") {
+      }  else if (pagesss === "Site Visit (Verification OTP)") {
         navigate("/approval");
       } else if (pagesss === "Engineer") {
         navigate("/engineer");
@@ -87,10 +90,18 @@ const Login = () => {
         navigate("/invoice");
       } else if (pagesss === "Account Verification") {
         navigate("/account");
-      } else if (pagesss === "Warehouse") {
-        navigate("/warehouse");
+      } else if (pagesss === "Warehouse2") {
+        navigate("/warehouse2");
       } else if (pagesss === "Calibration") {
         navigate("/calibration");
+      }else if (pagesss === "Accountability & Approvals") {
+        navigate("/accountabilityApprovals");
+      }else if (pagesss === "Calibration Certificate") {
+        navigate("/calibrationCertificate");
+      }else if (pagesss === "Conformation") {
+        navigate("/conformation");
+      }else if (pagesss === "Cancle") {
+        navigate("/cancle");
       }
 
       // Redirect based on role if needed

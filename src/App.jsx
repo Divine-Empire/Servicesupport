@@ -63,7 +63,7 @@ function App() {
           <Route path="/accountabilityApprovals" element={<AccountablityApproval />} />
           <Route path="/calibrationCertificate" element={<CalibrationCertificate />} />
           <Route path="/conformation" element={<Conformation />} />
-          <Route path="/cancle" element={<Cancle />} />
+          <Route path="/cancle" element={<Cancel />} />
 
           </Route>
           <Route path="*" element={<NotFound />} />

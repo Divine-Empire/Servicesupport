@@ -57,7 +57,7 @@ const navigation = [
     icon: Settings,
   },
   { name: "Conformation", href: "/conformation", icon: Settings },
-  { name: "Cancle", href: "/cancle", icon: Settings },
+  { name: "Cancel", href: "/cancel", icon: Settings },
 ];
 
 export default function Sidebar({ onClose, isMobile = false }) {

@@ -959,7 +959,7 @@ export default function SiteVisitByAccountant() {
       <Modal
         isOpen={showSiteVisitModal}
         onClose={() => setShowSiteVisitModal(false)}
-        title="Site Visit"
+        title="Expense Approval By Accountant"
         size="3xl"
       >
         <div className="bg-white rounded-lg">

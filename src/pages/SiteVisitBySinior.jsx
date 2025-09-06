@@ -905,7 +905,7 @@ export default function SiteVisit() {
       <Modal
         isOpen={showSiteVisitModal}
         onClose={() => setShowSiteVisitModal(false)}
-        title="Site Visit Approval By Sinior"
+        title="Expense Approval By Senior"
         size="3xl"
       >
         <div className="bg-white rounded-lg">

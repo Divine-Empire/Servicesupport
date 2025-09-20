@@ -366,19 +366,20 @@ export default function Quotation() {
     // console.log("sharethrough", formData.shareThrough);
 
     try {
-      const rowData = [
-        currentDateTime,
-        formData.ticketId || "",
-        formData.clientName || "",
-        formData.phoneNumber || "",
-        formData.quotationNo || "",
-        formData.basicAmount || "",
-        formData.totalAmountWithTax,
-        fileUrl || "",
-        formData.quotationShareBy || "",
-        "Mail",
-        formData.remarks || "",
-      ];
+     const rowData = [
+  currentDateTime,
+  formData.ticketId || "",
+  formData.clientName || "",
+  formData.phoneNumber || "",
+  formData.quotationNo || "",
+  formData.basicAmount || "",
+  formData.totalAmountWithTax,
+  fileUrl || "",
+  formData.quotationShareBy || "",
+  "Mail",
+  formData.quotationShare || "", // This will be added to column AU
+  formData.remarks || "",
+];
 
       // console.log("rowDAta", formData);
 
@@ -1020,19 +1021,21 @@ export default function Quotation() {
                   </select>
                 </div>
 
-                <div className="md:col-span-2">
-                  <Label>Remarks</Label>
-                  <Textarea
-                    rows={3}
-                    placeholder="Enter remarks"
-                    value={formData.remarks || ""}
-                    onChange={(e) =>
-                      handleInputChange("remarks", e.target.value)
-                    }
-                    data-testid="textarea-remarks"
-                  />
-                </div>
-
+           <div className="md:col-span-2">
+  <Label>Quotation Share</Label>
+  <select
+    value={formData.quotationShare || ""}
+    onChange={(e) =>
+      handleInputChange("quotationShare", e.target.value)
+    }
+    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    data-testid="select-quotation-share"
+  >
+    <option value="">Select Quotation Share</option>
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+  </select>
+</div>
                 <div className="md:col-span-2 flex space-x-4 pt-4 sticky bottom-0 bg-white py-4">
                   {" "}
                   {/* Make buttons sticky */}

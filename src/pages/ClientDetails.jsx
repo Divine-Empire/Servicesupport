@@ -267,47 +267,63 @@ const saveCustomCompanyName = async (companyName, state, gstNo, siteAddress) => 
   }, []);
 
 
-  const fetchMasterSheet = async () => {
-    try {
-      const response = await fetch(`${sheet_url}?sheet=Master`);
-      const result = await response.json();
+ const fetchMasterSheet = async () => {
+  try {
+    const response = await fetch(`${sheet_url}?sheet=Master`);
+    const result = await response.json();
 
-      if (result.success && result.data && result.data.length > 0) {
-        const headers = result.data[0]; // First row contains headers
-        const structuredData = {};
+    if (result.success && result.data && result.data.length > 0) {
+      const headers = result.data[0]; // First row contains headers
+      console.log("Headers:", headers); // Debug log
+      
+      const structuredData = {};
 
-        // Initialize each header with an empty array
-        headers.forEach((header) => {
-          structuredData[header] = [];
-        });
+      // Initialize each header with an empty array
+      headers.forEach((header) => {
+        structuredData[header] = [];
+      });
 
-        // Process each data row (skip the header row)
-        result.data.slice(1).forEach((row) => {
-          row.forEach((value, index) => {
-            const header = headers[index];
-            // Handle cases where value might be null/undefined or not a string
-            if (value !== null && value !== undefined) {
-              const stringValue = String(value).trim(); // Convert to string and trim
-              if (stringValue !== "") {
-                structuredData[header].push(stringValue);
-              }
+      // Process each data row (skip the header row)
+      result.data.slice(1).forEach((row) => {
+        row.forEach((value, index) => {
+          const header = headers[index];
+          // Handle cases where value might be null/undefined or not a string
+          if (value !== null && value !== undefined) {
+            const stringValue = String(value).trim(); // Convert to string and trim
+            if (stringValue !== "") {
+              structuredData[header].push(stringValue);
             }
-          });
+          }
         });
+      });
 
-        // Remove duplicates from each array
-        // Object.keys(structuredData).forEach((key) => {
-        //   structuredData[key] = [...new Set(structuredData[key])];
-        // });
+      // Remove duplicates from each array
+      Object.keys(structuredData).forEach((key) => {
+        structuredData[key] = [...new Set(structuredData[key])];
+      });
 
-        // console.log("Structured Master Data:", structuredData);
-        setMasterData([structuredData]); // Wrap in array as per your requested format
+      // Specifically handle Engineer Assign Name from column H (index 7)
+      // If column H data is not coming through headers properly, manually extract it
+      if (!structuredData["Engineer Assign Name"] || structuredData["Engineer Assign Name"].length === 0) {
+        const engineerNames = [];
+        result.data.slice(1).forEach((row) => {
+          if (row[7] && String(row[7]).trim() !== "") {
+            engineerNames.push(String(row[7]).trim());
+          }
+        });
+        structuredData["Engineer Assign Name"] = [...new Set(engineerNames)];
       }
-    } catch (error) {
-      console.error("Error fetching master data:", error);
-      toast.error("Failed to load master data");
+
+      console.log("Structured Master Data:", structuredData); // Debug log
+      console.log("Engineer Assign Name data:", structuredData["Engineer Assign Name"]); // Debug log
+      
+      setMasterData([structuredData]); // Wrap in array as per your requested format
     }
-  };
+  } catch (error) {
+    console.error("Error fetching master data:", error);
+    toast.error("Failed to load master data");
+  }
+};
 
   useEffect(() => {
     fetchMasterSheet();
@@ -1689,28 +1705,28 @@ if (!companyExists) {
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label className="text-sm">Engineer Name *</Label>
-                    <Select
-                      onValueChange={(value) =>
-                        handleInputChange("engineerAssign", value)
-                      }
-                      value={formData.engineerAssign}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select engineer" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
-                        {masterData[0]?.["Enquiry Receiver Name"]?.map(
-                          (option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                 <div className="space-y-1">
+  <Label className="text-sm">Engineer Name *</Label>
+  <Select
+    onValueChange={(value) =>
+      handleInputChange("engineerAssign", value)
+    }
+    value={formData.engineerAssign}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select engineer" />
+    </SelectTrigger>
+    <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
+      {masterData[0]?.["Engineer Assign Name"]?.map(
+        (option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        )
+      )}
+    </SelectContent>
+  </Select>
+</div>
 
                   {/* <div className="md:col-span-2 space-y-1">
                     <Label className="text-sm">Site Name *</Label>

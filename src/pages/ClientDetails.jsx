@@ -122,7 +122,6 @@ export default function ClientDetails() {
           serviceLocation: row[29], // Service Location
           uploadChallan: row[30],
           sentOtp: row[117], // NEW: Column DN (index 117 for DN column)
-
         }));
 
         // Filter data based on your conditions
@@ -345,7 +344,7 @@ export default function ClientDetails() {
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
       const matchesSearch =
-      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
@@ -360,7 +359,7 @@ export default function ClientDetails() {
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
       const matchesSearch =
-      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
@@ -413,7 +412,6 @@ export default function ClientDetails() {
       serviceLocation: "",
       warehouseChallan: "",
       sentOtp: "", // Add this line
-
     });
     setShowDetailsModal(true);
   };
@@ -561,6 +559,11 @@ export default function ClientDetails() {
     }
     if (!formData.serviceLocation) {
       alert("Error: Please select service Location");
+      return;
+    }
+
+    if(!formData.sentOtp){
+      alert("Error: Please select sent OTP");
       return;
     }
 
@@ -787,6 +790,7 @@ export default function ClientDetails() {
         selectedTicket.description || "", // Machine Name
         "Client Details",
         formData.cancelRemarks || "",
+        "Double Ticket"
       ];
 
       // console.log("rowDAta", formData);
@@ -1011,9 +1015,9 @@ export default function ClientDetails() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                           Email Address
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                        {/* <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                           Delay Days
-                        </th>
+                        </th> */}
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Category
                         </th>
@@ -1083,9 +1087,9 @@ export default function ClientDetails() {
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.emailAddress}
                             </td>
-                            <td className="px-4 py-3 text-red-900">
+                            {/* <td className="px-4 py-3 text-red-900">
                               {Math.round(ticket.delay1)}
-                            </td>
+                            </td> */}
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.category}
                             </td>
@@ -1310,7 +1314,7 @@ export default function ClientDetails() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.sentOtp || ""}
-                           </td>
+                            </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.uploadChallan ? (
                                 <a
@@ -1413,32 +1417,31 @@ export default function ClientDetails() {
               </CardHeader>
 
               <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-sm">Phone Number</Label>
-                    <Input 
-                      value={selectedTicket?.phoneNumber} 
-                      disabled 
-                      className="bg-gray-50" 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-sm">Email Address</Label>
-                    <Input 
-                      value={selectedTicket?.emailAddress} 
-                      disabled 
-                      className="bg-gray-50" 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-sm">Category</Label>
-                    <Input 
-                      value={selectedTicket?.category} 
-                      disabled 
-                      className="bg-gray-50" 
-                    />
-                  </div>
-                </CardContent>
-
+                <div className="space-y-1">
+                  <Label className="text-sm">Phone Number</Label>
+                  <Input
+                    value={selectedTicket?.phoneNumber}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">Email Address</Label>
+                  <Input
+                    value={selectedTicket?.emailAddress}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-sm">Category</Label>
+                  <Input
+                    value={selectedTicket?.category}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+              </CardContent>
             </Card>
           </div>
 
@@ -2160,33 +2163,22 @@ export default function ClientDetails() {
                     </div>
                   )}
                   <div className="space-y-1">
-  <Label className="text-sm">Sent OTP</Label>
-  <Select
-    onValueChange={(value) => handleInputChange("sentOtp", value)}
-    value={formData.sentOtp}
-  >
-    <SelectTrigger>
-      <SelectValue placeholder="Select option" />
-    </SelectTrigger>
-    <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
-      <SelectItem value="Yes">Yes</SelectItem>
-      <SelectItem value="No">No</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
-
-{formData.serviceLocation === "Warehouse" && (
-  <div className="space-y-1">
-    <Label className="text-sm">Upload Challan *</Label>
-    <Input
-      type="file"
-      onChange={(e) =>
-        handleInputChange("warehouseChallan", e.target.files[0])
-      }
-    />
-  </div>
-)}
-
+                    <Label className="text-sm">Sent OTP *</Label>
+                    <Select
+                      onValueChange={(value) =>
+                        handleInputChange("sentOtp", value)
+                      }
+                      value={formData.sentOtp}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
+                        <SelectItem value="Yes">Yes</SelectItem>
+                        <SelectItem value="No">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardContent>
               </Card>
             </>

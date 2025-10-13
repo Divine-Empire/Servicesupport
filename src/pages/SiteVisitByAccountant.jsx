@@ -754,6 +754,9 @@ export default function SiteVisitByAccountant() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Amount
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Approved Amount
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
@@ -833,6 +836,9 @@ export default function SiteVisitByAccountant() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               ₹{ticket.amount || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              ₹{ticket.approvedAmount || "0"}
                             </td>
                           </tr>
                         ))

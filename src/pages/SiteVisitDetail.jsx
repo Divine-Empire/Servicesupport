@@ -35,7 +35,7 @@ import {
 } from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
 
-export default function Engineer() {
+export default function SiteVisitDetail() {
   const [activeTab, setActiveTab] = useState("pending");
   const [pendingTickets, setPendingTickets] = useState([]);
   const [historyTickets, setHistoryTickets] = useState([]);
@@ -351,9 +351,18 @@ export default function Engineer() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+    if(!formData.serviceReportFile){
+      alert("Please select file for Serive Report");
+      return;
+    }
+
     setIsSubmitting(true); // Start loading
 
     let fileUrl = "";
+    let quatationReceiveURL = "";
+
+
 
     if (formData.serviceReportFile) {
       const uploadResult = await uploadImageToDrive(formData.serviceReportFile);
@@ -361,6 +370,14 @@ export default function Engineer() {
         throw new Error(uploadResult.error || "Failed to upload image");
       }
       fileUrl = uploadResult.fileUrl;
+    }
+
+    if (formData.quatationReceive) {
+      const uploadResult = await uploadImageToDrive(formData.quatationReceive);
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || "Failed to upload image");
+      }
+      quatationReceiveURL = uploadResult.fileUrl;
     }
 
     const currentDateTime = formatDateTime(new Date());
@@ -382,7 +399,7 @@ export default function Engineer() {
             DC: currentDateTime,
             DE: fileUrl,
             DF: formData.remarks,
-            DG: formData.quatationReceive || "",
+            DG: quatationReceiveURL || "",
             CF: formData.returnDateUpdated || formData.returnDate,
           }),
         }).toString(),
@@ -608,7 +625,7 @@ export default function Engineer() {
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <CardTitle className="text-blue-800">
-                Pending Engineer Approvals
+                Pending Site Visit Detail
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -749,7 +766,7 @@ export default function Engineer() {
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <CardTitle className="text-blue-800">
-                Engineer Approval History
+                History Site Visit Detail
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -959,7 +976,7 @@ export default function Engineer() {
 
               {/* Editable fields */}
               <div>
-                <Label>Service Report (upload file)</Label>
+                <Label>Service Report (upload file) *</Label>
                 <Input
                   type="file"
                   onChange={(e) => {
@@ -973,7 +990,7 @@ export default function Engineer() {
                 <Label>Remarks </Label>
                 <Input
                   type="text"
-                  maxLength={6}
+                  // maxLength={6}
                   placeholder="Enter Remarks"
                   value={formData.remarks || ""}
                   onChange={(e) => handleInputChange("remarks", e.target.value)}
@@ -983,9 +1000,9 @@ export default function Engineer() {
 
               <div className="space-y-1">
                 <Label className="text-gray-600 font-medium">
-                  Quation Receive
+                  Client approval for additional service
                 </Label>
-                <Select
+                {/* <Select
                   onValueChange={(value) =>
                     handleInputChange("quatationReceive", value)
                   }
@@ -1010,7 +1027,17 @@ export default function Engineer() {
                       No
                     </SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
+
+                <Input
+                    type="file"
+                    placeholder="Enter PDF link"
+                    onChange={(e) =>
+                      handleInputChange("quatationReceive", e.target.files[0])
+                    }
+                    data-testid="input-pdf-link"
+                  />
+
               </div>
 
               <div className="md:col-span-2 flex space-x-4 pt-4">

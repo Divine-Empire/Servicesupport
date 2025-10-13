@@ -134,7 +134,7 @@ export default function Invoice() {
           whatDidTheCustomerSay: row[57],
           nextAction: row[58],
           nextDateOfCall: row[59],
-          followUpRemarks: row[60],
+          followUpAttachment: row[60],
 
           planned5: row[61],
           actual5: row[62],
@@ -842,14 +842,34 @@ export default function Invoice() {
                           Phone Number
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Email Address
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation Pdf Link
                         </th>
+                        
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          PAYMENT TERM
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Acceptance Via
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Acceptance Attachments
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          PAYMENT MODE
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Senior approval
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Approval Attachment
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Attachment
+                        </th>
+
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
@@ -903,15 +923,73 @@ export default function Invoice() {
                               {ticket.phoneNumber || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.emailAddress || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || ""}
                             </td>
+
                             <td className="px-4 py-3">
                               {ticket.quotationPdfLink ? (
                                 <a
                                   href={ticket.quotationPdfLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentTerm || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.acceptanceVia || ""}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.acceptanceAttachemntFile ? (
+                                <a
+                                  href={ticket.acceptanceAttachemntFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentMode || ""}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.seniorApproval || ""}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.approvalAttachmentFile ? (
+                                <a
+                                  href={ticket.approvalAttachmentFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                             <td className="px-4 py-3">
+                              {ticket.followUpAttachment ? (
+                                <a
+                                  href={ticket.followUpAttachment}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
@@ -955,9 +1033,6 @@ export default function Invoice() {
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Email Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Category
@@ -1050,6 +1125,29 @@ export default function Invoice() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Total Amount with tex
                         </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          PAYMENT TERM
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Acceptance Via
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Acceptance Attachments
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          PAYMENT MODE
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Senior approval
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Approval Attachment
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Attachment
+                        </th>
+
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
@@ -1090,9 +1188,6 @@ export default function Invoice() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.phoneNumber || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.emailAddress || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.invoiceCategory || ""}
@@ -1230,6 +1325,67 @@ export default function Invoice() {
 
                             <td className="px-4 py-3 text-blue-900">
                               ₹{ticket.totalAmountWithTex || "0"}
+                            </td>
+
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentTerm || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.acceptanceVia || ""}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.acceptanceAttachemntFile ? (
+                                <a
+                                  href={ticket.acceptanceAttachemntFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentMode || ""}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.seniorApproval || ""}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.approvalAttachmentFile ? (
+                                <a
+                                  href={ticket.approvalAttachmentFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                             <td className="px-4 py-3">
+                              {ticket.followUpAttachment ? (
+                                <a
+                                  href={ticket.followUpAttachment}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
                             </td>
                           </tr>
                         ))

@@ -18,7 +18,6 @@ import Warehouse from "./pages/Warehouse2";
 import Calibration from "./pages/Calibration";
 import NotFound from "./pages/not-found";
 import Layout from './components/Layout';
-import Engineer from './pages/Engineer';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import SiteVisitByAccountant from './pages/SiteVisitByAccountant';
@@ -27,6 +26,7 @@ import AccountablityApproval from './pages/AccountablityApproval';
 import CalibrationCertificate from './pages/CalibrationCertificate';
 import Conformation from './pages/Conformation';
 import Cancle from './pages/Cancle';
+import SiteVisitDetail from './pages/SiteVisitDetail';
 
 function App() {
   return (
@@ -54,7 +54,7 @@ function App() {
           <Route path="/sitevisit" element={<SiteVisit />} />
           <Route path="/sitevisitbyaccount" element={<SiteVisitByAccountant />} />
           <Route path="/approval" element={<EngineerApproval />} />
-          <Route path="/engineer" element={<Engineer />} />
+          <Route path="/site_visit_detail" element={<SiteVisitDetail />} />
           <Route path="/invoice" element={<Invoice />} />
           <Route path="/account" element={<AccountVerification />} />
           <Route path="/warehouse2" element={<Warehouse />} />

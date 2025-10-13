@@ -40,7 +40,7 @@ const navigation = [
     href: "/approval",
     icon: CheckCircle,
   },
-  { name: "Engineer", href: "/engineer", icon: CheckCircle },
+  { name: "Site Visit Detail", href: "/site_visit_detail", icon: CheckCircle },
   { name: "Invoice", href: "/invoice", icon: Receipt },
   { name: "Account Verification", href: "/account", icon: UserCheck },
   { name: "Warehouse2", href: "/warehouse2", icon: Warehouse },

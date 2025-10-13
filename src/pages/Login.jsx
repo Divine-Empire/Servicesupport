@@ -84,8 +84,8 @@ const Login = () => {
         navigate("/sitevisitbyaccount");
       }  else if (pagesss === "Site Visit (Verification OTP)") {
         navigate("/approval");
-      } else if (pagesss === "Engineer") {
-        navigate("/engineer");
+      } else if (pagesss === "Site Visit Detail") {
+        navigate("/site_visit_detail");
       } else if (pagesss === "Invoice") {
         navigate("/invoice");
       } else if (pagesss === "Account Verification") {

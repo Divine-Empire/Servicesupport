@@ -37,7 +37,7 @@ const TicketEnquiry = () => {
   const [categories, setCategories] = useState([]);
   const [employeeNames, setEmployeeNames] = useState([]);
 
-  const [activeTab, setActiveTab] = useState("ticket");
+  // const [activeTab, setActiveTab] = useState("ticket");
 
   const [formData, setFormData] = useState({
     clientName: "",
@@ -85,6 +85,8 @@ const TicketEnquiry = () => {
           ticket["ColumnAData"] = row[0] || "";
           return ticket;
         });
+
+        console.log("formattedTickets", formattedTickets);
 
         setTickets(formattedTickets);
       } else {
@@ -202,7 +204,6 @@ const TicketEnquiry = () => {
       !formData.title ||
       !formData.category ||
       !formData.priority ||
-      !formData.emailAddress ||
       !formData.description ||
       !formData.personName
     ) {
@@ -351,10 +352,20 @@ const TicketEnquiry = () => {
 
   // console.log("tickets",tickets);
 
-  const filteredTickets =
-    activeTab === "cancel"
-      ? tickets.filter((ticket) => ticket["Status"] === "Cancelled")
-      : tickets.filter((ticket) => ticket["Status"] !== "Cancelled");
+  const filteredTickets = tickets;
+  // activeTab === "cancel"
+  //   ? tickets.filter((ticket) => ticket["Status"] === "Cancelled")
+  //   : tickets.filter((ticket) => ticket["Status"] !== "Cancelled");
+
+  const getRowColor = (ticket) => {
+    if (ticket["Status"] === "Cancelled") {
+      return "bg-red-100"; // Red for cancelled
+    }
+    if (ticket["Close Status"] === "Closed") {
+      return "bg-green-100"; // Blue for closed
+    }
+    return ""; // Default color for running or empty
+  };
 
   return (
     <div className="space-y-2">
@@ -378,9 +389,9 @@ const TicketEnquiry = () => {
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="text-blue-800">
-            All {activeTab === "ticket" ? "Tickets" : "Cancel"}
+            All Tickets
           </CardTitle>
-          <div className="flex space-x-2">
+          {/* <div className="flex space-x-2">
             <Button
               variant={activeTab === "ticket" ? "default" : "outline"}
               onClick={() => setActiveTab("ticket")}
@@ -395,7 +406,7 @@ const TicketEnquiry = () => {
             >
               Cancel
             </Button>
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 
@@ -446,6 +457,7 @@ const TicketEnquiry = () => {
                       }
                       required
                       disabled={isSubmitting}
+                      placeholder="Enter Client Name..."
                       data-testid="input-client-name"
                       className="border-blue-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -458,6 +470,7 @@ const TicketEnquiry = () => {
                       id="phoneNumber"
                       type="tel"
                       value={formData.phoneNumber}
+                      placeholder="Enter phone numbere..."
                       onChange={(e) =>
                         handleInputChange("phoneNumber", e.target.value)
                       }
@@ -469,7 +482,7 @@ const TicketEnquiry = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="emailAddress" className="text-blue-800">
-                      Email Address *
+                      Email Address
                     </Label>
                     <Input
                       id="emailAddress"
@@ -480,6 +493,7 @@ const TicketEnquiry = () => {
                       }
                       required
                       disabled={isSubmitting}
+                      placeholder="Enter Your Email..."
                       data-testid="input-email-address"
                       className="border-blue-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -627,6 +641,7 @@ const TicketEnquiry = () => {
                       }
                       required
                       disabled={isSubmitting}
+                      placeholder="Enter Company Name..."
                       data-testid="input-title"
                       className="border-blue-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -645,6 +660,7 @@ const TicketEnquiry = () => {
                       }
                       required
                       disabled={isSubmitting}
+                      placeholder="Enter Description..."
                       data-testid="textarea-description"
                       className="border-blue-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
@@ -718,7 +734,7 @@ const TicketEnquiry = () => {
                     Ticket ID
                   </TableHead>
 
-                   {activeTab === "cancel" && (
+                  {/* {activeTab === "cancel" && (
                     <>
                       <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
                         Stage Name
@@ -727,7 +743,7 @@ const TicketEnquiry = () => {
                         Remarks
                       </TableHead>
                     </>
-                  )}
+                  )} */}
 
                   <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
                     Client Name
@@ -741,6 +757,9 @@ const TicketEnquiry = () => {
                   <TableHead className="text-white border-b border-blue-500 min-w-[200px] px-4 py-3">
                     Email Address
                   </TableHead>
+                  <TableHead className="text-white border-b border-blue-500 min-w-[200px] px-4 py-3">
+                    Delay Days
+                  </TableHead>
                   <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
                     Category
                   </TableHead>
@@ -748,7 +767,7 @@ const TicketEnquiry = () => {
                     Priority
                   </TableHead>
                   <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Title
+                    Company Name
                   </TableHead>
                   <TableHead className="text-white border-b border-blue-500 min-w-[250px] px-4 py-3">
                     Description
@@ -756,7 +775,6 @@ const TicketEnquiry = () => {
                   <TableHead className="text-white border-b border-blue-500 min-w-[120px] px-4 py-3">
                     Date
                   </TableHead>
-                 
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-white divide-y divide-blue-100">
@@ -782,9 +800,17 @@ const TicketEnquiry = () => {
                   </TableRow>
                 ) : (
                   [...filteredTickets].reverse().map((ticket, index) => (
+                    // <TableRow
+                    //   key={index}
+                    //   className={index % 2 === 0 ? "bg-blue-50/50" : "bg-white"}
+                    // >
+
                     <TableRow
                       key={index}
-                      className={index % 2 === 0 ? "bg-blue-50/50" : "bg-white"}
+                      className={
+                        getRowColor(ticket) ||
+                        (index % 2 === 0 ? "bg-blue-50/50" : "bg-white")
+                      }
                     >
                       <TableCell
                         className="font-medium text-blue-800 px-4 py-3"
@@ -796,7 +822,7 @@ const TicketEnquiry = () => {
                         )}
                       </TableCell>
 
-                      {activeTab === "cancel" && (
+                      {/* {activeTab === "cancel" && (
                         <>
                           <TableCell className="text-blue-900 px-4 py-3">
                             {ticket["Stage Name"]}
@@ -805,7 +831,7 @@ const TicketEnquiry = () => {
                             {ticket["Remarks"]}
                           </TableCell>
                         </>
-                      )}
+                      )} */}
 
                       <TableCell className="text-blue-900 px-4 py-3">
                         {ticket["Client Name"]}
@@ -818,6 +844,9 @@ const TicketEnquiry = () => {
                       </TableCell>
                       <TableCell className="text-blue-900 px-4 py-3">
                         {ticket["Email Address"]}
+                      </TableCell>
+                      <TableCell className="text-red-900 px-4 py-3">
+                        {Math.round(ticket["Delay1"])}
                       </TableCell>
                       <TableCell className="text-blue-900 px-4 py-3">
                         {ticket["Category"]}
@@ -842,8 +871,6 @@ const TicketEnquiry = () => {
                       <TableCell className="text-blue-900 px-4 py-3">
                         {formatDate(ticket["ColumnAData"])}
                       </TableCell>
-
-                      
                     </TableRow>
                   ))
                 )}

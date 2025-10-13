@@ -37,6 +37,8 @@ import { Loader2Icon, LoaderIcon } from "lucide-react";
 
 export default function FollowUp() {
   const [activeTab, setActiveTab] = useState("pending");
+  const [dateFilterTab, setDateFilterTab] = useState("today");
+
   const [pendingTickets, setPendingTickets] = useState([]);
   const [historyTickets, setHistoryTickets] = useState([]);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
@@ -44,7 +46,7 @@ export default function FollowUp() {
   const [formData, setFormData] = useState({});
   const [followUpData, setFollowUpData] = useState([]);
   const [searchItem, setSearchItem] = useState("");
-  
+
   const { toast } = useToast();
 
   const [masterData, setMasterData] = useState({});
@@ -353,20 +355,64 @@ export default function FollowUp() {
     //   return;
     // }
 
+    if (formData.stage === "Followup") {
+      if (!formData.whatDidCustomerSay) {
+        alert("Please Write Something in What did Customer Say");
+        return;
+      }
+
+      if (!formData.nextAction) {
+        alert("Please Write Something in Next Action");
+        return;
+      }
+      if (!formData.nextDateOfCall) {
+        alert("Please Select Next Date of Call");
+        return;
+      }
+    } else {
+      if (!formData.approvalAttachmentFile) {
+        alert("Please add file for client Attachment");
+        return;
+      }
+      if (!formData.acceptanceAttachemntFile) {
+        alert("Please add file for Senior Attachment");
+        return;
+      }
+      if (!formData.paymentTerm) {
+        alert("Please select Payment Term");
+        return;
+      }
+      if (!formData.acceptanceVia) {
+        alert("Please select acceptance Via");
+        return;
+      }
+      if (!formData.paymentMode) {
+        alert("Please select Payment Mode");
+        return;
+      } else {
+        if (formData.paymentMode !== "FullyAdvance") {
+          if (!formData.seniorApproval) {
+            alert("Please select Senior Approval");
+            return;
+          }
+        }
+      }
+
+      if(formData.paymentMode === "FullyAdvance" || formData.paymentMode === "Partial Advance" || formData.paymentMode === "Partial Advance+PDC" || formData.paymentMode === "Current Date Cheque"){
+
+        if (!formData.followupremarkFile) {
+          alert("please add file for Advance Payment Attachment");
+          return;
+        }
+      }
+
+    }
+
     setIsSubmitting(true);
     let acceptanceFile = "";
     let approvalFile = "";
 
     let followupremarkFileUrl = "";
-
-    // console.log(
-    //   "formData.acceptanceAttachemntFile",
-    //   formData.acceptanceAttachemntFile
-    // );
-    // console.log(
-    //   "formData.approvalAttachmentFile",
-    //   formData.approvalAttachmentFile
-    // );
 
     if (formData.followupremarkFile) {
       const uploadResult = await uploadImageToDrive(
@@ -378,7 +424,6 @@ export default function FollowUp() {
       followupremarkFileUrl = uploadResult.fileUrl;
       // console.log("acceptanceFile", acceptanceFile);
     }
-
 
     if (formData.acceptanceAttachemntFile) {
       const uploadResult = await uploadImageToDrive(
@@ -521,7 +566,7 @@ export default function FollowUp() {
         selectedTicket.title || "", // Machine Name
         selectedTicket.description || "", // Machine Name
         "Follow-Up", // Enquiry Type (second one)
-        formData.cancelRemarks || ""
+        formData.cancelRemarks || "",
       ];
 
       // console.log("rowDAta", formData);
@@ -605,7 +650,7 @@ export default function FollowUp() {
       return (
         <>
           <div>
-            <Label>What Did The Customer Say</Label>
+            <Label>What Did The Customer Say *</Label>
             <Textarea
               rows={3}
               value={formData.whatDidCustomerSay || ""}
@@ -616,7 +661,7 @@ export default function FollowUp() {
             />
           </div>
           <div>
-            <Label>Next Action</Label>
+            <Label>Next Action *</Label>
             <Input
               value={formData.nextAction || ""}
               onChange={(e) => handleInputChange("nextAction", e.target.value)}
@@ -624,7 +669,7 @@ export default function FollowUp() {
             />
           </div>
           <div>
-            <Label>Next Date Of Call</Label>
+            <Label>Next Date Of Call *</Label>
             <Input
               type="date"
               value={formData.nextDateOfCall || ""}
@@ -641,7 +686,7 @@ export default function FollowUp() {
         <>
           {/* Editable fields */}
           <div>
-            <Label>Client Attachments </Label>
+            <Label>Client Attachments *</Label>
             <Input
               type="file"
               placeholder="Client Attachments"
@@ -653,7 +698,7 @@ export default function FollowUp() {
           </div>
 
           <div>
-            <Label>Senior Attachments </Label>
+            <Label>Senior Attachments *</Label>
             <Input
               type="file"
               placeholder="Senior Attachments"
@@ -665,7 +710,7 @@ export default function FollowUp() {
           </div>
 
           <div>
-            <Label>Payment Term</Label>
+            <Label>Payment Term *</Label>
             <Select
               value={formData.paymentTerm || undefined} // Use undefined instead of empty string
               onValueChange={(value) => handleInputChange("paymentTerm", value)}
@@ -696,12 +741,10 @@ export default function FollowUp() {
             </Select>
           </div>
 
-
-
           {/* Acceptance Via with Mail fix */}
 
           <div>
-            <Label>Acceptance Via</Label>
+            <Label>Acceptance Via *</Label>
             <Select
               value={formData.acceptanceVia || undefined} // Use undefined instead of empty string
               onValueChange={(value) =>
@@ -723,7 +766,7 @@ export default function FollowUp() {
           </div>
 
           <div>
-            <Label>Payment Mode</Label>
+            <Label>Payment Mode *</Label>
             <Select
               value={formData.paymentMode || undefined} // Use undefined instead of empty string
               onValueChange={(value) => handleInputChange("paymentMode", value)}
@@ -754,25 +797,25 @@ export default function FollowUp() {
             </Select>
           </div>
 
-          
-
-
-          <div>
-            <Label>Advance Payment Attachment</Label>
-            <Input
-              type="file"
-              placeholder="Advance Payment"
-              onChange={(e) =>
-                handleInputChange("followupremarkFile", e.target.files[0])
-              }
-              data-testid="attachment"
-            />
-          </div>
+          {formData.paymentMode !== "" &&
+            (formData.paymentMode === "FullyAdvance" || formData.paymentMode === "Partial Advance" || formData.paymentMode === "Partial Advance+PDC" || formData.paymentMode === "Current Date Cheque") && (
+              <div>
+                <Label>Advance Payment Attachment *</Label>
+                <Input
+                  type="file"
+                  placeholder="Advance Payment"
+                  onChange={(e) =>
+                    handleInputChange("followupremarkFile", e.target.files[0])
+                  }
+                  data-testid="attachment"
+                />
+              </div>
+            )}
 
           {formData.paymentMode !== "" &&
             formData.paymentMode !== "FullyAdvance" && (
               <div>
-                <Label>Senior Approval</Label>
+                <Label>Senior Approval *</Label>
                 <Select
                   value={formData.seniorApproval || undefined} // Use undefined instead of empty string
                   onValueChange={(value) =>
@@ -816,7 +859,7 @@ export default function FollowUp() {
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
       const matchesSearch =
-      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
@@ -830,16 +873,38 @@ export default function FollowUp() {
   const filteredHistoryData = followUpData
     .filter((item) => {
       const phoneNumberStr = String(item.phone_number || "");
-    const matchesSearch =
-      item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-    return matchesSearch;
+      const matchesSearch =
+        item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+      return matchesSearch;
     })
     .reverse();
 
-  console.log("filteredPendingData", filteredPendingData);
+  const filterByDateCategory = (data) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return data.filter((item) => {
+      const nextDate = new Date(item.nextDateOfCall);
+      nextDate.setHours(0, 0, 0, 0);
+
+      if (dateFilterTab === "today") {
+        return nextDate.getTime() === today.getTime();
+      } else if (dateFilterTab === "upcoming") {
+        return nextDate.getTime() > today.getTime();
+      } else if (dateFilterTab === "overdue") {
+        return nextDate.getTime() < today.getTime();
+      }
+      return true;
+    });
+  };
+
+  const finalFilteredPendingData = filterByDateCategory(filteredPendingData);
+  const finalFilteredHistoryData = filterByDateCategory(filteredHistoryData);
+
+  // console.log("filteredPendingData", filteredPendingData);
   // console.log("filteredHistoryData", filteredHistoryData);
 
   // console.log("fdslf", followUpData);
@@ -873,22 +938,60 @@ export default function FollowUp() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History ({filteredHistoryData.length})
-          </TabsTrigger>
-        </TabsList>
+        <div className="sm:flex justify-between">
+          <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+            <TabsTrigger
+              value="pending"
+              data-testid="tab-pending"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Pending ({finalFilteredPendingData.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              data-testid="tab-history"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              History ({finalFilteredHistoryData.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="mb-4 flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setDateFilterTab("today")}
+              className={`px-4 py-2 rounded-md transition-all ${
+                dateFilterTab === "today"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-transparent text-gray-700 hover:bg-green-100"
+              }`}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => setDateFilterTab("upcoming")}
+              className={`px-4 py-2 rounded-md transition-all ${
+                dateFilterTab === "upcoming"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-transparent text-gray-700 hover:bg-green-100"
+              }`}
+            >
+              Upcoming
+            </button>
+            <button
+              type="button"
+              onClick={() => setDateFilterTab("overdue")}
+              className={`px-4 py-2 rounded-md transition-all ${
+                dateFilterTab === "overdue"
+                  ? "bg-red-600 text-white shadow-md"
+                  : "bg-transparent text-gray-700 hover:bg-red-100"
+              }`}
+            >
+              Overdue
+            </button>
+          </div>
+        </div>
 
         <TabsContent value="pending">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -960,7 +1063,7 @@ export default function FollowUp() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
-                      {filteredPendingData.length === 0 ? (
+                      {finalFilteredPendingData.length === 0 ? (
                         <tr>
                           <td
                             colSpan={16}
@@ -979,7 +1082,7 @@ export default function FollowUp() {
                           </td>
                         </tr>
                       ) : (
-                        filteredPendingData.map((ticket, ind) => (
+                        finalFilteredPendingData.map((ticket, ind) => (
                           <tr
                             key={ticket.id}
                             className={
@@ -1129,7 +1232,7 @@ export default function FollowUp() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
-                      {filteredHistoryData.length === 0 ? (
+                      {finalFilteredHistoryData.length === 0 ? (
                         <tr>
                           <td
                             colSpan={6}
@@ -1148,89 +1251,88 @@ export default function FollowUp() {
                           </td>
                         </tr>
                       ) : (
-                        [...filteredHistoryData].reverse().reverse().map((ticket, ind) => (
-                          <tr
-                            key={ind}
-                            className={
-                              ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                            }
-                          >
-                            <td className="px-4 py-3 font-medium text-blue-800">
-                              {formatDate(ticket.timestamp)}
-                            </td>
-                            <td className="px-4 py-3 font-medium text-blue-800">
-                              {ticket.ticket_id}
-                            </td>
-                            <td className="px-4 py-3 font-medium text-blue-800">
-                              {ticket.stage || ""}
-                            </td>
+                        [...finalFilteredHistoryData]
+                          .reverse()
+                          .reverse()
+                          .map((ticket, ind) => (
+                            <tr
+                              key={ind}
+                              className={
+                                ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                              }
+                            >
+                              <td className="px-4 py-3 font-medium text-blue-800">
+                                {formatDate(ticket.timestamp)}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-blue-800">
+                                {ticket.ticket_id}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-blue-800">
+                                {ticket.stage || ""}
+                              </td>
 
-                            <td className="px-4 py-3">
-                              {ticket.payment_term_ || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.acceptance_via || ""}
-                            </td>
+                              <td className="px-4 py-3">
+                                {ticket.payment_term_ || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.acceptance_via || ""}
+                              </td>
 
-                            <td className="px-4 py-3 text-blue-900">
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.acceptance_attachments_ ? (
+                                  <a
+                                    href={ticket.acceptance_attachments_}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  ""
+                                )}
+                              </td>
 
-                            {ticket.acceptance_attachments_ ? (
-                              <a
-                                href={ticket.acceptance_attachments_}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                              >
-                                View
-                              </a>
-                            ) : (
-                              ""
-                            )}
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.payment_mode || ""}
+                              </td>
 
-                            </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.senior_approval || ""}
+                              </td>
 
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.payment_mode || ""}
-                            </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.approval_attachment ? (
+                                  <a
+                                    href={ticket.approval_attachment}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  ""
+                                )}
+                              </td>
 
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.senior_approval || ""}
-                            </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.what_did_the_customer_say || ""}
+                              </td>
 
-                            <td className="px-4 py-3 text-blue-900">
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.next_action || ""}
+                              </td>
 
+                              <td className="px-4 py-3 text-blue-900">
+                                {formatDate(ticket.next_date_of_call) || ""}
+                              </td>
 
-                            {ticket.approval_attachment ? (
-                              <a
-                              href={ticket.approval_attachment}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 hover:underline"
-                              >
-                                View
-                              </a>
-                            ) : (
-                              ""
-                            )}
-                            </td>
-
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.what_did_the_customer_say || ""}
-                            </td>
-
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.next_action || ""}
-                            </td>
-
-                            <td className="px-4 py-3 text-blue-900">
-                              {formatDate(ticket.next_date_of_call) || ""}
-                            </td>
-
-                            {/* <td className="px-4 py-3 text-blue-900">
+                              {/* <td className="px-4 py-3 text-blue-900">
                               {ticket.quotationremarks || ""}
                             </td> */}
-                          </tr>
-                        ))
+                            </tr>
+                          ))
                       )}
                     </tbody>
                   </table>

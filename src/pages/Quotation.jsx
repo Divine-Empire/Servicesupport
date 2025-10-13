@@ -269,7 +269,7 @@ export default function Quotation() {
       machineName: ticket.machineName || "",
       enquiryType: ticket.enquiryType || "",
       engineerAssign: ticket.engineerAssign || "",
-      siteName: ticket.siteName || "",
+      siteAddress: ticket.siteAddress || "",
       videoCallServicesSolve: ticket.videoCallServicesSolve || "",
       otpVerifications: ticket.otpVerification || "",
       quotationNo: "",
@@ -340,6 +340,22 @@ export default function Quotation() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if(!formData.quotationPdfLink){
+      alert("Please Upload quotation PDF");
+      return ;
+    }
+
+    if(!formData.quotationShare){
+      alert("Please select quotation Share");
+      return ;
+    }
+
+    if(!formData.quotationShareBy){
+      alert("Please select quotation Shareby");
+      return ;
+    }
+
 
     setIsSubmitting(true);
     let fileUrl = "";
@@ -915,7 +931,7 @@ export default function Quotation() {
                 className="bg-slate-50"
               />
             </div>
-            <div>
+            {/* <div>
               <Label>Machine Name</Label>
               <select
                 value={formData.machineName || ""}
@@ -931,14 +947,14 @@ export default function Quotation() {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             {!isCancelled && (
               <>
                 <div>
-                  <Label>Site Name</Label>
+                  <Label>Site Address</Label>
                   <Input
-                    value={formData.siteName || ""}
+                    value={formData.siteAddress || ""}
                     disabled
                     className="bg-slate-50"
                   />
@@ -1003,7 +1019,7 @@ export default function Quotation() {
                   />
                 </div>
                 <div>
-                  <Label>Quotation PDF Link</Label>
+                  <Label>Quotation PDF Link *</Label>
                   <Input
                     type="file"
                     placeholder="Enter PDF link"
@@ -1014,7 +1030,7 @@ export default function Quotation() {
                   />
                 </div>
                 <div>
-                  <Label>Quotation Share By</Label>
+                  <Label>Quotation Share By *</Label>
                   <select
                     value={formData.quotationShareBy || ""}
                     onChange={(e) =>
@@ -1032,7 +1048,7 @@ export default function Quotation() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label>Quotation Share</Label>
+                  <Label>Quotation Share *</Label>
                   <select
                     value={formData.quotationShare || ""}
                     onChange={(e) =>

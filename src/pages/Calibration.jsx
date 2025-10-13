@@ -596,6 +596,11 @@ export default function Calibration() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
                         </th>
+
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
@@ -604,15 +609,19 @@ export default function Calibration() {
                         </th>
 
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Email Address
+                          Invoice No (Sevice)
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Category
+                          Invoice No (NABL)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Copy (Service)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Copy (NABL)
                         </th>
 
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
-                        </th>
+                        
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation Pdf link
                         </th>
@@ -663,20 +672,55 @@ export default function Calibration() {
                               {ticket.quotationNo || `QT-${ticket.id}`}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || ""}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.phoneNumber}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.emailAddress}
+                              {ticket.invoiceNoSERVICE}
                             </td>
+
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.invoiceCategory}
+                              {ticket.nablInvoice}
                             </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.companyName || ""}
+
+
+                            <td className="px-4 py-3">
+                              {ticket.attachmentService ? (
+                                <a
+                                  href={ticket.attachmentService}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
                             </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.attachmentSpear ? (
+                                <a
+                                  href={ticket.attachmentSpear}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                            
                             <td className="px-4 py-3">
                               {ticket.quotationPdfLink ? (
                                 <a
@@ -722,6 +766,9 @@ export default function Calibration() {
                           Quotation No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -729,15 +776,19 @@ export default function Calibration() {
                         </th>
 
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Email Address
+                          Invoice No (Sevice)
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Category
+                          Invoice No (NABL)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Copy (Service)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Copy (NABL)
                         </th>
 
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
-                        </th>
+                        
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation Pdf link
                         </th>
@@ -786,20 +837,53 @@ export default function Calibration() {
                               {ticket.quotationNo || `QT-${ticket.id}`}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.phoneNumber}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.emailAddress}
+                              {ticket.invoiceNoSERVICE}
                             </td>
+
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.invoiceCategory}
+                              {ticket.nablInvoice}
                             </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.companyName || ""}
+
+
+                            <td className="px-4 py-3">
+                              {ticket.attachmentService ? (
+                                <a
+                                  href={ticket.attachmentService}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
                             </td>
+
+                            <td className="px-4 py-3">
+                              {ticket.attachmentSpear ? (
+                                <a
+                                  href={ticket.attachmentSpear}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold"
+                                >
+                                  View PDF
+                                </a>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+                            
                             <td className="px-4 py-3">
                               {ticket.quotationPdfLink ? (
                                 <a

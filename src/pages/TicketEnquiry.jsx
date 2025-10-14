@@ -758,7 +758,7 @@ const TicketEnquiry = () => {
                     Email Address
                   </TableHead>
                   <TableHead className="text-white border-b border-blue-500 min-w-[200px] px-4 py-3">
-                    Delay Days
+                    Delay In Hr
                   </TableHead>
                   <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
                     Category
@@ -846,7 +846,7 @@ const TicketEnquiry = () => {
                         {ticket["Email Address"]}
                       </TableCell>
                       <TableCell className="text-red-900 px-4 py-3">
-                        {Math.round(ticket["Delay1"])}
+                        {Math.round(ticket["Delay1"]*24)}
                       </TableCell>
                       <TableCell className="text-blue-900 px-4 py-3">
                         {ticket["Category"]}

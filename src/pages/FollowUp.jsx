@@ -37,7 +37,7 @@ import { Loader2Icon, LoaderIcon } from "lucide-react";
 
 export default function FollowUp() {
   const [activeTab, setActiveTab] = useState("pending");
-  const [dateFilterTab, setDateFilterTab] = useState("today");
+  const [dateFilterTab, setDateFilterTab] = useState("");
 
   const [pendingTickets, setPendingTickets] = useState([]);
   const [historyTickets, setHistoryTickets] = useState([]);
@@ -398,14 +398,17 @@ export default function FollowUp() {
         }
       }
 
-      if(formData.paymentMode === "FullyAdvance" || formData.paymentMode === "Partial Advance" || formData.paymentMode === "Partial Advance+PDC" || formData.paymentMode === "Current Date Cheque"){
-
+      if (
+        formData.paymentMode === "FullyAdvance" ||
+        formData.paymentMode === "Partial Advance" ||
+        formData.paymentMode === "Partial Advance+PDC" ||
+        formData.paymentMode === "Current Date Cheque"
+      ) {
         if (!formData.followupremarkFile) {
           alert("please add file for Advance Payment Attachment");
           return;
         }
       }
-
     }
 
     setIsSubmitting(true);
@@ -798,7 +801,10 @@ export default function FollowUp() {
           </div>
 
           {formData.paymentMode !== "" &&
-            (formData.paymentMode === "FullyAdvance" || formData.paymentMode === "Partial Advance" || formData.paymentMode === "Partial Advance+PDC" || formData.paymentMode === "Current Date Cheque") && (
+            (formData.paymentMode === "FullyAdvance" ||
+              formData.paymentMode === "Partial Advance" ||
+              formData.paymentMode === "Partial Advance+PDC" ||
+              formData.paymentMode === "Current Date Cheque") && (
               <div>
                 <Label>Advance Payment Attachment *</Label>
                 <Input
@@ -957,6 +963,14 @@ export default function FollowUp() {
           </TabsList>
 
           <div className="mb-4 flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
+            <button
+              type="button"
+              onClick={() => setDateFilterTab("")}
+              className={`px-4 py-2 rounded-md transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500 text-red-600`}
+            >
+              Reset
+            </button>
+
             <button
               type="button"
               onClick={() => setDateFilterTab("today")}

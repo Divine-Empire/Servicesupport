@@ -966,7 +966,7 @@ export default function FollowUp() {
             <button
               type="button"
               onClick={() => setDateFilterTab("")}
-              className={`px-4 py-2 rounded-md transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500 text-red-600`}
+              className={`px-4 py-2 rounded-md transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500`}
             >
               Reset
             </button>

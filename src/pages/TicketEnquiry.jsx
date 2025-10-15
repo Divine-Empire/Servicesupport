@@ -16,16 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
+
 import { LoaderIcon, Plus } from "lucide-react";
-import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
 
 const TicketEnquiry = () => {
@@ -350,21 +342,41 @@ const TicketEnquiry = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
-  // console.log("tickets",tickets);
-
   const filteredTickets = tickets;
-  // activeTab === "cancel"
-  //   ? tickets.filter((ticket) => ticket["Status"] === "Cancelled")
-  //   : tickets.filter((ticket) => ticket["Status"] !== "Cancelled");
 
   const getRowColor = (ticket) => {
+    if (ticket["Close Status"] === "Closed") {
+      return "bg-gray-200"; // Blue for closed
+    }
+    if (ticket["Actual 12"] !== "") {
+      return "bg-green-200"; // Blue for closed
+    }
+
     if (ticket["Status"] === "Cancelled") {
       return "bg-red-100"; // Red for cancelled
     }
-    if (ticket["Close Status"] === "Closed") {
-      return "bg-green-100"; // Blue for closed
-    }
+
     return ""; // Default color for running or empty
+  };
+
+  const calculateDelay = (timestamp) => {
+    if (!timestamp) return "00:00:00";
+
+    const ticketDate = new Date(timestamp);
+    const now = new Date();
+
+    // Calculate difference in milliseconds
+    const diffMs = now - ticketDate;
+
+    // Convert to hours, minutes, seconds
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(seconds).padStart(2, "0")}`;
   };
 
   return (
@@ -388,25 +400,7 @@ const TicketEnquiry = () => {
 
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-blue-800">
-            All Tickets
-          </CardTitle>
-          {/* <div className="flex space-x-2">
-            <Button
-              variant={activeTab === "ticket" ? "default" : "outline"}
-              onClick={() => setActiveTab("ticket")}
-              className={activeTab === "ticket" ? "bg-blue-600 text-white" : ""}
-            >
-              Ticket
-            </Button>
-            <Button
-              variant={activeTab === "cancel" ? "default" : "outline"}
-              onClick={() => setActiveTab("cancel")}
-              className={activeTab === "cancel" ? "bg-blue-600 text-white" : ""}
-            >
-              Cancel
-            </Button>
-          </div> */}
+          <CardTitle className="text-blue-800">All Tickets</CardTitle>
         </div>
       </CardHeader>
 
@@ -721,161 +715,121 @@ const TicketEnquiry = () => {
 
       {/* Tickets Table - FIXED: Fully Scrollable with Header */}
       <Card className="border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-md">
-        <CardHeader>
-          {/* <CardTitle className="text-blue-800">All Tickets</CardTitle> */}
-        </CardHeader>
         <CardContent>
-          {/* FIXED: Single scrollable container with both header and body */}
-          <div className="overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
-            <Table className="min-w-full">
-              <TableHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 sticky top-0 z-10">
-                <TableRow>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[120px] px-4 py-3">
-                    Ticket ID
-                  </TableHead>
-
-                  {/* {activeTab === "cancel" && (
-                    <>
-                      <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                        Stage Name
-                      </TableHead>
-                      <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                        Remarks
-                      </TableHead>
-                    </>
-                  )} */}
-
-                  <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Client Name
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Employee Name
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Phone Number
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[200px] px-4 py-3">
-                    Email Address
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[200px] px-4 py-3">
-                    Delay In Hr
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Category
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[120px] px-4 py-3">
-                    Priority
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[150px] px-4 py-3">
-                    Company Name
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[250px] px-4 py-3">
-                    Description
-                  </TableHead>
-                  <TableHead className="text-white border-b border-blue-500 min-w-[120px] px-4 py-3">
-                    Date
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="bg-white divide-y divide-blue-100">
-                {filteredTickets.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={10}
-                      className="text-center py-8 bg-white"
-                      data-testid="text-no-tickets"
-                    >
-                      {fetchLoading ? (
-                        <div className="flex justify-center items-center text-blue-700">
-                          <LoaderIcon className="animate-spin h-6 w-6" />
-                          <span className="ml-2">Loading tickets...</span>
-                        </div>
-                      ) : (
-                        <h1 className="text-blue-700">
-                          No tickets found. Create your first ticket to get
-                          started.
-                        </h1>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  [...filteredTickets].reverse().map((ticket, index) => (
-                    // <TableRow
-                    //   key={index}
-                    //   className={index % 2 === 0 ? "bg-blue-50/50" : "bg-white"}
-                    // >
-
-                    <TableRow
-                      key={index}
-                      className={
-                        getRowColor(ticket) ||
-                        (index % 2 === 0 ? "bg-blue-50/50" : "bg-white")
-                      }
-                    >
-                      <TableCell
-                        className="font-medium text-blue-800 px-4 py-3"
-                        data-testid={`text-ticket-id-${ticket["Ticket ID"]}`}
+          <div className="relative overflow-x-auto">
+            {/* Table container with fixed header and scrollable body */}
+            <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+              <table className="w-full">
+                {/* Table header - fixed */}
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                      Ticket ID
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Client Name
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Employee Name
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Phone Number
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                      Email Address
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                      Delay In Hr
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Category
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                      Priority
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Company Name
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                      Description
+                    </th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
+                {/* Table body - scrollable */}
+                <tbody className="bg-white divide-y divide-blue-100">
+                  {filteredTickets.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="text-center py-8 bg-white"
+                        data-testid="text-no-pending"
                       >
-                        {/* FIXED: Ensure Ticket ID is properly displayed */}
-                        {String(
-                          ticket["Ticket ID"] || ticket["ticket_id"] || ""
+                        {fetchLoading ? (
+                          <div className="flex justify-center items-center text-blue-700">
+                            <LoaderIcon className="animate-spin h-6 w-6" />
+                            <span className="ml-2">Loading tickets...</span>
+                          </div>
+                        ) : (
+                          <h1 className="text-blue-700">
+                            No tickets found. Create your first ticket to get
+                            started.
+                          </h1>
                         )}
-                      </TableCell>
-
-                      {/* {activeTab === "cancel" && (
-                        <>
-                          <TableCell className="text-blue-900 px-4 py-3">
-                            {ticket["Stage Name"]}
-                          </TableCell>
-                          <TableCell className="text-blue-900 px-4 py-3">
-                            {ticket["Remarks"]}
-                          </TableCell>
-                        </>
-                      )} */}
-
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Client Name"]}
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Person Name"]}
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Phone Number"]}
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Email Address"]}
-                      </TableCell>
-                      <TableCell className="text-red-900 px-4 py-3">
-                        {Math.round(ticket["Delay1"]*24)}
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Category"]}
-                      </TableCell>
-                      <TableCell className="px-4 py-3">
-                        <span
-                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityBadge(
-                            ticket["Priority"]
-                          )}`}
-                        >
-                          {ticket["Priority"]}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {ticket["Title"]}
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3 max-w-xs">
-                        <div className="truncate hover:whitespace-normal hover:overflow-visible">
+                      </td>
+                    </tr>
+                  ) : (
+                    [...filteredTickets].reverse().map((ticket, ind) => (
+                      <tr key={ind} className={`${getRowColor(ticket)}`}>
+                        <td className="px-4 py-3 font-medium text-blue-800">
+                          {String(
+                            ticket["Ticket ID"] || ticket["ticket_id"] || ""
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Client Name"]}
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Person Name"]}
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Phone Number"]}
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Email Address"]}
+                        </td>
+                        <td className="px-4 py-3 text-red-900">
+                          {calculateDelay(ticket["Timestamp"])}
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Category"]}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityBadge(
+                              ticket["Priority"]
+                            )}`}
+                          >
+                            {ticket["Priority"]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {ticket["Title"]}
+                        </td>
+                        <td className="px-4 py-3 max-w-xs text-blue-900 truncate hover:whitespace-normal hover:max-w-prose hover:overflow-visible hover:z-20 hover:bg-white hover:shadow-lg hover:border hover:border-blue-200 hover:rounded">
                           {ticket["Description"]}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-blue-900 px-4 py-3">
-                        {formatDate(ticket["ColumnAData"])}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                        </td>
+                        <td className="px-4 py-3 text-blue-900">
+                          {formatDate(ticket["ColumnAData"])}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

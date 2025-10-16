@@ -199,11 +199,13 @@ const TicketEnquiry = () => {
       !formData.description ||
       !formData.personName
     ) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      alert("Please enter a valid 10-digit phone number",);
       return;
     }
 
@@ -346,14 +348,14 @@ const TicketEnquiry = () => {
 
   const getRowColor = (ticket) => {
     if (ticket["Close Status"] === "Closed") {
-      return "bg-gray-200"; // Blue for closed
+      return "bg-gray-200";
     }
     if (ticket["Actual 12"] !== "") {
-      return "bg-green-200"; // Blue for closed
+      return "bg-green-200";
     }
 
     if (ticket["Status"] === "Cancelled") {
-      return "bg-red-100"; // Red for cancelled
+      return "bg-red-100";
     }
 
     return ""; // Default color for running or empty
@@ -462,6 +464,8 @@ const TicketEnquiry = () => {
                     </Label>
                     <Input
                       id="phoneNumber"
+                      min={10}
+                      maxLength={10}
                       type="tel"
                       value={formData.phoneNumber}
                       placeholder="Enter phone numbere..."

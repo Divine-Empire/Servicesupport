@@ -489,7 +489,6 @@ const TicketEnquiry = () => {
                       onChange={(e) =>
                         handleInputChange("emailAddress", e.target.value)
                       }
-                      required
                       disabled={isSubmitting}
                       placeholder="Enter Your Email..."
                       data-testid="input-email-address"

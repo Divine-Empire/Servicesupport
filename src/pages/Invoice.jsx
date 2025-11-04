@@ -734,34 +734,32 @@ export default function Invoice() {
   };
 
   const filteredPendingData = pendingData
-    .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
-      return matchesSearch;
-    })
-    .reverse();
+  .filter((item) => {
+    const phoneNumberStr = String(item.phoneNumber || "");
+    const quotationNoStr = String(item.quotationNo || "");
+    const matchesSearch =
+      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+    return matchesSearch;
+  })
+  .reverse();
 
   const filteredHistoryData = historyData
-    .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
-      return matchesSearch;
-    })
-    .reverse();
+  .filter((item) => {
+    const phoneNumberStr = String(item.phoneNumber || "");
+    const quotationNoStr = String(item.quotationNo || "");
+    const matchesSearch =
+      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+    return matchesSearch;
+  })
+  .reverse();
 
   // console.log("filteredPendingData", filteredPendingData);
   // console.log("filteredHistoryData", filteredHistoryData);
@@ -779,12 +777,12 @@ export default function Invoice() {
                 htmlFor="searchFilter"
                 className="text-sm font-medium text-blue-700"
               >
-                Search (Ticket ID, Client, Company, Phone)
+                Search (Ticket ID, Client, Company, Phone, Quotation No.)
               </Label>
               <div className="relative mt-1">
                 <Input
                   id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
+                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
                   className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
                   data-testid="input-search-filter"
                   onChange={(e) => setSearchItem(e.target.value)}

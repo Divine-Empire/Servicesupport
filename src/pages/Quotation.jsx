@@ -48,69 +48,59 @@ export default function Quotation() {
   const [isCancelled, setIsCancelled] = useState(false);
   const { toast } = useToast();
 
-  // console.log("quotationData", quotationData);
-
   const sheet_url =
     "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
 
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
-    setFetchLoading(true); // start loading
+    setFetchLoading(true);
     try {
       const response = await fetch(`${sheet_url}?sheet=Ticket_Enquiry`);
       const json = await response.json();
 
       if (json.success && Array.isArray(json.data)) {
-        // Log the headers to verify column positions
-        console.log("Sheet Headers:", json.data[5]); // Row 6 contains headers
+        console.log("Sheet Headers:", json.data[5]);
         
-        // Process the data to match your requirements
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
           timeStemp: row[0],
-          ticketId: row[1], // Column A (assuming this is Ticket id)
-          clientName: row[2], // Column C
-          phoneNumber: row[3], // Column D
-          emailAddress: row[4], // Column E
-          category: row[5], // Column F
-          priority: row[6], // Column G
-          title: row[7], // Column H
-          description: row[8], // Column I
-          planned1: row[9], // Column J
-          actual1: row[10], // Column K
-
-          delay1: row[11], // Delay1
-          callType: row[12], // Call type
-          requirementServiceCategory: row[13], // Enquiry Type (first one)
-          videoCall: row[14], // Enquiry Type (first one)
-
-          sourceOfEnquiry: row[15], // Source of enquiry
-          enquiryReceiverName: row[16], // Enquiry Receiver Name
-          warrantyCheck: row[17], // Warranty Check
-          billNumberInput: row[18], // Bill Number Input
-
-          billAttachmentFile: row[19], // Bill Number Input
-
-          machineName: row[20], // Machine Name
-          enquiryType: row[21], // Enquiry Type (second one)
-          siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
-          state: row[26], // State
-          pinCode: row[27], // PIN Code
-          engineerAssign: row[28], // Engineer Name
-          serviceLocation: row[29], // Service Location
+          ticketId: row[1],
+          clientName: row[2],
+          phoneNumber: row[3],
+          emailAddress: row[4],
+          category: row[5],
+          priority: row[6],
+          title: row[7],
+          description: row[8],
+          planned1: row[9],
+          actual1: row[10],
+          delay1: row[11],
+          callType: row[12],
+          requirementServiceCategory: row[13],
+          videoCall: row[14],
+          sourceOfEnquiry: row[15],
+          enquiryReceiverName: row[16],
+          warrantyCheck: row[17],
+          billNumberInput: row[18],
+          billAttachmentFile: row[19],
+          machineName: row[20],
+          enquiryType: row[21],
+          siteName: row[22],
+          companyName: row[23],
+          siteAddress: row[24],
+          gstAddress: row[25],
+          state: row[26],
+          pinCode: row[27],
+          engineerAssign: row[28],
+          serviceLocation: row[29],
           uploadChallan: row[30],
-
           planned2: row[31],
           actual2: row[32],
           delay2: row[33],
           videoCallServicesSolve: row[34],
           afterVideoCallGenerateOTP: row[35],
           otpVarificationStatus: row[36],
-
           planned3: row[37],
           actual3: row[38],
           delay3: row[39],
@@ -121,17 +111,10 @@ export default function Quotation() {
           quotationShareByPersonName: row[44],
           ShareThrough: row[45],
           quotationRemarks: row[46],
-          // Column DV - Check if this is the correct index
-          // DV = D(4)*26 + V(22) = 104+22 = 126, so index 125
-          totalQutation: row[125] || row[99] || row[100] || "", // Try multiple indices to find the correct one
-
-          // Planned 3	Actual 3	Delay 3	Quotation No.	Basic Amount	Total Amount with tex	Quotation Pdf link	Quotation Share by (Person Name) 	Share through	Remarks
+          totalQutation: row[125] || row[99] || row[100] || "",
         }));
 
-        // Log first few rows to verify data
         console.log("Sample data (first 3 rows):", allData.slice(0, 3));
-
-        // Filter data based on your conditions
 
         const pending = allData.filter(
           (item) => item.planned3 !== "" && item.actual3 === ""
@@ -147,7 +130,11 @@ export default function Quotation() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load data");
+      toast({
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive"
+      });
     } finally {
       setFetchLoading(false);
     }
@@ -159,21 +146,18 @@ export default function Quotation() {
       const result = await response.json();
 
       if (result.success && result.data && result.data.length > 0) {
-        const headers = result.data[0]; // First row contains headers
+        const headers = result.data[0];
         const structuredData = {};
 
-        // Initialize each header with an empty array
         headers.forEach((header) => {
           structuredData[header] = [];
         });
 
-        // Process each data row (skip the header row)
         result.data.slice(1).forEach((row) => {
           row.forEach((value, index) => {
             const header = headers[index];
-            // Handle cases where value might be null/undefined or not a string
             if (value !== null && value !== undefined) {
-              const stringValue = String(value).trim(); // Convert to string and trim
+              const stringValue = String(value).trim();
               if (stringValue !== "") {
                 structuredData[header].push(stringValue);
               }
@@ -181,17 +165,19 @@ export default function Quotation() {
           });
         });
 
-        // Remove duplicates from each array
         Object.keys(structuredData).forEach((key) => {
           structuredData[key] = [...new Set(structuredData[key])];
         });
 
-        // console.log("Structured Master Data:", structuredData);
-        setMasterData([structuredData]); // Wrap in array as per your requested format
+        setMasterData([structuredData]);
       }
     } catch (error) {
       console.error("Error fetching master data:", error);
-      toast.error("Failed to load master data");
+      toast({
+        title: "Error",
+        description: "Failed to load master data",
+        variant: "destructive"
+      });
     }
   };
 
@@ -201,18 +187,16 @@ export default function Quotation() {
       const result = await response.json();
 
       if (result.success && result.data && result.data.length > 0) {
-        const headers = result.data[0]; // First row contains headers
+        const headers = result.data[0];
         const formattedData = result.data.slice(1).map((row) => {
           const obj = {};
           headers.forEach((header, index) => {
-            // Convert header to camelCase or another JS-friendly format if needed
             const key = header.toLowerCase().replace(/\s+/g, "_");
-            obj[key] = row[index] || null; // Handle empty cells
+            obj[key] = row[index] || null;
           });
           return obj;
         });
 
-        // console.log("Formatted data:", formattedData);
         setQuotationData(formattedData);
       } else {
         console.log("No data available");
@@ -220,8 +204,12 @@ export default function Quotation() {
       }
     } catch (error) {
       console.error("Error fetching master data:", error);
-      toast.error("Failed to load master data");
-      throw error; // Re-throw if you want calling code to handle it
+      toast({
+        title: "Error",
+        description: "Failed to load master data",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -234,9 +222,24 @@ export default function Quotation() {
   // Get unique Total Quotation values for pending section only
   const uniquePendingTotalQuotations = [...new Set(
     pendingData
-      .map(item => item.totalQutation)
-      .filter(val => val !== null && val !== undefined && val !== "")
-  )].sort();
+      .map(item => {
+        const val = item.totalQutation;
+        // Convert to string and trim to handle various formats
+        if (val === null || val === undefined) return null;
+        const strVal = String(val).trim();
+        // Return the value even if it's empty or "0"
+        return strVal !== "" ? strVal : "0";
+      })
+      .filter(val => val !== null)
+  )].sort((a, b) => {
+    // Sort numerically if both are numbers, otherwise alphabetically
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+    return a.localeCompare(b);
+  });
 
   const filteredPendingData = pendingData
     .filter((item) => {
@@ -247,8 +250,17 @@ export default function Quotation() {
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
       
-      // Trim and compare total quotation values to handle whitespace issues
-      const itemTotalQuotation = String(item.totalQutation || "").trim();
+      // Handle totalQutation comparison - convert to string and trim
+      // Include items where totalQutation is 0, "0", empty string, or any other value
+      let itemTotalQuotation = item.totalQutation !== null && item.totalQutation !== undefined 
+        ? String(item.totalQutation).trim() 
+        : "";
+      
+      // Convert empty string to "0" for comparison
+      if (itemTotalQuotation === "") {
+        itemTotalQuotation = "0";
+      }
+      
       const filterValue = String(filterTotalQuotation || "").trim();
       const matchesTotalQuotation = 
         filterTotalQuotation === "all" || itemTotalQuotation === filterValue;
@@ -259,17 +271,16 @@ export default function Quotation() {
 
   const filteredHistoryData = quotationData.filter((item) => {
     const phoneNumberStr = String(item.phone_number || "");
+    const quotationNoStr = String(item["quotation_no."] || "");
     const matchesSearch =
       item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
       item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
       item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
+      quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
     
     return matchesSearch;
   });
-
-  // console.log("filteredPendingData", filteredPendingData);
-  // console.log("filteredHistoryData", filteredHistoryData);
 
   useEffect(() => {
     const tickets = storage.getTickets();
@@ -391,8 +402,6 @@ export default function Quotation() {
 
     const currentDateTime = formatDateTime(new Date());
 
-    // console.log("sharethrough", formData.shareThrough);
-
     try {
       const rowData = [
         currentDateTime,
@@ -405,11 +414,9 @@ export default function Quotation() {
         fileUrl || "",
         formData.quotationShareBy || "",
         "Mail",
-        formData.quotationShare || "", // This will be added to column AU
+        formData.quotationShare || "",
         formData.remarks || "",
       ];
-
-      // console.log("rowDAta", formData);
 
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -424,8 +431,6 @@ export default function Quotation() {
       });
 
       const result = await response.json();
-
-      // console.log("result", result);
 
       if (result.success) {
         setPendingData((prevPending) =>
@@ -453,7 +458,6 @@ export default function Quotation() {
           description: "Ticket details saved successfully",
         });
         setShowQuotationModal(false);
-        // fetchTickets(); // Refresh the ticket list
       } else {
         throw new Error(result.error || "Failed to save ticket details");
       }
@@ -464,11 +468,8 @@ export default function Quotation() {
         description: "Failed to save ticket. Data stored locally.",
         variant: "destructive",
       });
-
-      // setTickets([...tickets, newTicket]);
     } finally {
       setIsSubmitting(false);
-      // setShowForm(false);
     }
   };
 
@@ -484,19 +485,16 @@ export default function Quotation() {
     try {
       const rowData = [
         currentDateTime,
-        selectedTicket.ticketId || "", // Call Type
-        selectedTicket.clientName || "", // Enquiry Receiver Name
-        selectedTicket.phoneNumber || "", // Warranty Check
-        selectedTicket.emailAddress || "", // Bill Number Input
-        selectedTicket.category || "", // Bill Number Input
-
-        selectedTicket.title || "", // Machine Name
-        selectedTicket.description || "", // Machine Name
-        "Quotation", // Enquiry Type (second one)
+        selectedTicket.ticketId || "",
+        selectedTicket.clientName || "",
+        selectedTicket.phoneNumber || "",
+        selectedTicket.emailAddress || "",
+        selectedTicket.category || "",
+        selectedTicket.title || "",
+        selectedTicket.description || "",
+        "Quotation",
         formData.cancelRemarks || "",
       ];
-
-      // console.log("rowDAta", formData);
 
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -513,7 +511,6 @@ export default function Quotation() {
       const result = await response.json();
 
       if (result.success) {
-        // setTickets([...tickets, newTicket]);
         setPendingData((prevPending) =>
           prevPending.filter(
             (ticket) => ticket.ticketId !== selectedTicket.ticketId
@@ -535,11 +532,8 @@ export default function Quotation() {
         description: "Failed to save ticket. Data stored locally.",
         variant: "destructive",
       });
-
-      // setTickets([...tickets, newTicket]);
     } finally {
       setCancelSubmit(false);
-      // setShowForm(false);
     }
   };
 
@@ -554,8 +548,6 @@ export default function Quotation() {
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-
-  // console.log("fillterHisitoryData", filteredHistoryData);
 
   return (
     <div className="space-y-2 sm:space-y-6">
@@ -674,7 +666,6 @@ export default function Quotation() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Site Name
                         </th>
-
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           OTP Status
                         </th>
@@ -757,15 +748,14 @@ export default function Quotation() {
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.siteName || ""}
                             </td>
-
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.otpVarificationStatus || ""}
                             </td>
-
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.totalQutation || ""}
+                              {ticket.totalQutation !== null && ticket.totalQutation !== undefined 
+                                ? String(ticket.totalQutation).trim() || "0"
+                                : "N/A"}
                             </td>
-
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.quotationPdfLink ? (
                                 <a
@@ -912,7 +902,7 @@ export default function Quotation() {
                               </div>
                             </div>
 
-                            {/* OTP Status & PDF */}
+                            {/* OTP Status & Quotation Revice */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <p className="text-gray-500 font-medium">
@@ -927,7 +917,9 @@ export default function Quotation() {
                                   Quotation Revice
                                 </p>
                                 <p className="text-blue-900">
-                                  {ticket.totalQutation || "N/A"}
+                                  {ticket.totalQutation !== null && ticket.totalQutation !== undefined 
+                                    ? String(ticket.totalQutation).trim() || "0"
+                                    : "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -1081,7 +1073,6 @@ export default function Quotation() {
                                   ""
                                 )}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.remarks || ""}
                               </td>
@@ -1108,7 +1099,7 @@ export default function Quotation() {
                         <h1 className="text-blue-700">
                           No quotation history found.
                         </h1>
-                      </div>
+                        </div>
                     ) : (
                       [...filteredHistoryData].reverse().map((ticket, ind) => (
                         <Card
@@ -1241,7 +1232,6 @@ export default function Quotation() {
       </Tabs>
 
       {/* Quotation Modal */}
-
       <Modal
         isOpen={showQuotationModal}
         onClose={() => setShowQuotationModal(false)}
@@ -1251,7 +1241,6 @@ export default function Quotation() {
         <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
           <form
             onSubmit={handleSubmit}
-            // className="grid grid-cols-1 md:grid-cols-2 gap-4"
             className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4"
           >
             <div className="flex items-center space-x-2 mb-10">
@@ -1297,23 +1286,6 @@ export default function Quotation() {
                 className="bg-slate-50"
               />
             </div>
-            {/* <div>
-              <Label>Machine Name</Label>
-              <select
-                value={formData.machineName || ""}
-                onChange={(e) =>
-                  handleInputChange("machineName", e.target.value)
-                }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select Machine</option>
-                {masterData[0]?.["Machine Name"]?.map((machine) => (
-                  <option key={machine} value={machine}>
-                    {machine}
-                  </option>
-                ))}
-              </select>
-            </div> */}
 
             {!isCancelled && (
               <>
@@ -1429,8 +1401,6 @@ export default function Quotation() {
                   </select>
                 </div>
                 <div className="md:col-span-2 flex space-x-4 pt-4 sticky bottom-0 bg-white py-4">
-                  {" "}
-                  {/* Make buttons sticky */}
                   <Button
                     type="submit"
                     data-testid="button-submit-quotation"

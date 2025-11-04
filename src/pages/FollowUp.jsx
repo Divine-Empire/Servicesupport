@@ -119,7 +119,7 @@ export default function FollowUp() {
           planned3: row[37],
           actual3: row[38],
           delay3: row[39],
-          quotationNo: row[40],
+          quotationNo: row[40], // <-- THIS IS COLUMN AO
           basicAmount: row[41],
           totalAmoutWithTex: row[42],
           quotationPdfLink: row[43],
@@ -142,7 +142,7 @@ export default function FollowUp() {
           nextDateOfCall: row[59],
           followUpRemarks: row[60],
 
-          // Last Date Of Call	Status	Stage	What Did The Customer Say	Next Action	Next Date Of Call	Payment term	Against Delivery	Acceptance Via	Acceptance file	Payment  Terms	Payment Mode	Advance attachment 	Senior Approval
+          // Last Date Of Call	Status	Stage	What Did The Customer Say	Next Action	Next Date Of Call	Payment term	Against Delivery	Acceptance Via	Acceptance file	Payment  Terms	Payment Mode	Advance attachment 	Senior Approval
         }));
 
         // Filter data based on your conditions
@@ -220,7 +220,10 @@ export default function FollowUp() {
           const obj = {};
           headers.forEach((header, index) => {
             // Convert header to camelCase or another JS-friendly format if needed
-            const key = header.toLowerCase().replace(/\s+/g, "_");
+            const key = header
+              .toLowerCase()
+              .replace(/\s+/g, "_")
+              .replace("no.", "no"); // Handle "No." case
             obj[key] = row[index] || null; // Handle empty cells
           });
           return obj;
@@ -260,6 +263,7 @@ export default function FollowUp() {
       ticketId: ticket.ticketId,
       clientName: ticket.clientName,
       phoneNumber: ticket.phoneNumber,
+      quotationNo: ticket.quotationNo || "", // <-- NEW: Prefill Quotation No
       enquiryReceiverName: ticket.enquiryReceiverName || "",
       warrantyCheck: ticket.warrantyCheck || "",
       machineName: ticket.machineName || "",
@@ -347,12 +351,12 @@ export default function FollowUp() {
     e.preventDefault();
 
     // if (!formData.clientName || !formData.phoneNumber || !formData.title) {
-    //   toast({
-    //     title: "Error",
-    //     description: "Please fill in all required fields",
-    //     variant: "destructive",
-    //   });
-    //   return;
+    //  toast({
+    //    title: "Error",
+    //    description: "Please fill in all required fields",
+    //    variant: "destructive",
+    //  });
+    //  return;
     // }
 
     if (formData.stage === "Followup") {
@@ -454,21 +458,20 @@ export default function FollowUp() {
 
     try {
       const rowData = [
-        currentDateTime,
-        formData.ticketId || "", // Call Type
-        formData.stage || "", // Enquiry Receiver Name
-        formData.paymentTerm || "", // Warranty Check
-        formData.acceptanceVia || "", // Bill Number Input
-        acceptanceFile || "", // Bill Number Input
-
-        formData.paymentMode || "", // Machine Name
-        formData.seniorApproval || "", // Machine Name
-        approvalFile || "", // Machine Name
-
-        formData.whatDidCustomerSay || "", // Machine Name
-        formData.nextAction || "", // Machine Name
-        formData.nextDateOfCall || "", // Machine Name
-        followupremarkFileUrl || "", // Machine Name
+        currentDateTime, // A
+        formData.ticketId || "", // B
+        formData.stage || "", // C
+        formData.paymentTerm || "", // D
+        formData.acceptanceVia || "", // E
+        acceptanceFile || "", // F
+        formData.paymentMode || "", // G
+        formData.seniorApproval || "", // H
+        approvalFile || "", // I
+        formData.whatDidCustomerSay || "", // J
+        formData.nextAction || "", // K
+        formData.nextDateOfCall || "", // L
+        followupremarkFileUrl || "", // M
+        formData.quotationNo || "", // N <-- NEW: Save Quotation No
       ];
 
       // console.log("rowDAta", formData);
@@ -511,6 +514,7 @@ export default function FollowUp() {
           {
             timestamp: currentDateTime, // Add timestamp
             ticket_id: formData.ticketId,
+            quotation_no: formData.quotationNo, // <-- NEW: Add to local state
             stage: formData.stage,
             what_did_the_customer_say: formData.whatDidCustomerSay,
             next_action: formData.nextAction,
@@ -868,9 +872,10 @@ export default function FollowUp() {
         item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.quotationNo?.toLowerCase().includes(searchItem.toLowerCase()); // <-- NEW: Search by Quotation No
       // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
+      //  filterParty === "all" || item.partyName === filterParty;
       // return matchesSearch && matchesParty;
       return matchesSearch;
     })
@@ -878,12 +883,13 @@ export default function FollowUp() {
 
   const filteredHistoryData = followUpData
     .filter((item) => {
-      const phoneNumberStr = String(item.phone_number || "");
+      const phoneNumberStr = String(item.phone_number || ""); // This field likely doesn't exist here
       const matchesSearch =
         item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) || // This field likely doesn't exist here
+        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) || // This field likely doesn't exist here
+        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.quotation_no?.toLowerCase().includes(searchItem.toLowerCase()); // <-- NEW: Search by Quotation No
       return matchesSearch;
     })
     .reverse();
@@ -926,12 +932,13 @@ export default function FollowUp() {
                 htmlFor="searchFilter"
                 className="text-sm font-medium text-blue-700"
               >
-                Search (Ticket ID, Client, Company, Phone)
+                {/* UPDATED SEARCH LABEL */}
+                Search (Ticket ID, Client, Company, Phone, Quotation No)
               </Label>
               <div className="relative mt-1">
                 <Input
                   id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
+                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
                   className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
                   data-testid="input-search-filter"
                   onChange={(e) => setSearchItem(e.target.value)}
@@ -1026,6 +1033,10 @@ export default function FollowUp() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
                           Ticket ID
                         </th>
+                        {/* NEW COLUMN HEADER */}
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Quotation No.
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
@@ -1080,7 +1091,7 @@ export default function FollowUp() {
                       {finalFilteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={16}
+                            colSpan={17} // <-- Updated colSpan
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -1116,6 +1127,10 @@ export default function FollowUp() {
                             </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
+                            </td>
+                            {/* NEW COLUMN CELL */}
+                            <td className="px-4 py-3 font-medium text-blue-800">
+                              {ticket.quotationNo}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
@@ -1219,6 +1234,10 @@ export default function FollowUp() {
                                 <h3 className="font-bold text-blue-800 text-lg">
                                   {ticket.ticketId}
                                 </h3>
+                                {/* NEW: Quotation No in Mobile View */}
+                                <p className="text-sm text-gray-700 font-medium">
+                                  Quote: {ticket.quotationNo || "N/A"}
+                                </p>
                                 <p className="text-sm text-gray-600">
                                   {ticket.clientName}
                                 </p>
@@ -1414,6 +1433,10 @@ export default function FollowUp() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Ticket ID
                         </th>
+                        {/* NEW COLUMN HEADER */}
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Stage
                         </th>
@@ -1454,7 +1477,7 @@ export default function FollowUp() {
                       {finalFilteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={6}
+                            colSpan={13} // <-- Updated colSpan
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -1485,6 +1508,10 @@ export default function FollowUp() {
                               </td>
                               <td className="px-4 py-3 font-medium text-blue-800">
                                 {ticket.ticket_id}
+                              </td>
+                              {/* NEW COLUMN CELL */}
+                              <td className="px-4 py-3 font-medium text-blue-800">
+                                {ticket.quotation_no || ""}
                               </td>
                               <td className="px-4 py-3 font-medium text-blue-800">
                                 {ticket.stage || ""}
@@ -1548,8 +1575,8 @@ export default function FollowUp() {
                               </td>
 
                               {/* <td className="px-4 py-3 text-blue-900">
-                              {ticket.quotationremarks || ""}
-                            </td> */}
+                                {ticket.quotationremarks || ""}
+                              </td> */}
                             </tr>
                           ))
                       )}
@@ -1574,147 +1601,149 @@ export default function FollowUp() {
                         )}
                       </div>
                     ) : (
-                      [...finalFilteredHistoryData]
-                        
-                        .map((ticket, ind) => (
-                          <Card
-                            key={ind}
-                            className={`${
-                              ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                            } border-l-4 border-l-blue-500`}
-                          >
-                            <CardContent className="p-4 space-y-3">
-                              {/* Header */}
+                      [...finalFilteredHistoryData].map((ticket, ind) => (
+                        <Card
+                          key={ind}
+                          className={`${
+                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                          } border-l-4 border-l-blue-500`}
+                        >
+                          <CardContent className="p-4 space-y-3">
+                            {/* Header */}
+                            <div>
+                              <h3 className="font-bold text-blue-800 text-lg">
+                                {ticket.ticket_id}
+                              </h3>
+                              {/* NEW: Quotation No in Mobile View */}
+                              <p className="text-sm text-gray-700 font-medium">
+                                Quote: {ticket.quotation_no || "N/A"}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {formatDate(ticket.timestamp)}
+                              </p>
+                            </div>
+
+                            {/* Stage & Payment */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <h3 className="font-bold text-blue-800 text-lg">
-                                  {ticket.ticket_id}
-                                </h3>
-                                <p className="text-sm text-gray-500">
-                                  {formatDate(ticket.timestamp)}
-                                </p>
-                              </div>
-
-                              {/* Stage & Payment */}
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Stage
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {ticket.stage || "N/A"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Payment Term
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {ticket.payment_term_ || "N/A"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Acceptance & Payment Mode */}
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Acceptance Via
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {ticket.acceptance_via || "N/A"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Payment Mode
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {ticket.payment_mode || "N/A"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Senior Approval */}
-                              <div>
-                                <p className="text-gray-500 font-medium text-sm">
-                                  Senior Approval
+                                <p className="text-gray-500 font-medium">
+                                  Stage
                                 </p>
                                 <p className="text-blue-900">
-                                  {ticket.senior_approval || "N/A"}
+                                  {ticket.stage || "N/A"}
                                 </p>
                               </div>
-
-                              {/* Attachments */}
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Senior Attachments
-                                  </p>
-                                  {ticket.acceptance_attachments_ ? (
-                                    <a
-                                      href={ticket.acceptance_attachments_}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 text-sm"
-                                    >
-                                      View
-                                    </a>
-                                  ) : (
-                                    <p className="text-blue-900">N/A</p>
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Client Attachment
-                                  </p>
-                                  {ticket.approval_attachment ? (
-                                    <a
-                                      href={ticket.approval_attachment}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 text-sm"
-                                    >
-                                      View
-                                    </a>
-                                  ) : (
-                                    <p className="text-blue-900">N/A</p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Customer Feedback */}
                               <div>
-                                <p className="text-gray-500 font-medium text-sm">
-                                  Customer Feedback
+                                <p className="text-gray-500 font-medium">
+                                  Payment Term
                                 </p>
-                                <p className="text-blue-900 line-clamp-2">
-                                  {ticket.what_did_the_customer_say || "N/A"}
+                                <p className="text-blue-900">
+                                  {ticket.payment_term_ || "N/A"}
                                 </p>
                               </div>
+                            </div>
 
-                              {/* Next Steps */}
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Next Action
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {ticket.next_action || "N/A"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-gray-500 font-medium">
-                                    Next Call Date
-                                  </p>
-                                  <p className="text-blue-900">
-                                    {formatDate(ticket.next_date_of_call) ||
-                                      "N/A"}
-                                  </p>
-                                </div>
+                            {/* Acceptance & Payment Mode */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Acceptance Via
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.acceptance_via || "N/A"}
+                                </p>
                               </div>
-                            </CardContent>
-                          </Card>
-                        ))
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Payment Mode
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.payment_mode || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Senior Approval */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">
+                                Senior Approval
+                              </p>
+                              <p className="text-blue-900">
+                                {ticket.senior_approval || "N/A"}
+                              </p>
+                            </div>
+
+                            {/* Attachments */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Senior Attachments
+                                </p>
+                                {ticket.acceptance_attachments_ ? (
+                                  <a
+                                    href={ticket.acceptance_attachments_}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900">N/A</p>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Client Attachment
+                                </p>
+                                {ticket.approval_attachment ? (
+                                  <a
+                                    href={ticket.approval_attachment}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900">N/A</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Customer Feedback */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">
+                                Customer Feedback
+                              </p>
+                              <p className="text-blue-900 line-clamp-2">
+                                {ticket.what_did_the_customer_say || "N/A"}
+                              </p>
+                            </div>
+
+                            {/* Next Steps */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Next Action
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.next_action || "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Next Call Date
+                                </p>
+                                <p className="text-blue-900">
+                                  {formatDate(ticket.next_date_of_call) ||
+                                    "N/A"}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
                     )}
                   </div>
                 </div>
@@ -1771,6 +1800,15 @@ export default function FollowUp() {
             <Label>Phone Number</Label>
             <Input
               value={formData.phoneNumber || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          {/* NEW: Quotation No Field in Modal */}
+          <div>
+            <Label>Quotation No.</Label>
+            <Input
+              value={formData.quotationNo || ""}
               disabled
               className="bg-slate-50"
             />
@@ -1875,3 +1913,4 @@ export default function FollowUp() {
     </div>
   );
 }
+

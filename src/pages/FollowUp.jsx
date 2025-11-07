@@ -868,28 +868,27 @@ export default function FollowUp() {
   const filteredPendingData = pendingData
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
+      const quotationNoStr = String(item.quotationNo || "");
       const matchesSearch =
         item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.quotationNo?.toLowerCase().includes(searchItem.toLowerCase()); // <-- NEW: Search by Quotation No
-      // const matchesParty =
-      //  filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
+        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
       return matchesSearch;
     })
     .reverse();
 
   const filteredHistoryData = followUpData
     .filter((item) => {
-      const phoneNumberStr = String(item.phone_number || ""); // This field likely doesn't exist here
+      const phoneNumberStr = String(item.phone_number || "");
+      const quotationNoStr = String(item.quotation_no || "");
       const matchesSearch =
         item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) || // This field likely doesn't exist here
-        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) || // This field likely doesn't exist here
+        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.quotation_no?.toLowerCase().includes(searchItem.toLowerCase()); // <-- NEW: Search by Quotation No
+        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
       return matchesSearch;
     })
     .reverse();
@@ -1913,4 +1912,3 @@ export default function FollowUp() {
     </div>
   );
 }
-

@@ -362,10 +362,23 @@ export default function VideoCallSolution() {
     }
   };
 
+  // function generateSixDigitNumber() {
+  //   let result = "";
+  //   for (let i = 0; i < 6; i++) {
+  //     const digit = Math.floor(Math.random() * 10).toString();
+  //     result += digit.toString();
+  //   }
+  //   return result;
+  // }
+
   function generateSixDigitNumber() {
     let result = "";
     for (let i = 0; i < 6; i++) {
-      const digit = Math.floor(Math.random() * 10).toString();
+      // First digit should be 1-9, rest can be 0-9
+      const digit =
+        i === 0
+          ? Math.floor(Math.random() * 9) + 1
+          : Math.floor(Math.random() * 10);
       result += digit.toString();
     }
     return result;
@@ -519,17 +532,19 @@ export default function VideoCallSolution() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
-  const filteredPendingData = role === "user" ?  filteredPendingDataa.filter(
-    (item) => item["CREName"] === userName
-  ) : filteredPendingDataa;
+  const filteredPendingData =
+    role === "user"
+      ? filteredPendingDataa.filter((item) => item["CREName"] === userName)
+      : filteredPendingDataa;
 
-  const filteredHistoryData = role === "user" ?  filteredHistoryDataa.filter(
-    (item) => item["CREName"] === userName
-  ) : filteredHistoryDataa;
+  const filteredHistoryData =
+    role === "user"
+      ? filteredHistoryDataa.filter((item) => item["CREName"] === userName)
+      : filteredHistoryDataa;
 
   // console.log("filteredPendingData", filteredPendingData);
   // console.log("filteredHistoryData", filteredHistoryData);

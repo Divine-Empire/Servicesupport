@@ -445,10 +445,24 @@ export default function EngineerApproval() {
     }
   };
 
+  // function generateSixDigitNumber() {
+  //   let result = "";
+  //   for (let i = 0; i < 6; i++) {
+  //     const digit = Math.floor(Math.random() * 10).toString();
+  //     result += digit.toString();
+  //   }
+  //   return result;
+  // }
+
+
   function generateSixDigitNumber() {
     let result = "";
     for (let i = 0; i < 6; i++) {
-      const digit = Math.floor(Math.random() * 10).toString();
+      // First digit should be 1-9, rest can be 0-9
+      const digit =
+        i === 0
+          ? Math.floor(Math.random() * 9) + 1
+          : Math.floor(Math.random() * 10);
       result += digit.toString();
     }
     return result;

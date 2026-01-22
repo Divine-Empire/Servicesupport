@@ -60,7 +60,7 @@ export default function FollowUp() {
   const [isCancelled, setIsCancelled] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
@@ -838,7 +838,7 @@ export default function FollowUp() {
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
                     {masterData.length > 0 &&
-                    masterData[0]["Senior Approval"] ? (
+                      masterData[0]["Senior Approval"] ? (
                       masterData[0]["Senior Approval"].map(
                         (item, ind) =>
                           item && ( // Only render if item is not empty
@@ -918,9 +918,9 @@ export default function FollowUp() {
 
 
 
-    const userName = localStorage.getItem("currentUsername");
+  const userName = localStorage.getItem("currentUsername");
 
-      const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -928,7 +928,7 @@ export default function FollowUp() {
     (item) => item["CREName"] === userName
   ) : finalFilteredPendingDataa;
 
-  const finalFilteredHistoryData = role=== "user" ?  finalFilteredHistoryDataa.filter(
+  const finalFilteredHistoryData = role === "user" ? finalFilteredHistoryDataa.filter(
     (item) => item["cre_name"] === userName
   ) : finalFilteredHistoryDataa;
 
@@ -996,33 +996,30 @@ export default function FollowUp() {
             <button
               type="button"
               onClick={() => setDateFilterTab("today")}
-              className={`px-4 py-2 rounded-md transition-all ${
-                dateFilterTab === "today"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "bg-transparent text-gray-700 hover:bg-green-100"
-              }`}
+              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "today"
+                ? "bg-green-600 text-white shadow-md"
+                : "bg-transparent text-gray-700 hover:bg-green-100"
+                }`}
             >
               Today
             </button>
             <button
               type="button"
               onClick={() => setDateFilterTab("upcoming")}
-              className={`px-4 py-2 rounded-md transition-all ${
-                dateFilterTab === "upcoming"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "bg-transparent text-gray-700 hover:bg-green-100"
-              }`}
+              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "upcoming"
+                ? "bg-green-600 text-white shadow-md"
+                : "bg-transparent text-gray-700 hover:bg-green-100"
+                }`}
             >
               Upcoming
             </button>
             <button
               type="button"
               onClick={() => setDateFilterTab("overdue")}
-              className={`px-4 py-2 rounded-md transition-all ${
-                dateFilterTab === "overdue"
-                  ? "bg-red-600 text-white shadow-md"
-                  : "bg-transparent text-gray-700 hover:bg-red-100"
-              }`}
+              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "overdue"
+                ? "bg-red-600 text-white shadow-md"
+                : "bg-transparent text-gray-700 hover:bg-red-100"
+                }`}
             >
               Overdue
             </button>
@@ -1238,9 +1235,8 @@ export default function FollowUp() {
                       finalFilteredPendingData.map((ticket, ind) => (
                         <Card
                           key={ticket.id}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -1619,9 +1615,8 @@ export default function FollowUp() {
                       [...finalFilteredHistoryData].map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}

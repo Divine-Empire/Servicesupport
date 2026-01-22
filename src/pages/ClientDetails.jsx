@@ -73,7 +73,7 @@ export default function ClientDetails() {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
@@ -942,7 +942,7 @@ export default function ClientDetails() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -950,7 +950,7 @@ export default function ClientDetails() {
     (item) => item["CREName"] === userName
   ) : filteredPendingDataa;
 
-  const filteredHistoryData = role === "user" ?  filteredHistoryDataa.filter(
+  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa
 
@@ -1153,13 +1153,12 @@ export default function ClientDetails() {
                       filteredPendingData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`border-l-4 ${
-                            ticket.priority?.toLowerCase() === "high"
-                              ? "border-l-red-500"
-                              : ticket.priority?.toLowerCase() === "medium"
+                          className={`border-l-4 ${ticket.priority?.toLowerCase() === "high"
+                            ? "border-l-red-500"
+                            : ticket.priority?.toLowerCase() === "medium"
                               ? "border-l-yellow-500"
                               : "border-l-green-500"
-                          } ${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"}`}
+                            } ${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"}`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -1495,9 +1494,8 @@ export default function ClientDetails() {
                       filteredHistoryData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}
@@ -1838,7 +1836,7 @@ export default function ClientDetails() {
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
                         {masterData.length > 0 &&
-                        masterData[0]["Source of enquiry"] ? (
+                          masterData[0]["Source of enquiry"] ? (
                           masterData[0]["Source of enquiry"]
                             ?.filter((item) => item && item.trim() !== "")
                             .map((item, ind) => (
@@ -2345,10 +2343,10 @@ export default function ClientDetails() {
                                 .toLowerCase()
                                 .includes(formData.companyName.toLowerCase())
                             ).length === 0 && (
-                              <div className="px-3 py-2 text-gray-500">
-                                No matching companies found
-                              </div>
-                            )}
+                                <div className="px-3 py-2 text-gray-500">
+                                  No matching companies found
+                                </div>
+                              )}
                           </div>
                         )}
 

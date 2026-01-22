@@ -51,7 +51,7 @@ export default function Quotation() {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
 
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
@@ -551,7 +551,7 @@ export default function Quotation() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -559,7 +559,7 @@ export default function Quotation() {
     (item) => item["CREName"] === userName
   ) : filteredPendingDataa;
 
-  const filteredHistoryData = role=== "user" ?  filteredHistoryDataa.filter(
+  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa;
 
@@ -620,28 +620,28 @@ export default function Quotation() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex  items-center justify-between">
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+        <div className="flex  items-center justify-between">
+          <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
 
 
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending({filteredPendingData?.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History({filteredHistoryData?.length})
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger
+              value="pending"
+              data-testid="tab-pending"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Pending({filteredPendingData?.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              data-testid="tab-history"
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              History({filteredHistoryData?.length})
+            </TabsTrigger>
+          </TabsList>
 
 
-        <Button
+          <Button
             size="sm"
             variant="outline"
             className="bg-gradient-to-br from-green-50 to-emerald-50 text-green-600... mr-10"
@@ -649,10 +649,10 @@ export default function Quotation() {
               setSelectedTicket(null);
               setShowMakeQuotationModal(true);
             }}
-            >
+          >
             <span className="font-medium">Make Quotation</span>
           </Button>
-            </div>
+        </div>
 
         <TabsContent value="pending">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -787,7 +787,7 @@ export default function Quotation() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.totalQutation !== null &&
-                              ticket.totalQutation !== undefined
+                                ticket.totalQutation !== undefined
                                 ? String(ticket.totalQutation).trim() || "0"
                                 : "N/A"}
                             </td>
@@ -832,9 +832,8 @@ export default function Quotation() {
                       filteredPendingData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -953,7 +952,7 @@ export default function Quotation() {
                                 </p>
                                 <p className="text-blue-900">
                                   {ticket.totalQutation !== null &&
-                                  ticket.totalQutation !== undefined
+                                    ticket.totalQutation !== undefined
                                     ? String(ticket.totalQutation).trim() || "0"
                                     : "N/A"}
                                 </p>
@@ -1143,9 +1142,8 @@ export default function Quotation() {
                       [...filteredHistoryData].reverse().map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}

@@ -87,8 +87,8 @@ const QuotationDetails = ({
                 >
                   <option value="">Select Quotation to Revise</option>
                   {existingQuotations && existingQuotations.length > 0 ? (
-                    existingQuotations.map((quotation) => (
-                      <option key={quotation} value={quotation}>
+                    existingQuotations.map((quotation, index) => (
+                      <option key={`${quotation}-${index}`} value={quotation}>
                         {quotation}
                       </option>
                     ))

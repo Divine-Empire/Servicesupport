@@ -58,7 +58,7 @@ export default function Conformation() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchInvoiceSheet = async () => {
@@ -553,7 +553,7 @@ export default function Conformation() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -562,7 +562,7 @@ export default function Conformation() {
   ) : filteredPendingDataa;
 
 
-  const filteredHistoryData =role === "user" ? filteredHistoryDataa.filter(
+  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa;
 
@@ -863,204 +863,204 @@ export default function Conformation() {
 
 
                   {/* Mobile Card View */}
-      <div className="sm:hidden space-y-4">
-        {filteredPendingData.length === 0 ? (
-          <div className="text-center py-8 bg-white" data-testid="text-no-pending">
-            {fetchLoading ? (
-              <div className="flex justify-center items-center text-blue-700">
-                <LoaderIcon className="animate-spin w-8 h-8" />
-              </div>
-            ) : (
-              <h1 className="text-blue-700">No pending calibrations found.</h1>
-            )}
-          </div>
-        ) : (
-          filteredPendingData.map((ticket, ind) => (
-            <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-indigo-500`}>
-              <CardContent className="p-4 space-y-3">
-                {/* Header with Ticket ID and Action */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
-                    <p className="text-sm text-gray-600">{ticket.clientName}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleCalibrationClick(ticket)}
-                    variant="outline"
-                    className="bg-gradient-to-br from-indigo-50 to-blue-50 text-indigo-600 hover:from-indigo-100 hover:to-blue-100 border border-indigo-200"
-                  >
-                    Calibration
-                  </Button>
-                </div>
-
-                {/* Basic Information */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Quotation No.</p>
-                    <p className="text-blue-900">{ticket.quotationNo || `QT-${ticket.id}`}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Phone</p>
-                    <p className="text-blue-900">{ticket.phoneNumber}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Email</p>
-                    <p className="text-blue-900 truncate">{ticket.emailAddress || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Category</p>
-                    <p className="text-blue-900">{ticket.invoiceCategory || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Company Name */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Company Name</p>
-                  <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
-                </div>
-
-                {/* Calibration Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.calibrationDate) || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Period</p>
-                    <p className="text-blue-900">{ticket.calibrationPeriodMonth || "N/A"} months</p>
-                  </div>
-                </div>
-
-                {/* Document Links */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Quotation PDF</p>
-                    {ticket.quotationPdfLink ? (
-                      <a
-                        href={ticket.quotationPdfLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View PDF
-                      </a>
+                  <div className="sm:hidden space-y-4">
+                    {filteredPendingData.length === 0 ? (
+                      <div className="text-center py-8 bg-white" data-testid="text-no-pending">
+                        {fetchLoading ? (
+                          <div className="flex justify-center items-center text-blue-700">
+                            <LoaderIcon className="animate-spin w-8 h-8" />
+                          </div>
+                        ) : (
+                          <h1 className="text-blue-700">No pending calibrations found.</h1>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
+                      filteredPendingData.map((ticket, ind) => (
+                        <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-indigo-500`}>
+                          <CardContent className="p-4 space-y-3">
+                            {/* Header with Ticket ID and Action */}
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
+                                <p className="text-sm text-gray-600">{ticket.clientName}</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleCalibrationClick(ticket)}
+                                variant="outline"
+                                className="bg-gradient-to-br from-indigo-50 to-blue-50 text-indigo-600 hover:from-indigo-100 hover:to-blue-100 border border-indigo-200"
+                              >
+                                Calibration
+                              </Button>
+                            </div>
+
+                            {/* Basic Information */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Quotation No.</p>
+                                <p className="text-blue-900">{ticket.quotationNo || `QT-${ticket.id}`}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Phone</p>
+                                <p className="text-blue-900">{ticket.phoneNumber}</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Email</p>
+                                <p className="text-blue-900 truncate">{ticket.emailAddress || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Category</p>
+                                <p className="text-blue-900">{ticket.invoiceCategory || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Company Name */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Company Name</p>
+                              <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
+                            </div>
+
+                            {/* Calibration Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.calibrationDate) || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Period</p>
+                                <p className="text-blue-900">{ticket.calibrationPeriodMonth || "N/A"} months</p>
+                              </div>
+                            </div>
+
+                            {/* Document Links */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Quotation PDF</p>
+                                {ticket.quotationPdfLink ? (
+                                  <a
+                                    href={ticket.quotationPdfLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View PDF
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Upload</p>
+                                {ticket.calibrationUploadFile ? (
+                                  <a
+                                    href={ticket.calibrationUploadFile}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View PDF
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Approval Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Accountability</p>
+                                <p className="text-blue-900">{ticket.accountablityApproval || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Screenshot</p>
+                                {ticket.screenShort ? (
+                                  <a
+                                    href={ticket.screenShort}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Sender Name */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Sender Name</p>
+                              <p className="text-blue-900">{ticket.senderName || "N/A"}</p>
+                            </div>
+
+                            {/* Certificate Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Certificate Type</p>
+                                <p className="text-blue-900">{ticket.certificateTypeName || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">No. of Certificates</p>
+                                <p className="text-blue-900">{ticket.numberOfCertificatesDocuments || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Destination Address */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Destination Address</p>
+                              <p className="text-blue-900 line-clamp-2">{ticket.fullDestinationAddress || "N/A"}</p>
+                            </div>
+
+                            {/* Courier Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Dispatch Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.dateOfDispatch) || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Courier Company</p>
+                                <p className="text-blue-900">{ticket.courierCompanyName || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Tracking Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Tracking Number</p>
+                                <p className="text-blue-900">{ticket.courierTrackingNumber || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Expected Delivery</p>
+                                <p className="text-blue-900">{formatDate(ticket.expectedDeliveryDate) || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Certificate Attachment */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Certificate Attachment</p>
+                              {ticket.calibrationCertificateAttachment ? (
+                                <a
+                                  href={ticket.calibrationCertificateAttachment}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                  View Certificate
+                                </a>
+                              ) : (
+                                <p className="text-blue-900 text-sm">N/A</p>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
                     )}
                   </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Upload</p>
-                    {ticket.calibrationUploadFile ? (
-                      <a
-                        href={ticket.calibrationUploadFile}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View PDF
-                      </a>
-                    ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Approval Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Accountability</p>
-                    <p className="text-blue-900">{ticket.accountablityApproval || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Screenshot</p>
-                    {ticket.screenShort ? (
-                      <a
-                        href={ticket.screenShort}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View
-                      </a>
-                    ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sender Name */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Sender Name</p>
-                  <p className="text-blue-900">{ticket.senderName || "N/A"}</p>
-                </div>
-
-                {/* Certificate Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Certificate Type</p>
-                    <p className="text-blue-900">{ticket.certificateTypeName || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">No. of Certificates</p>
-                    <p className="text-blue-900">{ticket.numberOfCertificatesDocuments || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Destination Address */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Destination Address</p>
-                  <p className="text-blue-900 line-clamp-2">{ticket.fullDestinationAddress || "N/A"}</p>
-                </div>
-
-                {/* Courier Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Dispatch Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.dateOfDispatch) || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Courier Company</p>
-                    <p className="text-blue-900">{ticket.courierCompanyName || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Tracking Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Tracking Number</p>
-                    <p className="text-blue-900">{ticket.courierTrackingNumber || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Expected Delivery</p>
-                    <p className="text-blue-900">{formatDate(ticket.expectedDeliveryDate) || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Certificate Attachment */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Certificate Attachment</p>
-                  {ticket.calibrationCertificateAttachment ? (
-                    <a
-                      href={ticket.calibrationCertificateAttachment}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      View Certificate
-                    </a>
-                  ) : (
-                    <p className="text-blue-900 text-sm">N/A</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
                 </div>
               </div>
             </CardContent>
@@ -1302,194 +1302,194 @@ export default function Conformation() {
 
 
                   {/* Mobile Card View */}
-      <div className="sm:hidden space-y-4">
-        {filteredHistoryData.length === 0 ? (
-          <div className="text-center py-8 bg-white" data-testid="text-no-history">
-            {fetchLoading ? (
-              <div className="flex justify-center items-center text-blue-700">
-                <LoaderIcon className="animate-spin w-8 h-8" />
-              </div>
-            ) : (
-              <h1 className="text-blue-700">No calibration history found.</h1>
-            )}
-          </div>
-        ) : (
-          filteredHistoryData.map((ticket, ind) => (
-            <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-indigo-500`}>
-              <CardContent className="p-4 space-y-3">
-                {/* Header */}
-                <div>
-                  <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
-                  <p className="text-sm text-gray-600">{ticket.clientName}</p>
-                </div>
-
-                {/* Basic Information */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Quotation No.</p>
-                    <p className="text-blue-900">{ticket.quotationNo || `QT-${ticket.id}`}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Phone</p>
-                    <p className="text-blue-900">{ticket.phoneNumber}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Email</p>
-                    <p className="text-blue-900 truncate">{ticket.emailAddress || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Category</p>
-                    <p className="text-blue-900">{ticket.invoiceCategory || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Company Name */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Company Name</p>
-                  <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
-                </div>
-
-                {/* Calibration Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.calibrationDate) || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Period</p>
-                    <p className="text-blue-900">{ticket.calibrationPeriodMonth || "N/A"} months</p>
-                  </div>
-                </div>
-
-                {/* Document Links */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Quotation PDF</p>
-                    {ticket.quotationPdfLink ? (
-                      <a
-                        href={ticket.quotationPdfLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View PDF
-                      </a>
+                  <div className="sm:hidden space-y-4">
+                    {filteredHistoryData.length === 0 ? (
+                      <div className="text-center py-8 bg-white" data-testid="text-no-history">
+                        {fetchLoading ? (
+                          <div className="flex justify-center items-center text-blue-700">
+                            <LoaderIcon className="animate-spin w-8 h-8" />
+                          </div>
+                        ) : (
+                          <h1 className="text-blue-700">No calibration history found.</h1>
+                        )}
+                      </div>
                     ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
+                      filteredHistoryData.map((ticket, ind) => (
+                        <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-indigo-500`}>
+                          <CardContent className="p-4 space-y-3">
+                            {/* Header */}
+                            <div>
+                              <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
+                              <p className="text-sm text-gray-600">{ticket.clientName}</p>
+                            </div>
+
+                            {/* Basic Information */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Quotation No.</p>
+                                <p className="text-blue-900">{ticket.quotationNo || `QT-${ticket.id}`}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Phone</p>
+                                <p className="text-blue-900">{ticket.phoneNumber}</p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Email</p>
+                                <p className="text-blue-900 truncate">{ticket.emailAddress || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Category</p>
+                                <p className="text-blue-900">{ticket.invoiceCategory || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Company Name */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Company Name</p>
+                              <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
+                            </div>
+
+                            {/* Calibration Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.calibrationDate) || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Period</p>
+                                <p className="text-blue-900">{ticket.calibrationPeriodMonth || "N/A"} months</p>
+                              </div>
+                            </div>
+
+                            {/* Document Links */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Quotation PDF</p>
+                                {ticket.quotationPdfLink ? (
+                                  <a
+                                    href={ticket.quotationPdfLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View PDF
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Calibration Upload</p>
+                                {ticket.calibrationUploadFile ? (
+                                  <a
+                                    href={ticket.calibrationUploadFile}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View PDF
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Approval Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Accountability</p>
+                                <p className="text-blue-900">{ticket.accountablityApproval || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Screenshot</p>
+                                {ticket.screenShort ? (
+                                  <a
+                                    href={ticket.screenShort}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-xs"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  <p className="text-blue-900 text-xs">N/A</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Sender Name */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Sender Name</p>
+                              <p className="text-blue-900">{ticket.senderName || "N/A"}</p>
+                            </div>
+
+                            {/* Certificate Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Certificate Type</p>
+                                <p className="text-blue-900">{ticket.certificateTypeName || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">No. of Certificates</p>
+                                <p className="text-blue-900">{ticket.numberOfCertificatesDocuments || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Destination Address */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Destination Address</p>
+                              <p className="text-blue-900 line-clamp-2">{ticket.fullDestinationAddress || "N/A"}</p>
+                            </div>
+
+                            {/* Courier Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Dispatch Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.dateOfDispatch) || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Courier Company</p>
+                                <p className="text-blue-900">{ticket.courierCompanyName || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Tracking Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Tracking Number</p>
+                                <p className="text-blue-900">{ticket.courierTrackingNumber || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Expected Delivery</p>
+                                <p className="text-blue-900">{formatDate(ticket.expectedDeliveryDate) || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Certificate Attachment */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Certificate Attachment</p>
+                              {ticket.calibrationCertificateAttachment ? (
+                                <a
+                                  href={ticket.calibrationCertificateAttachment}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                  View Certificate
+                                </a>
+                              ) : (
+                                <p className="text-blue-900 text-sm">N/A</p>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
                     )}
                   </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Calibration Upload</p>
-                    {ticket.calibrationUploadFile ? (
-                      <a
-                        href={ticket.calibrationUploadFile}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View PDF
-                      </a>
-                    ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Approval Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Accountability</p>
-                    <p className="text-blue-900">{ticket.accountablityApproval || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Screenshot</p>
-                    {ticket.screenShort ? (
-                      <a
-                        href={ticket.screenShort}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        View
-                      </a>
-                    ) : (
-                      <p className="text-blue-900 text-xs">N/A</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sender Name */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Sender Name</p>
-                  <p className="text-blue-900">{ticket.senderName || "N/A"}</p>
-                </div>
-
-                {/* Certificate Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Certificate Type</p>
-                    <p className="text-blue-900">{ticket.certificateTypeName || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">No. of Certificates</p>
-                    <p className="text-blue-900">{ticket.numberOfCertificatesDocuments || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Destination Address */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Destination Address</p>
-                  <p className="text-blue-900 line-clamp-2">{ticket.fullDestinationAddress || "N/A"}</p>
-                </div>
-
-                {/* Courier Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Dispatch Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.dateOfDispatch) || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Courier Company</p>
-                    <p className="text-blue-900">{ticket.courierCompanyName || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Tracking Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Tracking Number</p>
-                    <p className="text-blue-900">{ticket.courierTrackingNumber || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Expected Delivery</p>
-                    <p className="text-blue-900">{formatDate(ticket.expectedDeliveryDate) || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Certificate Attachment */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Certificate Attachment</p>
-                  {ticket.calibrationCertificateAttachment ? (
-                    <a
-                      href={ticket.calibrationCertificateAttachment}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      View Certificate
-                    </a>
-                  ) : (
-                    <p className="text-blue-900 text-sm">N/A</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
                 </div>
               </div>
             </CardContent>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Toaster as ShadcnToaster } from './components/ui/toaster';
 
 import Dashboard from "./pages/Dashboard";
 import TicketEnquiry from "./pages/TicketEnquiry";
@@ -32,6 +33,7 @@ function App() {
   return (
     <Router>
       <Toaster position="top-right" />
+      <ShadcnToaster />
       {/* <Layout> */}
         <Routes>
 

@@ -66,7 +66,7 @@ function MakeQuotation() {
     const fetchExistingQuotations = async () => {
       try {
         const scriptUrl =
-          "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec";
+          "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
         const response = await fetch(scriptUrl, {
           method: "POST",
           headers: {
@@ -80,7 +80,7 @@ function MakeQuotation() {
 
         const result = await response.json();
 
-        console.log("result",result);
+        console.log("result", result);
 
         if (result.success && Array.isArray(result.quotationNumbers)) {
           setExistingQuotations(result.quotationNumbers);
@@ -146,6 +146,12 @@ function MakeQuotation() {
     }
   };
 
+  // Helper function to check if IGST should be applied
+  const checkShouldUseIGST = (consignorState, consigneeState) => {
+    if (!consignorState || !consigneeState) return false;
+    return consignorState.toLowerCase().trim() !== consigneeState.toLowerCase().trim();
+  };
+
   const handleQuotationSelect = async (quotationNo) => {
     if (!quotationNo) return;
 
@@ -154,7 +160,7 @@ function MakeQuotation() {
 
     try {
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec";
+        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -169,16 +175,16 @@ function MakeQuotation() {
 
       const result = await response.json();
 
-      console.log("result",result);
+      console.log("result", result);
 
       if (result.success) {
         const loadedData = result.quotationData;
 
         const references = loadedData.consignorName
           ? loadedData.consignorName
-              .split(",")
-              .map((r) => r.trim())
-              .filter((r) => r)
+            .split(",")
+            .map((r) => r.trim())
+            .filter((r) => r)
           : [];
         setSelectedReferences(references);
 
@@ -192,7 +198,17 @@ function MakeQuotation() {
         ) {
           items = loadedData.items.map((item, index) => ({
             id: index + 1,
-            ...item,
+            code: item.code || "",
+            name: item.name || "",
+            description: item.description || "",
+            gst: String(item.gst) || "",
+            units: item.units || "Nos",
+            rate: Number(item.rate) || 0,
+            discount: Number(item.discount) || 0,
+            flatDiscount: Number(item.flatDiscount) || 0,
+            amount: Number(item.amount) || 0,
+            qty: Number(item.qty) || 0,
+
           }));
         }
 
@@ -203,21 +219,38 @@ function MakeQuotation() {
         const totalFlatDiscount = Number(loadedData.totalFlatDiscount) || 0;
         const cgstRate = Number(loadedData.cgstRate) || 9;
         const sgstRate = Number(loadedData.sgstRate) || 9;
+        const igstRate = Number(loadedData.igstRate) || 18;
+        // const taxableAmount = Math.max(0, subtotal - totalFlatDiscount);
+        // const cgstAmount = Number(
+        //   (taxableAmount * (cgstRate / 100)).toFixed(2)
+        // );
+        // const sgstAmount = Number(
+        //   (taxableAmount * (sgstRate / 100)).toFixed(2)
+        // );
+        // const total = Number(
+        //   (
+        //     taxableAmount +
+        //     cgstAmount +
+        //     sgstAmount -
+        //     specialDiscountFromItems
+        //   ).toFixed(2)
+        // );
         const taxableAmount = Math.max(0, subtotal - totalFlatDiscount);
-        const cgstAmount = Number(
-          (taxableAmount * (cgstRate / 100)).toFixed(2)
-        );
-        const sgstAmount = Number(
-          (taxableAmount * (sgstRate / 100)).toFixed(2)
-        );
-        const total = Number(
-          (
-            taxableAmount +
-            cgstAmount +
-            sgstAmount -
-            specialDiscountFromItems
-          ).toFixed(2)
-        );
+        const shouldUseIGST = checkShouldUseIGST(loadedData.consignorState, loadedData.consigneeState);
+
+        let cgstAmount = 0;
+        let sgstAmount = 0;
+        let igstAmount = 0;
+        let total = 0;
+
+        if (shouldUseIGST) {
+          igstAmount = Number((taxableAmount * (igstRate / 100)).toFixed(2));
+          total = Number((taxableAmount + igstAmount - specialDiscountFromItems).toFixed(2));
+        } else {
+          cgstAmount = Number((taxableAmount * (cgstRate / 100)).toFixed(2));
+          sgstAmount = Number((taxableAmount * (sgstRate / 100)).toFixed(2));
+          total = Number((taxableAmount + cgstAmount + sgstAmount - specialDiscountFromItems).toFixed(2));
+        }
 
         // Parse special offers from loaded data
         let specialOffers = [""];
@@ -240,8 +273,11 @@ function MakeQuotation() {
           totalFlatDiscount,
           cgstRate,
           sgstRate,
+          igstRate: Number(loadedData.igstRate) || 18,
+          isIGST: shouldUseIGST,
           cgstAmount,
           sgstAmount,
+          igstAmount,
           total,
           accountNo: loadedData.accountNo || "",
           bankName: loadedData.bankName || "",
@@ -271,8 +307,8 @@ function MakeQuotation() {
           notes: Array.isArray(loadedData.notes)
             ? loadedData.notes
             : loadedData.notes
-            ? [loadedData.notes]
-            : [""],
+              ? [loadedData.notes]
+              : [""],
         });
 
         setSpecialDiscount(specialDiscountFromItems);
@@ -427,20 +463,19 @@ function MakeQuotation() {
       if (sendResult.emailSent) {
         alert(
           `✅ Email sent successfully!\n\n` +
-            `📧 Email sent to: ${sendResult.emailAddress}\n` +
-            `📄 Temporary PDF URL sent (expires in 10 days)\n` +
-            `⏰ PDF expires at: ${sendResult.pdfExpiresAt}\n\n` +
-            `🔗 Your permanent reference link: ${localLink}\n` +
-            `📎 Permanent PDF: ${permanentPdfUrl}`
+          `📧 Email sent to: ${sendResult.emailAddress}\n` +
+          `📄 Temporary PDF URL sent (expires in 10 days)\n` +
+          `⏰ PDF expires at: ${sendResult.pdfExpiresAt}\n\n` +
+          `🔗 Your permanent reference link: ${localLink}\n` +
+          `📎 Permanent PDF: ${permanentPdfUrl}`
         );
       } else {
         alert(
           `⚠️ Quotation link generated but email could not be sent.\n\n` +
-            `Error: ${
-              sendResult.emailError || "No email address provided"
-            }\n\n` +
-            `🔗 Your reference link: ${localLink}\n` +
-            `📎 Permanent PDF: ${permanentPdfUrl}`
+          `Error: ${sendResult.emailError || "No email address provided"
+          }\n\n` +
+          `🔗 Your reference link: ${localLink}\n` +
+          `📎 Permanent PDF: ${permanentPdfUrl}`
         );
       }
     } catch (error) {
@@ -514,7 +549,7 @@ function MakeQuotation() {
       const fileName = `Quotation_${finalQuotationNo}.pdf`;
 
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec";
+        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
 
       const pdfParams = {
         action: "QuotationuploadPDF",
@@ -787,22 +822,20 @@ function MakeQuotation() {
         <div className="border-b">
           <div className="flex">
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "edit"
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-tl-lg"
-                  : "text-gray-600"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "edit"
+                ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-tl-lg"
+                : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("edit")}
               disabled={isViewMode}
             >
               Edit Quotation
             </button>
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "preview"
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
-                  : "text-gray-600"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "preview"
+                ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("preview")}
             >
               Preview

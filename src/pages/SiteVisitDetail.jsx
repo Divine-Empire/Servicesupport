@@ -54,7 +54,7 @@ export default function SiteVisitDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
@@ -353,7 +353,7 @@ export default function SiteVisitDetail() {
     e.preventDefault();
 
 
-    if(!formData.serviceReportFile){
+    if (!formData.serviceReportFile) {
       alert("Please select file for Serive Report");
       return;
     }
@@ -548,7 +548,7 @@ export default function SiteVisitDetail() {
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
       const matchesSearch =
-      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
@@ -563,7 +563,7 @@ export default function SiteVisitDetail() {
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
       const matchesSearch =
-      item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
+        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
         phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
@@ -576,7 +576,7 @@ export default function SiteVisitDetail() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -776,104 +776,104 @@ export default function SiteVisitDetail() {
 
 
 
-{/* Mobile Card View */}
-      <div className="sm:hidden space-y-4">
-        {filteredPendingData.length === 0 ? (
-          <div className="text-center py-8 bg-white" data-testid="text-no-pending">
-            {fetchLoading ? (
-              <div className="flex justify-center items-center text-blue-700">
-                <LoaderIcon className="animate-spin w-8 h-8" />
-              </div>
-            ) : (
-              <h1 className="text-blue-700">No pending engineer approvals found.</h1>
-            )}
-          </div>
-        ) : (
-          filteredPendingData.map((ticket, ind) => (
-            <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-blue-500`}>
-              <CardContent className="p-4 space-y-3">
-                {/* Header with Ticket ID and Action */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
-                    <p className="text-sm text-gray-600">{ticket.clientName}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleApprovalClick(ticket)}
-                    variant="outline"
-                    className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 hover:from-blue-100 hover:to-indigo-100 border border-blue-200"
-                  >
-                    Approval
-                  </Button>
-                </div>
+                  {/* Mobile Card View */}
+                  <div className="sm:hidden space-y-4">
+                    {filteredPendingData.length === 0 ? (
+                      <div className="text-center py-8 bg-white" data-testid="text-no-pending">
+                        {fetchLoading ? (
+                          <div className="flex justify-center items-center text-blue-700">
+                            <LoaderIcon className="animate-spin w-8 h-8" />
+                          </div>
+                        ) : (
+                          <h1 className="text-blue-700">No pending engineer approvals found.</h1>
+                        )}
+                      </div>
+                    ) : (
+                      filteredPendingData.map((ticket, ind) => (
+                        <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-blue-500`}>
+                          <CardContent className="p-4 space-y-3">
+                            {/* Header with Ticket ID and Action */}
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
+                                <p className="text-sm text-gray-600">{ticket.clientName}</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApprovalClick(ticket)}
+                                variant="outline"
+                                className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 hover:from-blue-100 hover:to-indigo-100 border border-blue-200"
+                              >
+                                Approval
+                              </Button>
+                            </div>
 
-                {/* Contact & Receiver Info */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Phone</p>
-                    <p className="text-blue-900">{ticket.phoneNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Enquiry Receiver</p>
-                    <p className="text-blue-900">{ticket.enquiryReceiverName}</p>
-                  </div>
-                </div>
+                            {/* Contact & Receiver Info */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Phone</p>
+                                <p className="text-blue-900">{ticket.phoneNumber}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Enquiry Receiver</p>
+                                <p className="text-blue-900">{ticket.enquiryReceiverName}</p>
+                              </div>
+                            </div>
 
-                {/* Technical Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Warranty</p>
-                    <p className="text-blue-900">{ticket.warrantyCheck}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Machine</p>
-                    <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
-                  </div>
-                </div>
+                            {/* Technical Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Warranty</p>
+                                <p className="text-blue-900">{ticket.warrantyCheck}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Machine</p>
+                                <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
+                              </div>
+                            </div>
 
-                {/* Engineer & Enquiry Type */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Engineer</p>
-                    <p className="text-blue-900">{ticket.engineerAssign || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Enquiry Type</p>
-                    <p className="text-blue-900">{ticket.enquiryType || "N/A"}</p>
-                  </div>
-                </div>
+                            {/* Engineer & Enquiry Type */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Engineer</p>
+                                <p className="text-blue-900">{ticket.engineerAssign || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Enquiry Type</p>
+                                <p className="text-blue-900">{ticket.enquiryType || "N/A"}</p>
+                              </div>
+                            </div>
 
-                {/* Travel Dates */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Travel Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.travelDate) || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Return Date</p>
-                    <p className="text-blue-900">{formatDate(ticket.returnDate) || "N/A"}</p>
-                  </div>
-                </div>
+                            {/* Travel Dates */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Travel Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.travelDate) || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Return Date</p>
+                                <p className="text-blue-900">{formatDate(ticket.returnDate) || "N/A"}</p>
+                              </div>
+                            </div>
 
-                {/* Approval Details */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Approval Status</p>
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {ticket.approvalBy || "Pending"}
-                    </span>
+                            {/* Approval Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Approval Status</p>
+                                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {ticket.approvalBy || "Pending"}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Approval Name</p>
+                                <p className="text-blue-900">{ticket.nameDropdown || "N/A"}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
                   </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Approval Name</p>
-                    <p className="text-blue-900">{ticket.nameDropdown || "N/A"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
                 </div>
               </div>
             </CardContent>
@@ -978,70 +978,70 @@ export default function SiteVisitDetail() {
 
 
 
-                   {/* Mobile Card View */}
-      <div className="sm:hidden space-y-4">
-        {filteredHistoryData.length === 0 ? (
-          <div className="text-center py-8 bg-white" data-testid="text-no-history">
-            {fetchLoading ? (
-              <div className="flex justify-center items-center text-blue-700">
-                <LoaderIcon className="animate-spin w-8 h-8" />
-              </div>
-            ) : (
-              <h1 className="text-blue-700">No engineer approval history found.</h1>
-            )}
-          </div>
-        ) : (
-          filteredHistoryData.map((ticket, ind) => (
-            <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-blue-500`}>
-              <CardContent className="p-4 space-y-3">
-                {/* Header */}
-                <div>
-                  <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
-                  <p className="text-sm text-gray-600">{ticket.clientName}</p>
-                </div>
+                  {/* Mobile Card View */}
+                  <div className="sm:hidden space-y-4">
+                    {filteredHistoryData.length === 0 ? (
+                      <div className="text-center py-8 bg-white" data-testid="text-no-history">
+                        {fetchLoading ? (
+                          <div className="flex justify-center items-center text-blue-700">
+                            <LoaderIcon className="animate-spin w-8 h-8" />
+                          </div>
+                        ) : (
+                          <h1 className="text-blue-700">No engineer approval history found.</h1>
+                        )}
+                      </div>
+                    ) : (
+                      filteredHistoryData.map((ticket, ind) => (
+                        <Card key={ind} className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"} border-l-4 border-l-blue-500`}>
+                          <CardContent className="p-4 space-y-3">
+                            {/* Header */}
+                            <div>
+                              <h3 className="font-bold text-blue-800 text-lg">{ticket.ticketId}</h3>
+                              <p className="text-sm text-gray-600">{ticket.clientName}</p>
+                            </div>
 
-                {/* Contact & Machine Info */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <p className="text-gray-500 font-medium">Phone</p>
-                    <p className="text-blue-900">{ticket.phoneNumber}</p>
+                            {/* Contact & Machine Info */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Phone</p>
+                                <p className="text-blue-900">{ticket.phoneNumber}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Machine</p>
+                                <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Remarks */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Remarks</p>
+                              <p className="text-blue-900 line-clamp-3">{ticket.remarksEnginner || "No remarks"}</p>
+                            </div>
+
+                            {/* Service Report */}
+                            <div>
+                              <p className="text-gray-500 font-medium text-sm">Service Report</p>
+                              {ticket.serviceReportFile ? (
+                                <a
+                                  href={ticket.serviceReportFile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-semibold"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                                  </svg>
+                                  View Service Report PDF
+                                </a>
+                              ) : (
+                                <p className="text-blue-900 text-sm">No service report available</p>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
                   </div>
-                  <div>
-                    <p className="text-gray-500 font-medium">Machine</p>
-                    <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Remarks */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Remarks</p>
-                  <p className="text-blue-900 line-clamp-3">{ticket.remarksEnginner || "No remarks"}</p>
-                </div>
-
-                {/* Service Report */}
-                <div>
-                  <p className="text-gray-500 font-medium text-sm">Service Report</p>
-                  {ticket.serviceReportFile ? (
-                    <a
-                      href={ticket.serviceReportFile}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-semibold"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                      </svg>
-                      View Service Report PDF
-                    </a>
-                  ) : (
-                    <p className="text-blue-900 text-sm">No service report available</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
                 </div>
               </div>
             </CardContent>
@@ -1216,13 +1216,13 @@ export default function SiteVisitDetail() {
                 </Select> */}
 
                 <Input
-                    type="file"
-                    placeholder="Enter PDF link"
-                    onChange={(e) =>
-                      handleInputChange("quatationReceive", e.target.files[0])
-                    }
-                    data-testid="input-pdf-link"
-                  />
+                  type="file"
+                  placeholder="Enter PDF link"
+                  onChange={(e) =>
+                    handleInputChange("quatationReceive", e.target.files[0])
+                  }
+                  data-testid="input-pdf-link"
+                />
 
               </div>
 

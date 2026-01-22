@@ -12,7 +12,7 @@ import { useQuotationData } from "./use-quotation-data"
 
 // export const getNextQuotationNumber = async (companyPrefix = "OT") => {
 //   const scriptUrl =
-//     "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+//     "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
 
 //   try {
 //     const params = {
@@ -54,7 +54,7 @@ import { useQuotationData } from "./use-quotation-data"
 
 export const getNextQuotationNumber = async (companyPrefix = "OT") => {
   const scriptUrl =
-    "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
 
   try {
     const params = {
@@ -89,12 +89,12 @@ export const getNextQuotationNumber = async (companyPrefix = "OT") => {
       const startShort = String(financialYearStart).slice(-2)
       const endShort = String(financialYearEnd).slice(-2)
       const currentFY = startShort + "-" + endShort
-      
-      return `${companyPrefix}-${currentFY}-2201`  // Changed from -001 to -2201
+
+      return `${companyPrefix}-${currentFY}-2401`  // Changed from -001 to -2201
     }
   } catch (error) {
     console.error("Error getting next quotation number:", error)
-    
+
     // Get current financial year
     const now = new Date()
     const currentYear = now.getFullYear()
@@ -103,15 +103,15 @@ export const getNextQuotationNumber = async (companyPrefix = "OT") => {
     const startShort = String(financialYearStart).slice(-2)
     const endShort = String(financialYearEnd).slice(-2)
     const currentFY = startShort + "-" + endShort
-    
-    return `${companyPrefix}-${currentFY}-2201`  // Changed from -001 to -2201
+
+    return `${companyPrefix}-${currentFY}-2401`  // Changed from -001 to -2201
   }
 }
 
 
 export const getCompanyPrefix = async (companyName) => {
   const scriptUrl =
-    "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
 
   try {
     const params = {
@@ -196,7 +196,7 @@ function Quotation() {
       try {
         console.log("Fetching existing quotations...")
         const scriptUrl =
-          "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+          "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
         const response = await fetch(scriptUrl, {
           method: "POST",
           headers: {
@@ -248,30 +248,30 @@ function Quotation() {
 
 
   // Add this useEffect to fetch prefix when company changes
-useEffect(() => {
-  const fetchPrefixAndUpdateQuotation = async () => {
-    if (quotationData.consigneeName) {
-      try {
-        // Fetch company prefix
-        const prefix = await getCompanyPrefix(quotationData.consigneeName)
-        console.log("Fetched prefix:", prefix)
-        
-        // Get next quotation number with the new prefix
-        const nextQuotationNumber = await getNextQuotationNumber(prefix)
-        console.log("New quotation number:", nextQuotationNumber)
-        
-        setQuotationData((prev) => ({
-          ...prev,
-          quotationNo: nextQuotationNumber,
-        }))
-      } catch (error) {
-        console.error("Error fetching prefix and quotation number:", error)
+  useEffect(() => {
+    const fetchPrefixAndUpdateQuotation = async () => {
+      if (quotationData.consigneeName) {
+        try {
+          // Fetch company prefix
+          const prefix = await getCompanyPrefix(quotationData.consigneeName)
+          console.log("Fetched prefix:", prefix)
+
+          // Get next quotation number with the new prefix
+          const nextQuotationNumber = await getNextQuotationNumber(prefix)
+          console.log("New quotation number:", nextQuotationNumber)
+
+          setQuotationData((prev) => ({
+            ...prev,
+            quotationNo: nextQuotationNumber,
+          }))
+        } catch (error) {
+          console.error("Error fetching prefix and quotation number:", error)
+        }
       }
     }
-  }
 
-  fetchPrefixAndUpdateQuotation()
-}, [quotationData.consigneeName]) // Trigger when company name changes
+    fetchPrefixAndUpdateQuotation()
+  }, [quotationData.consigneeName]) // Trigger when company name changes
 
   // Load quotation data from URL if in view mode
   useEffect(() => {
@@ -309,7 +309,7 @@ useEffect(() => {
 
     try {
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -330,9 +330,9 @@ useEffect(() => {
 
         const references = loadedData.consignorName
           ? loadedData.consignorName
-              .split(",")
-              .map((r) => r.trim())
-              .filter((r) => r)
+            .split(",")
+            .map((r) => r.trim())
+            .filter((r) => r)
           : []
         setSelectedReferences(references)
 
@@ -494,7 +494,7 @@ useEffect(() => {
       const fileName = `Quotation_${finalQuotationNo}.pdf`
 
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
+        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
 
       const pdfParams = {
         action: "uploadPDF",
@@ -752,20 +752,18 @@ useEffect(() => {
         <div className="border-b">
           <div className="flex">
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "edit"
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-tl-lg"
-                  : "text-gray-600"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "edit"
+                ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-tl-lg"
+                : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("edit")}
               disabled={isViewMode}
             >
               Edit Quotation
             </button>
             <button
-              className={`px-4 py-2 font-medium ${
-                activeTab === "preview" ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white" : "text-gray-600"
-              }`}
+              className={`px-4 py-2 font-medium ${activeTab === "preview" ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white" : "text-gray-600"
+                }`}
               onClick={() => setActiveTab("preview")}
             >
               Preview
@@ -800,7 +798,7 @@ useEffect(() => {
               addSpecialOffer={addSpecialOffer}
               removeSpecialOffer={removeSpecialOffer}
               handleSpecialOfferChange={handleSpecialOfferChange}
-              //   handleSpecialDiscountChange={handleSpecialDiscountChangeWrapper}
+            //   handleSpecialDiscountChange={handleSpecialDiscountChangeWrapper}
             />
           ) : (
             <QuotationPreview

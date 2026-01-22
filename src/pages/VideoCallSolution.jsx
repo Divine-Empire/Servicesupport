@@ -54,7 +54,7 @@ export default function VideoCallSolution() {
   const [isVideoCallSolved, setIsVideoCallSolved] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
@@ -253,7 +253,7 @@ export default function VideoCallSolution() {
             videoCallServicesSolve: formData.videoCallServicesSolve,
             otpVarificationStatus:
               formData?.otpVerification?.toString() ===
-              selectedTicket?.afterVideoCallGenerateOTP?.toString()
+                selectedTicket?.afterVideoCallGenerateOTP?.toString()
                 ? "Yes"
                 : "No",
           },
@@ -519,15 +519,15 @@ export default function VideoCallSolution() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
-  const filteredPendingData = role === "user" ?  filteredPendingDataa.filter(
+  const filteredPendingData = role === "user" ? filteredPendingDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredPendingDataa;
 
-  const filteredHistoryData = role === "user" ?  filteredHistoryDataa.filter(
+  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa;
 
@@ -773,9 +773,8 @@ export default function VideoCallSolution() {
                       filteredPendingData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -1075,11 +1074,10 @@ export default function VideoCallSolution() {
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  ticket.videoCallServicesSolve === "yes"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
+                                className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${ticket.videoCallServicesSolve === "yes"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                                  }`}
                               >
                                 {ticket.videoCallServicesSolve === "yes"
                                   ? "Yes"
@@ -1119,9 +1117,8 @@ export default function VideoCallSolution() {
                       filteredHistoryData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}
@@ -1211,11 +1208,10 @@ export default function VideoCallSolution() {
                                   Video Call Solved
                                 </p>
                                 <span
-                                  className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                    ticket.videoCallServicesSolve === "yes"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
+                                  className={`px-2 py-1 text-xs font-semibold rounded-full ${ticket.videoCallServicesSolve === "yes"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                    }`}
                                 >
                                   {ticket.videoCallServicesSolve === "yes"
                                     ? "Yes"
@@ -1392,11 +1388,10 @@ export default function VideoCallSolution() {
                               : null
                           }
                           data-testid="button-resend-otp"
-                          className={`px-2 py-1 ${
-                            canGenerateOtp(selectedTicket?.ticketId)
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
-                              : "bg-gray-400 cursor-not-allowed"
-                          } text-white rounded-lg transition-all duration-300 shadow-lg text-center w-full flex justify-center items-center`}
+                          className={`px-2 py-1 ${canGenerateOtp(selectedTicket?.ticketId)
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
+                            : "bg-gray-400 cursor-not-allowed"
+                            } text-white rounded-lg transition-all duration-300 shadow-lg text-center w-full flex justify-center items-center`}
                         >
                           {isResending ? (
                             <span className="flex items-center">

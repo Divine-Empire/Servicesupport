@@ -52,7 +52,7 @@ export default function Warehouse1() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchData = async () => {
@@ -618,7 +618,7 @@ export default function Warehouse1() {
 
   const userName = localStorage.getItem("currentUsername");
 
-    const roleStorage = localStorage.getItem("o2d-auth-storage");
+  const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
@@ -626,7 +626,7 @@ export default function Warehouse1() {
     (item) => item["CREName"] === userName
   ) : filteredPendingDataa;
 
-  const filteredHistoryData =role === "user" ? filteredHistoryDataa.filter(
+  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa;
 
@@ -686,10 +686,9 @@ export default function Warehouse1() {
           <div className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-1 rounded-lg border border-blue-200">
             <div
               onClick={() => setActiveServiceTab("warehouse")}
-              className={`${
-                activeServiceTab === "warehouse" &&
+              className={`${activeServiceTab === "warehouse" &&
                 "bg-blue-700 text-white font-medium shadow-sm"
-              }  rounded-md py-2 transition-all duration-300 cursor-pointer`}
+                }  rounded-md py-2 transition-all duration-300 cursor-pointer`}
             >
               <span className="flex items-center gap-2">
                 <svg
@@ -710,10 +709,9 @@ export default function Warehouse1() {
 
             <div
               onClick={() => setActiveServiceTab("onsite")}
-              className={`${
-                activeServiceTab === "onsite" &&
+              className={`${activeServiceTab === "onsite" &&
                 "bg-blue-700 text-white font-medium shadow-sm"
-              }  rounded-md py-2 transition-all duration-300 cursor-pointer`}
+                }  rounded-md py-2 transition-all duration-300 cursor-pointer`}
             >
               <span className="flex items-center gap-2">
                 <svg
@@ -895,9 +893,8 @@ export default function Warehouse1() {
                       filteredPendingData.map((ticket, indx) => (
                         <Card
                           key={indx}
-                          className={`${
-                            indx % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${indx % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -1252,9 +1249,8 @@ export default function Warehouse1() {
                       filteredHistoryData.map((ticket, indx) => (
                         <Card
                           key={indx}
-                          className={`${
-                            indx % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-blue-500`}
+                          className={`${indx % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-blue-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}

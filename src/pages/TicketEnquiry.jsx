@@ -44,7 +44,7 @@ const TicketEnquiry = () => {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
 
   const fetchTickets = async () => {
     try {
@@ -339,7 +339,7 @@ const TicketEnquiry = () => {
   };
 
   const userName = localStorage.getItem("currentUsername");
-  
+
   const roleStorage = localStorage.getItem("o2d-auth-storage");
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
@@ -861,13 +861,12 @@ const TicketEnquiry = () => {
                   [...filteredTickets].reverse().map((ticket, ind) => (
                     <Card
                       key={ind}
-                      className={`${getRowColor(ticket)} border-l-4 ${
-                        ticket["Priority"]?.toLowerCase() === "high"
-                          ? "border-l-red-500"
-                          : ticket["Priority"]?.toLowerCase() === "medium"
+                      className={`${getRowColor(ticket)} border-l-4 ${ticket["Priority"]?.toLowerCase() === "high"
+                        ? "border-l-red-500"
+                        : ticket["Priority"]?.toLowerCase() === "medium"
                           ? "border-l-yellow-500"
                           : "border-l-green-500"
-                      }`}
+                        }`}
                     >
                       <CardContent className="p-4 space-y-2">
                         <div className="flex justify-between items-start">

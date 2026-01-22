@@ -31,7 +31,7 @@ import {
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
 import { storage } from "../lib/storage";
-import { useToast } from "../hooks/use-toast";
+import { useToast } from "../hooks/use-toast.js";
 import { Loader2Icon, LoaderIcon } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 
@@ -58,7 +58,7 @@ export default function Calibration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbzsDuvTz21Qx8fAP3MthQdRanIKnFFScPf-SRYp40CqYfKmO4CImMH7-_cVQjMqCsBD/exec";
+    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
   const fetchInvoiceSheet = async () => {
@@ -347,9 +347,8 @@ export default function Calibration() {
       const processedFile = await compressImage(file);
       const fileSizeMB = processedFile.size / (1024 * 1024);
 
-      const fileName = `Invoice_${selectedTicket?.ticketId}_${Date.now()}.${
-        file.type === "application/pdf" ? "pdf" : "jpg"
-      }`;
+      const fileName = `Invoice_${selectedTicket?.ticketId}_${Date.now()}.${file.type === "application/pdf" ? "pdf" : "jpg"
+        }`;
       const mimeType = processedFile.type || file.type;
 
       // For files smaller than 5MB, use direct upload
@@ -452,9 +451,8 @@ export default function Calibration() {
       console.error("Error uploading file:", error);
       toast({
         title: "Error",
-        description: `Failed to upload file: ${
-          error.message || "Unknown error"
-        }`,
+        description: `Failed to upload file: ${error.message || "Unknown error"
+          }`,
         variant: "destructive",
       });
       return {
@@ -479,17 +477,38 @@ export default function Calibration() {
     setIsSubmitting(true);
 
     let calibrationfileUrls = "";
+    let fileUploaded = false;
 
     // Handle all file uploads
 
     if (formData.calibrationUpload) {
-      const uploadResult = await uploadImageToDrive(formData.calibrationUpload);
-      if (!uploadResult.success) {
-        throw new Error(
-          uploadResult.error || "Failed to upload calibration copy"
-        );
+      try {
+        const uploadResult = await uploadImageToDrive(formData.calibrationUpload);
+        if (!uploadResult.success) {
+          toast({
+            title: "File Upload Failed",
+            description: uploadResult.error || "Failed to upload file",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        calibrationfileUrls = uploadResult.fileUrl;
+        fileUploaded = true;
+        toast({
+          title: "File Uploaded",
+          description: "Calibration file uploaded successfully!",
+        });
+      } catch (uploadError) {
+        console.error("File Upload error: ", uploadError)
+        toast({
+          title: "File Upload Failed",
+          description: uploadError.message || "Failed to Upload calibration file",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
       }
-      calibrationfileUrls = uploadResult.fileUrl;
     }
 
     const currentDateTime = formatDateTime(new Date());
@@ -561,7 +580,7 @@ export default function Calibration() {
 
         toast({
           title: "Success",
-          description: `Submitted successfully`,
+          description: fileUploaded ? "Submitted successfully with file uploaded!" : "Submitted successfully (no file uploaded)",
         });
       } else {
         throw new Error(result.error || "Failed to save ticket");
@@ -956,9 +975,8 @@ export default function Calibration() {
                       filteredPendingData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-indigo-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-indigo-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header with Ticket ID and Action */}
@@ -1296,9 +1314,8 @@ export default function Calibration() {
                       filteredHistoryData.map((ticket, ind) => (
                         <Card
                           key={ind}
-                          className={`${
-                            ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
-                          } border-l-4 border-l-indigo-500`}
+                          className={`${ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
+                            } border-l-4 border-l-indigo-500`}
                         >
                           <CardContent className="p-4 space-y-3">
                             {/* Header */}
@@ -1574,22 +1591,50 @@ export default function Calibration() {
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-gray-700">
                   Calibration Upload
                 </Label>
-                <div className="relative">
-                  <Input
+                <div className="flex items-center gap-3">
+                  {/* Real Hidden Input */}
+                  <input
                     type="file"
+                    id="calibration-file-input"
+                    className="hidden"
                     onChange={(e) =>
                       handleInputChange(
                         "calibrationUpload",
                         e.target.files[0] || ""
                       )
                     }
-                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     data-testid="input-calibration-copy"
                   />
+
+                  {/* Custom Styled Trigger */}
+                  <label
+                    htmlFor="calibration-file-input"
+                    className={`flex-1 flex items-center h-10 px-3 border border-gray-300 rounded-md cursor-pointer transition-all duration-200 hover:border-blue-400 hover:bg-blue-50/30 ${formData.calibrationUpload ? "bg-blue-50/50" : "bg-white"
+                      }`}
+                  >
+                    <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded mr-3 uppercase tracking-wider shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
+                      Upload File
+                    </div>
+                    <span className={`text-sm truncate ${formData.calibrationUpload ? "text-blue-700 font-medium" : "text-gray-400"}`}>
+                      {formData.calibrationUpload ? formData.calibrationUpload.name : "No file chosen"}
+                    </span>
+                  </label>
+
+                  {/* Clear Button (Optional but helpful) */}
+                  {formData.calibrationUpload && (
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange("calibrationUpload", "")}
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                      title="Clear file"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
 

@@ -126,7 +126,7 @@ export const useQuotationData = (initialSpecialDiscount = 0) => {
           (sum, item) => sum + Number(item.flatDiscount),
           0
         );
-        const subtotal = value.reduce((sum, item) => sum + item.amount, 0);
+        const subtotal = value.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
         const taxableAmount = subtotal;
 
         const shouldUseIGST = checkStateAndCalculateGST(
@@ -180,7 +180,7 @@ export const useQuotationData = (initialSpecialDiscount = 0) => {
           (sum, item) => sum + Number(item.flatDiscount),
           0
         );
-        const subtotal = prev.items.reduce((sum, item) => sum + item.amount, 0);
+       const subtotal = prev.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
         const taxableAmount = subtotal;
 
         let cgstAmount = 0;
@@ -251,7 +251,7 @@ export const useQuotationData = (initialSpecialDiscount = 0) => {
         0
       );
       const subtotal = Number(
-        newItems.reduce((sum, item) => sum + item.amount, 0)
+        newItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
       );
       const taxableAmount = subtotal;
 
@@ -292,7 +292,7 @@ export const useQuotationData = (initialSpecialDiscount = 0) => {
   const handleFlatDiscountChange = (value) => {
     setQuotationData((prev) => {
       const numValue = Number(value);
-      const subtotal = prev.items.reduce((sum, item) => sum + item.amount, 0);
+      const subtotal = prev.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
       const taxableAmount = subtotal;
 
       let cgstAmount = 0;

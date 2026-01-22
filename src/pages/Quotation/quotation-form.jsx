@@ -185,113 +185,113 @@ const QuotationForm = ({
   }, [])
 
   // NEW: Fetch lead numbers from both sheets with filtering conditions
-useEffect(() => {
-  const fetchLeadNumbers = async () => {
-    try {
-      const leadNoOptionsData = ["Select Lead No."]
-      const leadNoDataMap = {}
+  useEffect(() => {
+    const fetchLeadNumbers = async () => {
+      try {
+        const leadNoOptionsData = ["Select Lead No."]
+        const leadNoDataMap = {}
 
-      // Fetch from FMS sheet
-      const fmsUrl =
-        "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
-      const fmsResponse = await fetch(fmsUrl)
-      const fmsText = await fmsResponse.text()
+        // Fetch from FMS sheet
+        const fmsUrl =
+          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
+        const fmsResponse = await fetch(fmsUrl)
+        const fmsText = await fmsResponse.text()
 
-      const fmsJsonStart = fmsText.indexOf("{")
-      const fmsJsonEnd = fmsText.lastIndexOf("}") + 1
-      const fmsJsonData = fmsText.substring(fmsJsonStart, fmsJsonEnd)
-      const fmsData = JSON.parse(fmsJsonData)
+        const fmsJsonStart = fmsText.indexOf("{")
+        const fmsJsonEnd = fmsText.lastIndexOf("}") + 1
+        const fmsJsonData = fmsText.substring(fmsJsonStart, fmsJsonEnd)
+        const fmsData = JSON.parse(fmsJsonData)
 
-      if (fmsData && fmsData.table && fmsData.table.rows) {
-        fmsData.table.rows.forEach((row) => {
-          if (row.c && row.c[1]) {
-            // Column B (index 1)
-            const leadNo = safeToString(row.c[1].v)
-            
-            // Check filtering conditions: BA (index 52) is not null and BB (index 53) is null
-            const baValue = row.c[52] ? safeToString(row.c[52].v) : ""
-            const bbValue = row.c[53] ? safeToString(row.c[53].v) : ""
-            
-            if (leadNo && !leadNoOptionsData.includes(leadNo) && baValue !== "" && bbValue === "") {
-              leadNoOptionsData.push(leadNo)
+        if (fmsData && fmsData.table && fmsData.table.rows) {
+          fmsData.table.rows.forEach((row) => {
+            if (row.c && row.c[1]) {
+              // Column B (index 1)
+              const leadNo = safeToString(row.c[1].v)
 
-              leadNoDataMap[leadNo] = {
-                sheet: "FMS",
-                 companyName: row.c[23] ? safeToString(row.c[23].v) : "", // Column D
-                address: row.c[24] ? safeToString(row.c[24].v) : "", // Column G
-                state: row.c[26] ? safeToString(row.c[26].v) : "", // Column N
-                contactName: row.c[2] ? safeToString(row.c[2].v) : "", // Column F
-                contactNo: row.c[3] ? safeToString(row.c[3].v) : "", // Column E
-                gstin: row.c[27] ? safeToString(row.c[27].v) : "", // Column L
-                shipTo: row.c[25] ? safeToString(row.c[25].v) : "", // Column I
-                rowData: row.c, // Store full row data for items
+              // Check filtering conditions: BA (index 52) is not null and BB (index 53) is null
+              const baValue = row.c[52] ? safeToString(row.c[52].v) : ""
+              const bbValue = row.c[53] ? safeToString(row.c[53].v) : ""
+
+              if (leadNo && !leadNoOptionsData.includes(leadNo) && baValue !== "" && bbValue === "") {
+                leadNoOptionsData.push(leadNo)
+
+                leadNoDataMap[leadNo] = {
+                  sheet: "FMS",
+                  companyName: row.c[23] ? safeToString(row.c[23].v) : "", // Column D
+                  address: row.c[24] ? safeToString(row.c[24].v) : "", // Column G
+                  state: row.c[26] ? safeToString(row.c[26].v) : "", // Column N
+                  contactName: row.c[2] ? safeToString(row.c[2].v) : "", // Column F
+                  contactNo: row.c[3] ? safeToString(row.c[3].v) : "", // Column E
+                  gstin: row.c[27] ? safeToString(row.c[27].v) : "", // Column L
+                  shipTo: row.c[25] ? safeToString(row.c[25].v) : "", // Column I
+                  rowData: row.c, // Store full row data for items
+                }
               }
             }
-          }
-        })
-      }
+          })
+        }
 
-      // Fetch from ENQUIRY TO ORDER sheet
-      const enquiryUrl =
-        "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
-        
-      const enquiryResponse = await fetch(enquiryUrl)
-      const enquiryText = await enquiryResponse.text()
+        // Fetch from ENQUIRY TO ORDER sheet
+        const enquiryUrl =
+          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
 
-      const enquiryJsonStart = enquiryText.indexOf("{")
-      const enquiryJsonEnd = enquiryText.lastIndexOf("}") + 1
-      const enquiryJsonData = enquiryText.substring(enquiryJsonStart, enquiryJsonEnd)
-      const enquiryData = JSON.parse(enquiryJsonData)
+        const enquiryResponse = await fetch(enquiryUrl)
+        const enquiryText = await enquiryResponse.text()
 
-      if (enquiryData && enquiryData.table && enquiryData.table.rows) {
-        enquiryData.table.rows.slice(4).forEach((row) => {
-          if (row.c && row.c[1]) {
-            // Column B (index 1)
-            const leadNo = safeToString(row.c[1].v)
-            
-            // Check filtering conditions: AL (index 37) is not null and AM (index 38) is null
-            const alValue = row.c[37] ? safeToString(row.c[37].v) : ""
-            const amValue = row.c[38] ? safeToString(row.c[38].v) : ""
-            
-            if (leadNo && !leadNoOptionsData.includes(leadNo)) {
-              leadNoOptionsData.push(leadNo)
+        const enquiryJsonStart = enquiryText.indexOf("{")
+        const enquiryJsonEnd = enquiryText.lastIndexOf("}") + 1
+        const enquiryJsonData = enquiryText.substring(enquiryJsonStart, enquiryJsonEnd)
+        const enquiryData = JSON.parse(enquiryJsonData)
 
-              leadNoDataMap[leadNo] = {
-                sheet: "ENQUIRY",
-                // companyName: row.c[3] ? safeToString(row.c[3].v) : "", // Column D
-                // address: row.c[6] ? safeToString(row.c[6].v) : "", // Column G
-                // state: row.c[13] ? safeToString(row.c[13].v) : "", // Column N
-                // contactName: row.c[5] ? safeToString(row.c[5].v) : "", // Column F
-                // contactNo: row.c[4] ? safeToString(row.c[4].v) : "", // Column E
-                // gstin: row.c[11] ? safeToString(row.c[11].v) : "", // Column L
-                // shipTo: row.c[8] ? safeToString(row.c[8].v) : "", // Column I
-                // rowData: row.c, // Store full row data for items
+        if (enquiryData && enquiryData.table && enquiryData.table.rows) {
+          enquiryData.table.rows.slice(4).forEach((row) => {
+            if (row.c && row.c[1]) {
+              // Column B (index 1)
+              const leadNo = safeToString(row.c[1].v)
 
+              // Check filtering conditions: AL (index 37) is not null and AM (index 38) is null
+              const alValue = row.c[37] ? safeToString(row.c[37].v) : ""
+              const amValue = row.c[38] ? safeToString(row.c[38].v) : ""
+
+              if (leadNo && !leadNoOptionsData.includes(leadNo)) {
+                leadNoOptionsData.push(leadNo)
+
+                leadNoDataMap[leadNo] = {
+                  sheet: "ENQUIRY",
+                  // companyName: row.c[3] ? safeToString(row.c[3].v) : "", // Column D
+                  // address: row.c[6] ? safeToString(row.c[6].v) : "", // Column G
+                  // state: row.c[13] ? safeToString(row.c[13].v) : "", // Column N
+                  // contactName: row.c[5] ? safeToString(row.c[5].v) : "", // Column F
+                  // contactNo: row.c[4] ? safeToString(row.c[4].v) : "", // Column E
+                  // gstin: row.c[11] ? safeToString(row.c[11].v) : "", // Column L
+                  // shipTo: row.c[8] ? safeToString(row.c[8].v) : "", // Column I
+                  // rowData: row.c, // Store full row data for items
 
 
-                companyName: row.c[23] ? safeToString(row.c[23].v) : "", // Column D
-                address: row.c[24] ? safeToString(row.c[24].v) : "", // Column G
-                state: row.c[26] ? safeToString(row.c[26].v) : "", // Column N
-                contactName: row.c[2] ? safeToString(row.c[2].v) : "", // Column F
-                contactNo: row.c[3] ? safeToString(row.c[3].v) : "", // Column E
-                gstin: row.c[27] ? safeToString(row.c[27].v) : "", // Column L
-                shipTo: row.c[25] ? safeToString(row.c[25].v) : "", // Column I
-                rowData: row.c, // Store full row data for items
+
+                  companyName: row.c[23] ? safeToString(row.c[23].v) : "", // Column D
+                  address: row.c[24] ? safeToString(row.c[24].v) : "", // Column G
+                  state: row.c[26] ? safeToString(row.c[26].v) : "", // Column N
+                  contactName: row.c[2] ? safeToString(row.c[2].v) : "", // Column F
+                  contactNo: row.c[3] ? safeToString(row.c[3].v) : "", // Column E
+                  gstin: row.c[27] ? safeToString(row.c[27].v) : "", // Column L
+                  shipTo: row.c[25] ? safeToString(row.c[25].v) : "", // Column I
+                  rowData: row.c, // Store full row data for items
+                }
               }
             }
-          }
-        })
-      }
+          })
+        }
 
-      setLeadNoOptions(leadNoOptionsData)
-      setLeadNoData(leadNoDataMap)
-    } catch (error) {
-      console.error("Error fetching lead numbers:", error)
+        setLeadNoOptions(leadNoOptionsData)
+        setLeadNoData(leadNoDataMap)
+      } catch (error) {
+        console.error("Error fetching lead numbers:", error)
+      }
     }
-  }
 
-  fetchLeadNumbers()
-}, [])
+    fetchLeadNumbers()
+  }, [])
 
   const handleSpecialDiscountChangeWrapper = (value) => {
     const discount = Number(value) || 0
@@ -375,282 +375,282 @@ useEffect(() => {
   }
 
   // NEW: Handle lead number selection and autofill
-const handleLeadNoSelect = async (selectedLeadNo) => {
-  if (!selectedLeadNo || selectedLeadNo === "Select Lead No." || !leadNoData[selectedLeadNo]) {
-    return;
-  }
-
-  setIsItemsLoading(true); // Start loading
-
-  const leadData = leadNoData[selectedLeadNo]
-
-  // Fill consignee details
-  const companyName = leadData.companyName
-  handleInputChange("consigneeName", companyName)
-  handleInputChange("consigneeAddress", leadData.address)
-  handleInputChange("consigneeState", leadData.state)
-  handleInputChange("consigneeContactName", leadData.contactName)
-  handleInputChange("consigneeContactNo", leadData.contactNo)
-  handleInputChange("consigneeGSTIN", leadData.gstin)
-
-  if (leadData.shipTo) {
-    handleInputChange("shipTo", leadData.shipTo)
-  }
-
-  // IMPORTANT: Fill additional company details from dropdown data if available
-  if (companyName && dropdownData.companies && dropdownData.companies[companyName]) {
-    const companyDetails = dropdownData.companies[companyName]
-    
-    // Fill additional company details if not already filled from lead data
-    if (!leadData.address && companyDetails.address) {
-      handleInputChange("consigneeAddress", companyDetails.address)
+  const handleLeadNoSelect = async (selectedLeadNo) => {
+    if (!selectedLeadNo || selectedLeadNo === "Select Lead No." || !leadNoData[selectedLeadNo]) {
+      return;
     }
-    if (!leadData.state && companyDetails.state) {
-      handleInputChange("consigneeState", companyDetails.state)
+
+    setIsItemsLoading(true); // Start loading
+
+    const leadData = leadNoData[selectedLeadNo]
+
+    // Fill consignee details
+    const companyName = leadData.companyName
+    handleInputChange("consigneeName", companyName)
+    handleInputChange("consigneeAddress", leadData.address)
+    handleInputChange("consigneeState", leadData.state)
+    handleInputChange("consigneeContactName", leadData.contactName)
+    handleInputChange("consigneeContactNo", leadData.contactNo)
+    handleInputChange("consigneeGSTIN", leadData.gstin)
+
+    if (leadData.shipTo) {
+      handleInputChange("shipTo", leadData.shipTo)
     }
-    if (!leadData.contactName && companyDetails.contactName) {
-      handleInputChange("consigneeContactName", companyDetails.contactName)
+
+    // IMPORTANT: Fill additional company details from dropdown data if available
+    if (companyName && dropdownData.companies && dropdownData.companies[companyName]) {
+      const companyDetails = dropdownData.companies[companyName]
+
+      // Fill additional company details if not already filled from lead data
+      if (!leadData.address && companyDetails.address) {
+        handleInputChange("consigneeAddress", companyDetails.address)
+      }
+      if (!leadData.state && companyDetails.state) {
+        handleInputChange("consigneeState", companyDetails.state)
+      }
+      if (!leadData.contactName && companyDetails.contactName) {
+        handleInputChange("consigneeContactName", companyDetails.contactName)
+      }
+      if (!leadData.contactNo && companyDetails.contactNo) {
+        handleInputChange("consigneeContactNo", companyDetails.contactNo)
+      }
+      if (!leadData.gstin && companyDetails.gstin) {
+        handleInputChange("consigneeGSTIN", companyDetails.gstin)
+      }
+      if (companyDetails.stateCode) {
+        handleInputChange("consigneeStateCode", companyDetails.stateCode)
+      }
     }
-    if (!leadData.contactNo && companyDetails.contactNo) {
-      handleInputChange("consigneeContactNo", companyDetails.contactNo)
-    }
-    if (!leadData.gstin && companyDetails.gstin) {
-      handleInputChange("consigneeGSTIN", companyDetails.gstin)
-    }
-    if (companyDetails.stateCode) {
-      handleInputChange("consigneeStateCode", companyDetails.stateCode)
-    }
-  }
 
-  // CRITICAL: Get company prefix and update quotation number based on company name
-  try {
-    // const companyPrefix = await getCompanyPrefix(companyName)
-    // const newQuotationNumber = await getNextQuotationNumber(companyPrefix)
+    // CRITICAL: Get company prefix and update quotation number based on company name
+    try {
+      // const companyPrefix = await getCompanyPrefix(companyName)
+      // const newQuotationNumber = await getNextQuotationNumber(companyPrefix)
 
-    // handleInputChange("quotationNo", newQuotationNumber)
+      // handleInputChange("quotationNo", newQuotationNumber)
 
 
 
-    const companyPrefix = await getCompanyPrefix(companyName)
-  
-  // NEW: Use the new function
-  const scriptUrl = "https://script.google.com/macros/s/AKfycby-VezwOC3982X6eFON4lgk8a6_-NIdTvI0wgobl9f0rTDDPVAGhyZhQBhfc8wvd7Tb/exec"
-  const response = await fetch(scriptUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      action: "getNextQuotationNumberNew",
-      companyPrefix: companyPrefix
-    }),
-  })
-  
-  const result = await response.json()
-  if (result.success) {
-    handleInputChange("quotationNo", result.nextQuotationNumber)
-  }
+      const companyPrefix = await getCompanyPrefix(companyName)
 
-  
-  } catch (error) {
-    console.error("Error updating quotation number from lead selection:", error)
-  }
+      // NEW: Use the new function
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+      const response = await fetch(scriptUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "getNextQuotationNumberNew",
+          companyPrefix: companyPrefix
+        }),
+      })
 
-  // Auto-fill items using the local handleAutoFillItems function
-  try {
-    await handleAutoFillItems(companyName)
-  } catch (error) {
-    console.error("Error auto-filling items:", error)
-  }
-
-  // Wait a bit to ensure productData is available
-  await new Promise(resolve => setTimeout(resolve, 100))
-
-  // Auto-fill items based on sheet data
-  const autoItems = []
-
-  if (leadData.sheet === "FMS") {
-    const row = leadData.rowData
-    const baValue = row[52] ? safeToString(row[52].v) : ""
-    const bbValue = row[53] ? safeToString(row[53].v) : ""
-    const biValue = row[60] ? safeToString(row[60].v) : ""
-
-
-    if (baValue !== "" && biValue === "") {
-
-      // Regular columns AN-AW (indices 39-48)
-      const itemColumns = [
-        { nameCol: 39, qtyCol: 40 }, // AN, AO
-        { nameCol: 41, qtyCol: 42 }, // AP, AQ
-        { nameCol: 43, qtyCol: 44 }, // AR, AS
-        { nameCol: 45, qtyCol: 46 }, // AT, AU
-        { nameCol: 47, qtyCol: 48 }, // AV, AW
-      ]
-
-      for (const { nameCol, qtyCol } of itemColumns) {
-        const itemName = row[nameCol] ? safeToString(row[nameCol].v).trim() : ""
-        const itemQty = row[qtyCol] ? safeToString(row[qtyCol].v) : ""
-
-
-        if (itemName !== "" && itemQty !== "") {
-          const qty = isNaN(Number(itemQty)) ? 1 : Number(itemQty)
-          autoItems.push({
-            name: itemName,
-            qty: qty,
-          })
-        }
+      const result = await response.json()
+      if (result.success) {
+        handleInputChange("quotationNo", result.nextQuotationNumber)
       }
 
-      // JSON data from CS column (index 96)
-      const csValue = row[96] ? safeToString(row[96].v) : ""
-      
-      if (csValue !== "" && csValue !== "null" && csValue !== "undefined") {
-        try {
-          const jsonData = JSON.parse(csValue)
-          if (Array.isArray(jsonData)) {
-            jsonData.forEach((item) => {
-              if (item.name && item.quantity !== undefined && item.quantity !== null) {
-                const qty = isNaN(Number(item.quantity)) ? 1 : Number(item.quantity)
-                autoItems.push({
-                  name: item.name,
-                  qty: qty,
-                })
-              }
+
+    } catch (error) {
+      console.error("Error updating quotation number from lead selection:", error)
+    }
+
+    // Auto-fill items using the local handleAutoFillItems function
+    try {
+      await handleAutoFillItems(companyName)
+    } catch (error) {
+      console.error("Error auto-filling items:", error)
+    }
+
+    // Wait a bit to ensure productData is available
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Auto-fill items based on sheet data
+    const autoItems = []
+
+    if (leadData.sheet === "FMS") {
+      const row = leadData.rowData
+      const baValue = row[52] ? safeToString(row[52].v) : ""
+      const bbValue = row[53] ? safeToString(row[53].v) : ""
+      const biValue = row[60] ? safeToString(row[60].v) : ""
+
+
+      if (baValue !== "" && biValue === "") {
+
+        // Regular columns AN-AW (indices 39-48)
+        const itemColumns = [
+          { nameCol: 39, qtyCol: 40 }, // AN, AO
+          { nameCol: 41, qtyCol: 42 }, // AP, AQ
+          { nameCol: 43, qtyCol: 44 }, // AR, AS
+          { nameCol: 45, qtyCol: 46 }, // AT, AU
+          { nameCol: 47, qtyCol: 48 }, // AV, AW
+        ]
+
+        for (const { nameCol, qtyCol } of itemColumns) {
+          const itemName = row[nameCol] ? safeToString(row[nameCol].v).trim() : ""
+          const itemQty = row[qtyCol] ? safeToString(row[qtyCol].v) : ""
+
+
+          if (itemName !== "" && itemQty !== "") {
+            const qty = isNaN(Number(itemQty)) ? 1 : Number(itemQty)
+            autoItems.push({
+              name: itemName,
+              qty: qty,
             })
           }
-        } catch (error) {
-          console.error("Error parsing JSON data from FMS:", error)
         }
-      }
-    } else {
-      console.log("FMS lead conditions not met - BA:", baValue, "BI:", biValue)
-    }
-  } else if (leadData.sheet === "ENQUIRY") {
-    const row = leadData.rowData
-    const alValue = row[37] ? safeToString(row[37].v) : ""
-    const amValue = row[38] ? safeToString(row[38].v) : ""
-    const atValue = row[45] ? safeToString(row[45].v) : ""
 
+        // JSON data from CS column (index 96)
+        const csValue = row[96] ? safeToString(row[96].v) : ""
 
-    if (alValue !== "" && amValue === "") {
-
-      // FIRST: Process regular columns R-AK (indices 17-36) - 10 items
-      const itemColumns = [
-        { nameCol: 17, qtyCol: 18 }, // R, S
-        { nameCol: 19, qtyCol: 20 }, // T, U
-        { nameCol: 21, qtyCol: 22 }, // V, W
-        { nameCol: 23, qtyCol: 24 }, // X, Y
-        { nameCol: 25, qtyCol: 26 }, // Z, AA
-        { nameCol: 27, qtyCol: 28 }, // AB, AC
-        { nameCol: 29, qtyCol: 30 }, // AD, AE
-        { nameCol: 31, qtyCol: 32 }, // AF, AG
-        { nameCol: 33, qtyCol: 34 }, // AH, AI
-        { nameCol: 35, qtyCol: 36 }, // AJ, AK
-      ]
-      for (const { nameCol, qtyCol } of itemColumns) {
-        const itemName = row[nameCol] ? safeToString(row[nameCol].v).trim() : ""
-        const itemQty = row[qtyCol] ? safeToString(row[qtyCol].v) : ""
-
-
-        if (itemName !== "" && itemQty !== "") {
-          const qty = isNaN(Number(itemQty)) ? 1 : Number(itemQty)
-          autoItems.push({
-            name: itemName,
-            qty: qty,
-          })
+        if (csValue !== "" && csValue !== "null" && csValue !== "undefined") {
+          try {
+            const jsonData = JSON.parse(csValue)
+            if (Array.isArray(jsonData)) {
+              jsonData.forEach((item) => {
+                if (item.name && item.quantity !== undefined && item.quantity !== null) {
+                  const qty = isNaN(Number(item.quantity)) ? 1 : Number(item.quantity)
+                  autoItems.push({
+                    name: item.name,
+                    qty: qty,
+                  })
+                }
+              })
+            }
+          } catch (error) {
+            console.error("Error parsing JSON data from FMS:", error)
+          }
         }
-      }
-
-
-      // SECOND: Process JSON data from CB column (index 79) - Continue from item 11+
-      const cbValue = row[79] ? safeToString(row[79].v) : ""
-
-      if (cbValue !== "" && cbValue !== "null" && cbValue !== "undefined") {
-        try {
-          const jsonData = JSON.parse(cbValue)
-
-          if (Array.isArray(jsonData)) {
-            jsonData.forEach((item, index) => {
-              if (item.name && item.quantity !== undefined && item.quantity !== null) {
-                const qty = isNaN(Number(item.quantity)) ? 1 : Number(item.quantity)
-                autoItems.push({
-                  name: item.name,
-                  qty: qty,
-                })
-              } 
-            })
-          } 
-        } catch (error) {
-          console.error("Error parsing JSON data from ENQUIRY CB column:", error)
-        }
-      } 
-
-    } 
-  }
-
-  // Update items if found from lead data
-  if (autoItems.length > 0) {
-    
-    const newItems = autoItems.map((item, index) => {
-      // Auto-fill product code from productData with better matching
-      let productInfo = null
-      let productCode = ""
-      let productDescription = ""
-      let productRate = 0
-
-      // Try exact match first
-      if (productData[item.name]) {
-        productInfo = productData[item.name]
       } else {
-        // Try case-insensitive match
-        const matchingKey = Object.keys(productData).find(key => 
-          key.toLowerCase().trim() === item.name.toLowerCase().trim()
-        )
-        if (matchingKey) {
-          productInfo = productData[matchingKey]
+        console.log("FMS lead conditions not met - BA:", baValue, "BI:", biValue)
+      }
+    } else if (leadData.sheet === "ENQUIRY") {
+      const row = leadData.rowData
+      const alValue = row[37] ? safeToString(row[37].v) : ""
+      const amValue = row[38] ? safeToString(row[38].v) : ""
+      const atValue = row[45] ? safeToString(row[45].v) : ""
+
+
+      if (alValue !== "" && amValue === "") {
+
+        // FIRST: Process regular columns R-AK (indices 17-36) - 10 items
+        const itemColumns = [
+          { nameCol: 17, qtyCol: 18 }, // R, S
+          { nameCol: 19, qtyCol: 20 }, // T, U
+          { nameCol: 21, qtyCol: 22 }, // V, W
+          { nameCol: 23, qtyCol: 24 }, // X, Y
+          { nameCol: 25, qtyCol: 26 }, // Z, AA
+          { nameCol: 27, qtyCol: 28 }, // AB, AC
+          { nameCol: 29, qtyCol: 30 }, // AD, AE
+          { nameCol: 31, qtyCol: 32 }, // AF, AG
+          { nameCol: 33, qtyCol: 34 }, // AH, AI
+          { nameCol: 35, qtyCol: 36 }, // AJ, AK
+        ]
+        for (const { nameCol, qtyCol } of itemColumns) {
+          const itemName = row[nameCol] ? safeToString(row[nameCol].v).trim() : ""
+          const itemQty = row[qtyCol] ? safeToString(row[qtyCol].v) : ""
+
+
+          if (itemName !== "" && itemQty !== "") {
+            const qty = isNaN(Number(itemQty)) ? 1 : Number(itemQty)
+            autoItems.push({
+              name: itemName,
+              qty: qty,
+            })
+          }
         }
-      }
 
-      if (productInfo) {
-        productCode = productInfo.code || ""
-        productDescription = productInfo.description || ""
-        productRate = productInfo.rate || 0
-      }
 
-      
-      // If no code found, try a partial match
-      if (!productCode) {
-        const partialMatch = Object.keys(productData).find(key => 
-          key.toLowerCase().includes(item.name.toLowerCase().substring(0, 10)) ||
-          item.name.toLowerCase().includes(key.toLowerCase().substring(0, 10))
-        )
-        if (partialMatch && productData[partialMatch]) {
-          productCode = productData[partialMatch].code || ""
-          productDescription = productData[partialMatch].description || ""
-          productRate = productData[partialMatch].rate || 0
+        // SECOND: Process JSON data from CB column (index 79) - Continue from item 11+
+        const cbValue = row[79] ? safeToString(row[79].v) : ""
+
+        if (cbValue !== "" && cbValue !== "null" && cbValue !== "undefined") {
+          try {
+            const jsonData = JSON.parse(cbValue)
+
+            if (Array.isArray(jsonData)) {
+              jsonData.forEach((item, index) => {
+                if (item.name && item.quantity !== undefined && item.quantity !== null) {
+                  const qty = isNaN(Number(item.quantity)) ? 1 : Number(item.quantity)
+                  autoItems.push({
+                    name: item.name,
+                    qty: qty,
+                  })
+                }
+              })
+            }
+          } catch (error) {
+            console.error("Error parsing JSON data from ENQUIRY CB column:", error)
+          }
         }
-      }
 
-      return {
-        id: index + 1,
-        code: productCode, // Auto-filled from productData
-        name: item.name,
-        description: productDescription, // Auto-filled from productData
-        gst: 18,
-        qty: item.qty,
-        units: "Nos",
-        rate: productRate, // Auto-filled from productData
-        discount: 0,
-        flatDiscount: 0,
-        amount: item.qty * productRate, // Calculate initial amount
       }
-    })
+    }
 
-    handleInputChange("items", newItems)
-  } 
-  
-  setIsItemsLoading(false); // Stop loading
-}
+    // Update items if found from lead data
+    if (autoItems.length > 0) {
+
+      const newItems = autoItems.map((item, index) => {
+        // Auto-fill product code from productData with better matching
+        let productInfo = null
+        let productCode = ""
+        let productDescription = ""
+        let productRate = 0
+
+        // Try exact match first
+        if (productData[item.name]) {
+          productInfo = productData[item.name]
+        } else {
+          // Try case-insensitive match
+          const matchingKey = Object.keys(productData).find(key =>
+            key.toLowerCase().trim() === item.name.toLowerCase().trim()
+          )
+          if (matchingKey) {
+            productInfo = productData[matchingKey]
+          }
+        }
+
+        if (productInfo) {
+          productCode = productInfo.code || ""
+          productDescription = productInfo.description || ""
+          productRate = productInfo.rate || 0
+        }
+
+
+        // If no code found, try a partial match
+        if (!productCode) {
+          const partialMatch = Object.keys(productData).find(key =>
+            key.toLowerCase().includes(item.name.toLowerCase().substring(0, 10)) ||
+            item.name.toLowerCase().includes(key.toLowerCase().substring(0, 10))
+          )
+          if (partialMatch && productData[partialMatch]) {
+            productCode = productData[partialMatch].code || ""
+            productDescription = productData[partialMatch].description || ""
+            productRate = productData[partialMatch].rate || 0
+          }
+        }
+
+        return {
+          id: index + 1,
+          code: productCode, // Auto-filled from productData
+          name: item.name,
+          description: productDescription, // Auto-filled from productData
+          gst: 18,
+          qty: item.qty,
+          units: "Nos",
+          rate: productRate, // Auto-filled from productData
+          discount: 0,
+          flatDiscount: 0,
+          amount: item.qty * productRate, // Calculate initial amount
+        }
+      })
+
+      handleInputChange("items", newItems)
+    }
+
+    setIsItemsLoading(false); // Stop loading
+  }
 
   // Function to auto-fill items based on company selection
   const handleAutoFillItems = async (companyName) => {
@@ -857,7 +857,7 @@ const handleLeadNoSelect = async (selectedLeadNo) => {
         // Update quotation data with new items
         handleInputChange("items", newItems)
 
-      } 
+      }
     } catch (error) {
       console.error("Error auto-filling items:", error)
     } finally {

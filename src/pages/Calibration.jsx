@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -37,8 +37,6 @@ import { Textarea } from "../components/ui/textarea";
 
 export default function Calibration() {
   const [activeTab, setActiveTab] = useState("pending");
-  const [pendingTickets, setPendingTickets] = useState([]);
-  const [historyTickets, setHistoryTickets] = useState([]);
   const [showCalibrationModal, setShowCalibrationModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
@@ -61,75 +59,76 @@ export default function Calibration() {
     "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
 
-  const fetchInvoiceSheet = async () => {
-    setFetchLoading(true); // start loading
+  const fetchInvoiceSheet = useCallback(async () => {
+    setFetchLoading(true);
     try {
-      const response = await fetch(`${sheet_url}?sheet=Invoice`);
+      // Add a cache-buster to ensure we get the latest data after updates
+      const response = await fetch(`${sheet_url}?sheet=Invoice&t=${Date.now()}`);
       const json = await response.json();
 
       if (json.success && Array.isArray(json.data)) {
-        // Process the data to match your requirements
-        const allData = json.data.slice(6).map((row, index) => ({
-          id: index + 1,
-          timeStemp: row[0], // Timestamp
-          ticketId: row[1], // Ticket ID
-          quotationNo: row[2], // Quotation No.(input)
-          clientName: row[3], // Client Name
-          phoneNumber: row[4], // Phone Number
-          emailAddress: row[5], // Email Address
-          invoiceCategory: row[6], // Email Address
-          companyName: row[7], // Company Name
-          quotationPdfLink: row[8], // Quotation Pdf link
+        const allData = json.data.slice(6).map((row, index) => {
+          // Helper to safely get and trim values from the row array
+          const getValue = (idx) => {
+            const val = row[idx];
+            return val !== null && val !== undefined ? String(val).trim() : "";
+          };
 
-          invoicePostedBy: row[9], // Invoice Posted By(Drop-Down)
-          invoiceNoNABL: row[10], // Invoice No (NABL) (Manual)
-          invoiceNoSERVICE: row[11], // Invoice No (SERVICE)
-          invoiceNoSPARE: row[12], // Invoice No (SPARE)
-          spareInvoice: row[13], // SPARE INVOICE
-          serviceInvoice: row[14], // SERVICE INVOICE
-          nablInvoice: row[15], // NABL INVOICE
-          nonNabl: row[16], // NON NABL
-          invoiceAmountNABLBasic: row[17], // Invoice Amount NABL (Basic)
-          invoiceAmountNABLGst: row[18], // Invoice Amount NABL (gst)
-          totalInvoiceAmtNonNABLBasic: row[19], // Total Invoice Amt NON NABL BASIC
-          totalInvoiceAmtNonNABLGst: row[20], // Total Invoice Amt NON NABL gst
-          serviceAmountBasic: row[21], // Service Amount (Basic)
+          return {
+            id: index + 1,
+            timeStemp: getValue(0),
+            ticketId: getValue(1),
+            quotationNo: getValue(2),
+            clientName: getValue(3),
+            phoneNumber: getValue(4),
+            emailAddress: getValue(5),
+            invoiceCategory: getValue(6),
+            companyName: getValue(7),
+            quotationPdfLink: getValue(8),
+            invoicePostedBy: getValue(9),
+            invoiceNoNABL: getValue(10),
+            invoiceNoSERVICE: getValue(11),
+            invoiceNoSPARE: getValue(12),
+            spareInvoice: getValue(13),
+            serviceInvoice: getValue(14),
+            nablInvoice: getValue(15),
+            nonNabl: getValue(16),
+            invoiceAmountNABLBasic: getValue(17),
+            invoiceAmountNABLGst: getValue(18),
+            totalInvoiceAmtNonNABLBasic: getValue(19),
+            totalInvoiceAmtNonNABLGst: getValue(20),
+            serviceAmountBasic: getValue(21),
+            totalServiceAmtSpare: getValue(22),
+            totalServiceAmtSpareGst: getValue(23),
+            attachmentService: getValue(24),
+            attachmentSpear: getValue(25),
+            attachmentNABL: getValue(26),
+            billNo: getValue(27),
+            billFile: getValue(28),
+            basicAmount: getValue(29),
+            totalAmountWithTex: getValue(30),
+            planned13: getValue(31),
+            actual13: getValue(32),
+            delay13: getValue(33),
+            otp: getValue(34),
+            otpVarification: getValue(35),
+            planned14: getValue(36),
+            actual14: getValue(37),
+            delay14: getValue(38),
+            planned15: getValue(39),
+            actual15: getValue(40),
+            delay15: getValue(41),
+            calibrationDate: getValue(42),
+            calibrationPeriodMonth: getValue(43),
+            calibrationUploadFile: getValue(44),
+            calibrationDueDate: getValue(74), // Column BW (index 74)
+            CREName: getValue(73),
+          };
+        });
 
-          totalServiceAmtSpare: row[22], // Total Service Amt (spare)
-          totalServiceAmtSpareGst: row[23], // Total Service Amt (spare) gst
-
-          attachmentService: row[24], // Attachment Service
-          attachmentSpear: row[25], // Attachment Spear
-          attachmentNABL: row[26], // Attachment NABL
-
-          billNo: row[27], // Attachment NABL
-          billFile: row[28], // Attachment NABL
-          basicAmount: row[29], // Attachment NABL
-          totalAmountWithTex: row[30], // Attachment NABL
-
-          planned13: row[31],
-          actual13: row[32],
-          delay13: row[33],
-          otp: row[34],
-          otpVarification: row[35],
-
-          planned14: row[36],
-          actual14: row[37],
-          delay14: row[38],
-
-          planned15: row[39],
-          actual15: row[40],
-          delay15: row[41],
-          calibrationDate: row[42],
-          calibrationPeriodMonth: row[43],
-          calibrationUploadFile: row[44],
-          CREName: row[73],
-        }));
-
-        // Filter data based on your conditions
-
-        // console.log("Alldata", allData);
-
+        // FILTERING LOGIC (same as reference):
+        // Pending = has planned15 AND actual15 is EMPTY
+        // History = has planned15 AND actual15 is NOT EMPTY
         const pending = allData.filter(
           (item) => item.planned15 !== "" && item.actual15 === ""
         );
@@ -137,24 +136,29 @@ export default function Calibration() {
         const history = allData.filter(
           (item) => item.planned15 !== "" && item.actual15 !== ""
         );
+
         setPendingData(pending);
         setHistoryData(history);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load data");
+      toast({
+        title: "Error",
+        description: "Failed to load calibration data",
+        variant: "destructive",
+      });
     } finally {
       setFetchLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchMasterSheet = async () => {
+  const fetchMasterSheet = useCallback(async () => {
     try {
       const response = await fetch(`${sheet_url}?sheet=Master`);
       const result = await response.json();
 
       if (result.success && result.data && result.data.length > 0) {
-        const headers = result.data[0]; // First row contains headers
+        const headers = result.data[0];
         const structuredData = {};
 
         // Initialize each header with an empty array
@@ -166,9 +170,8 @@ export default function Calibration() {
         result.data.slice(1).forEach((row) => {
           row.forEach((value, index) => {
             const header = headers[index];
-            // Handle cases where value might be null/undefined or not a string
             if (value !== null && value !== undefined) {
-              const stringValue = String(value).trim(); // Convert to string and trim
+              const stringValue = String(value).trim();
               if (stringValue !== "") {
                 structuredData[header].push(stringValue);
               }
@@ -181,28 +184,22 @@ export default function Calibration() {
           structuredData[key] = [...new Set(structuredData[key])];
         });
 
-        // console.log("Structured Master Data:", structuredData);
-        setMasterData([structuredData]); // Wrap in array as per your requested format
+        setMasterData(structuredData);
       }
     } catch (error) {
       console.error("Error fetching master data:", error);
-      toast.error("Failed to load master data");
+      toast({
+        title: "Error",
+        description: "Failed to load master data",
+        variant: "destructive",
+      });
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchMasterSheet();
     fetchInvoiceSheet();
-  }, []);
-
-  useEffect(() => {
-    const tickets = storage.getTickets();
-    const pending = tickets.filter((t) => t.status === "warehouse-completed");
-    const history = tickets.filter((t) => t.status === "completed");
-
-    setPendingTickets(pending);
-    setHistoryTickets(history);
-  }, []);
+  }, [fetchMasterSheet, fetchInvoiceSheet]);
 
   const handleCalibrationClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -214,22 +211,56 @@ export default function Calibration() {
       companyName: ticket.companyName || "",
       quotationPdfLink: ticket.quotationPdfLink || "",
       entryNo: ticket.entryNo || "",
-      calibrationCertificatePlanDate: "",
-      certificateUpdatePersonName: "",
-      calibrationDate: "",
-      calibrationUpload: "",
-      calibrationDueDate: "",
-      certificateTypeName: "",
-      numberOfCertificatesDocuments: "",
-      dateOfDispatch: "",
-      courierCompanyName: "",
-      courierTrackingNumber: "",
-      fullDestinationAddress: "",
-      expectedDeliveryDate: "",
-      attachment: "",
+      calibrationDate: ticket.calibrationDate || "",
+      calibrationPeriodMonth: ticket.calibrationPeriodMonth || "",
+      calibrationDueDate: ticket.calibrationDueDate || "",
+      calibrationUpload: null,
+      cancelRemarks: "",
     });
+    setIsCancelled(false);
     setShowCalibrationModal(true);
   };
+
+  // 2. Add useEffect to calculate due date when calibration date or period changes
+  useEffect(() => {
+    const calculateDueDate = () => {
+      if (formData.calibrationDate && formData.calibrationPeriodMonth) {
+        try {
+          const calibrationDate = new Date(formData.calibrationDate);
+          const monthsToAdd = parseInt(formData.calibrationPeriodMonth, 10);
+
+          if (!isNaN(monthsToAdd) && monthsToAdd > 0) {
+            // Create a new date to avoid mutation issues
+            const dueDate = new Date(calibrationDate);
+            dueDate.setMonth(dueDate.getMonth() + monthsToAdd);
+
+            // Handle edge case: If the day of month doesn't exist in target month
+            if (dueDate.getDate() !== calibrationDate.getDate()) {
+              // Set to last day of the month
+              dueDate.setDate(0);
+            }
+
+            const formattedDueDate = dueDate.toISOString().split('T')[0];
+
+            // Only update if different from current value
+            if (formData.calibrationDueDate !== formattedDueDate) {
+              handleInputChange("calibrationDueDate", formattedDueDate);
+            }
+          } else {
+            handleInputChange("calibrationDueDate", "");
+          }
+        } catch (error) {
+          console.error("Error calculating due date:", error);
+          handleInputChange("calibrationDueDate", "");
+        }
+      } else {
+        handleInputChange("calibrationDueDate", "");
+      }
+    };
+
+    calculateDueDate();
+  }, [formData.calibrationDate, formData.calibrationPeriodMonth]);
+
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -347,7 +378,7 @@ export default function Calibration() {
       const processedFile = await compressImage(file);
       const fileSizeMB = processedFile.size / (1024 * 1024);
 
-      const fileName = `Invoice_${selectedTicket?.ticketId}_${Date.now()}.${file.type === "application/pdf" ? "pdf" : "jpg"
+      const fileName = `Calibration_${selectedTicket?.ticketId || "Unknown"}_${Date.now()}.${file.type === "application/pdf" ? "pdf" : "jpg"
         }`;
       const mimeType = processedFile.type || file.type;
 
@@ -464,57 +495,40 @@ export default function Calibration() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // if (!formData.clientName || !formData.phoneNumber || !formData.title) {
-    //   toast({
-    //     title: "Error",
-    //     description: "Please fill in all required fields",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
     setIsSubmitting(true);
 
-    let calibrationfileUrls = "";
-    let fileUploaded = false;
-
-    // Handle all file uploads
-
-    if (formData.calibrationUpload) {
-      try {
-        const uploadResult = await uploadImageToDrive(formData.calibrationUpload);
-        if (!uploadResult.success) {
-          toast({
-            title: "File Upload Failed",
-            description: uploadResult.error || "Failed to upload file",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-        calibrationfileUrls = uploadResult.fileUrl;
-        fileUploaded = true;
-        toast({
-          title: "File Uploaded",
-          description: "Calibration file uploaded successfully!",
-        });
-      } catch (uploadError) {
-        console.error("File Upload error: ", uploadError)
-        toast({
-          title: "File Upload Failed",
-          description: uploadError.message || "Failed to Upload calibration file",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
+    // Validate required fields
+    if (!formData.calibrationDate) {
+      toast({
+        title: "Validation Error",
+        description: "Calibration Date is required",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
     }
 
-    const currentDateTime = formatDateTime(new Date());
-    const id = selectedTicket?.id;
+    let calibrationfileUrls = "";
 
     try {
+      // Handle file upload if present
+      if (formData.calibrationUpload) {
+        const uploadResult = await uploadImageToDrive(formData.calibrationUpload);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || "Failed to upload file");
+        }
+        calibrationfileUrls = uploadResult.fileUrl;
+
+        toast({
+          title: "Success",
+          description: "File uploaded successfully!",
+        });
+      }
+
+      // Prepare data for Google Sheets
+      const currentDateTime = formatDateTime(new Date());
+      const rowIndex = selectedTicket?.id ? (selectedTicket.id + 6).toString() : "0";
+
       const response = await fetch(sheet_url, {
         method: "POST",
         headers: {
@@ -524,12 +538,13 @@ export default function Calibration() {
           sheetId: Sheet_Id,
           sheetName: "Invoice",
           action: "update",
-          rowIndex: (id + 6).toString(),
+          rowIndex: rowIndex,
           columnData: JSON.stringify({
-            AO: currentDateTime,
-            AQ: formData.calibrationDate || "",
-            AR: formData.calibrationPeriodMonth || "",
-            AS: calibrationfileUrls || "",
+            AO: currentDateTime, // Actual Completion Date
+            AQ: formData.calibrationDate || "", // Calibration Date
+            AR: formData.calibrationPeriodMonth || "", // Calibration Period (months)
+            AS: calibrationfileUrls || "", // Calibration Upload URL
+            BW: formData.calibrationDueDate || "", // Due Date - NEW FIELD
           }),
         }).toString(),
       });
@@ -539,62 +554,53 @@ export default function Calibration() {
         throw new Error(result.error || "Failed to update Google Sheet");
       }
 
-      if (result.success) {
-        setPendingData((prev) =>
-          prev.filter((t) => t.ticketId !== selectedTicket.ticketId)
-        );
+      // Update local state
+      setPendingData((prev) =>
+        prev.filter((t) => t.ticketId !== selectedTicket.ticketId)
+      );
 
-        // Add to historyData with the new calibration data
-        setHistoryData((prev) => [
-          {
-            ...selectedTicket,
-            calibrationCertificatePlanDate:
-              formData.calibrationCertificatePlanDate,
-            certificateUpdatePerson: formData.certificateUpdatePersonName,
-            calibrationDate: formData.calibrationDate,
-            calibrationUpload: calibrationfileUrls || "",
-            calibrationDueDate: formData.calibrationDueDate,
+      setHistoryData((prev) => [
+        {
+          ...selectedTicket,
+          calibrationDate: formData.calibrationDate,
+          calibrationPeriodMonth: formData.calibrationPeriodMonth,
+          calibrationUploadFile: calibrationfileUrls,
+          calibrationDueDate: formData.calibrationDueDate,
+          actual15: currentDateTime,
+        },
+        ...prev,
+      ]);
 
-            certificateTypeName: formData.certificateTypeName,
-            numberOfCertificates: formData.numberOfCertificatesDocuments,
-            dateOfDispatch: formData.dateOfDispatch,
-            courierCompanyName: formData.courierCompanyName,
-            courierTrackingNumber: formData.courierTrackingNumber,
-            fullDestinationAddress: formData.fullDestinationAddress,
-            expectedDeliveryDate: formData.expectedDeliveryDate,
-          },
-          ...prev,
-        ]);
+      toast({
+        title: "Success",
+        description: "Calibration details saved successfully!",
+      });
 
-        setShowCalibrationModal(false);
-        setFormData({
-          clientName: "",
-          phoneNumber: "",
-          emailAddress: "",
-          category: "",
-          priority: "",
-          title: "",
-          description: "",
-          date: new Date().toISOString().split("T")[0],
-        });
+      setShowCalibrationModal(false);
+      setFormData({
+        ticketId: "",
+        quotationNo: "",
+        clientName: "",
+        phoneNumber: "",
+        companyName: "",
+        quotationPdfLink: "",
+        entryNo: "",
+        calibrationDate: "",
+        calibrationPeriodMonth: "",
+        calibrationDueDate: "",
+        calibrationUpload: null,
+        cancelRemarks: "",
+      });
 
-        toast({
-          title: "Success",
-          description: fileUploaded ? "Submitted successfully with file uploaded!" : "Submitted successfully (no file uploaded)",
-        });
-      } else {
-        throw new Error(result.error || "Failed to save ticket");
-      }
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      console.error("Error submitting calibration:", error);
       toast({
         title: "Error",
-        description: "Failed to save ticket. Data stored locally.",
+        description: error.message || "Failed to save calibration details",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
-      setShowCalibrationModal(false);
     }
   };
 
@@ -602,27 +608,20 @@ export default function Calibration() {
 
   const handleSubmitCancel = async (e) => {
     e.preventDefault();
-
     setCancelSubmit(true);
 
-    const currentDateTime = formatDateTime(new Date());
-
     try {
+      const currentDateTime = formatDateTime(new Date());
       const rowData = [
         currentDateTime,
-        selectedTicket.ticketId || "", // Call Type
-        selectedTicket.clientName || "", // Enquiry Receiver Name
-        selectedTicket.phoneNumber || "", // Warranty Check
-        selectedTicket.emailAddress || "", // Bill Number Input
-        selectedTicket.invoiceCategory || "", // Bill Number Input
-
-        selectedTicket.title || "", // Machine Name
-        selectedTicket.description || "", // Machine Name
-        "Calibration", // Enquiry Type (second one)
+        selectedTicket.ticketId || "",
+        selectedTicket.clientName || "",
+        selectedTicket.phoneNumber || "",
+        selectedTicket.emailAddress || "",
+        selectedTicket.invoiceCategory || "",
+        "Calibration",
         formData.cancelRemarks || "",
       ];
-
-      // console.log("rowDAta", formData);
 
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -639,45 +638,50 @@ export default function Calibration() {
       const result = await response.json();
 
       if (result.success) {
-        // setTickets([...tickets, newTicket]);
         setPendingData((prevPending) =>
           prevPending.filter(
             (ticket) => ticket.ticketId !== selectedTicket.ticketId
           )
         );
+
         toast({
           title: "Success",
-          description: "Ticket details Cancle successfully",
+          description: "Ticket cancelled successfully",
         });
+
         setShowCalibrationModal(false);
         setIsCancelled(false);
       } else {
-        throw new Error(result.error || "Failed to save ticket");
+        throw new Error(result.error || "Failed to cancel ticket");
       }
     } catch (error) {
-      console.error("Error submitting ticket:", error);
+      console.error("Error cancelling ticket:", error);
       toast({
         title: "Error",
-        description: "Failed to save ticket. Data stored locally.",
+        description: "Failed to cancel ticket",
         variant: "destructive",
       });
-
-      // setTickets([...tickets, newTicket]);
     } finally {
       setCancelSubmit(false);
-      // setShowForm(false);
     }
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
 
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-    const year = date.getFullYear();
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
 
-    return `${day}/${month}/${year}`;
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "";
+    }
   };
 
   const formatDateTime = (date) => {
@@ -694,49 +698,48 @@ export default function Calibration() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
-      return matchesSearch;
+      const searchTerm = searchItem.toLowerCase();
+      return (
+        item.ticketId?.toLowerCase().includes(searchTerm) ||
+        item.clientName?.toLowerCase().includes(searchTerm) ||
+        item.companyName?.toLowerCase().includes(searchTerm) ||
+        String(item.phoneNumber || "").toLowerCase().includes(searchTerm)
+      );
     })
     .reverse();
 
   const filteredHistoryDataa = historyData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
-      return matchesSearch;
+      const searchTerm = searchItem.toLowerCase();
+      return (
+        item.ticketId?.toLowerCase().includes(searchTerm) ||
+        item.clientName?.toLowerCase().includes(searchTerm) ||
+        item.companyName?.toLowerCase().includes(searchTerm) ||
+        String(item.phoneNumber || "").toLowerCase().includes(searchTerm)
+      );
     })
     .reverse();
 
-  const userName = localStorage.getItem("currentUsername");
-
+  const userName = localStorage.getItem("currentUsername") || "";
   const roleStorage = localStorage.getItem("o2d-auth-storage");
-  const parsedData = JSON.parse(roleStorage);
-  const role = parsedData.state.user.role;
+  let role = "user";
 
-  const filteredPendingData =
-    role === "user"
-      ? filteredPendingDataa.filter((item) => item["CREName"] === userName)
-      : filteredPendingDataa;
+  if (roleStorage) {
+    try {
+      const parsedData = JSON.parse(roleStorage);
+      role = parsedData.state?.user?.role || "user";
+    } catch (error) {
+      console.error("Error parsing auth storage:", error);
+    }
+  }
 
-  const filteredHistoryData =
-    role === "user"
-      ? filteredHistoryDataa.filter((item) => item["CREName"] === userName)
-      : filteredHistoryDataa;
+  const filteredPendingData = role === "user"
+    ? filteredPendingDataa.filter((item) => item.CREName === userName)
+    : filteredPendingDataa;
+
+  const filteredHistoryData = role === "user"
+    ? filteredHistoryDataa.filter((item) => item.CREName === userName)
+    : filteredHistoryDataa;
 
   // console.log("filteredPendingDataa", filteredPendingDataa);
   // console.log("filteredHistoryDataa", filteredHistoryDataa);
@@ -1170,6 +1173,9 @@ export default function Calibration() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Calibration Upload
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Due Date
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
@@ -1286,6 +1292,9 @@ export default function Calibration() {
                               ) : (
                                 ""
                               )}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.calibrationDueDate) || ""}
                             </td>
                           </tr>
                         ))
@@ -1652,6 +1661,22 @@ export default function Calibration() {
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   data-testid="input-calibration-period-month"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-gray-700">
+                  Due Date
+                </Label>
+                <Input
+                  type="date"
+                  value={formData.calibrationDueDate || ""}
+                  disabled // Make it read-only since it's auto-calculated
+                  className="text-gray-800 bg-gray-100 border-gray-300"
+                  data-testid="input-calibration-due-date"
+                />
+                {/* <p className="text-xs text-gray-500 mt-1">
+                  Calculated automatically from Calibration Date + Calibration Period
+                </p> */}
               </div>
 
               <div className="flex justify-end pt-6 space-x-4 md:col-span-2">

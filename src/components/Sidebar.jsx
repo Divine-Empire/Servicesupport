@@ -129,15 +129,13 @@ export default function Sidebar({ onClose, isMobile = false }) {
                     key={item.name}
                     to={item.href}
                     className={({ isActive }) =>
-                      `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all mb-1 ${
-                        isActive
-                          ? `bg-gradient-to-r ${randomColor} text-white shadow-lg`
-                          : "text-blue-100 hover:text-white hover:bg-blue-700/50 hover:shadow-md"
+                      `flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all mb-1 ${isActive
+                        ? `bg-gradient-to-r ${randomColor} text-white shadow-lg`
+                        : "text-blue-100 hover:text-white hover:bg-blue-700/50 hover:shadow-md"
                       }`
                     }
-                    data-testid={`nav-${
-                      item.href.replace("/", "") || "dashboard"
-                    }`}
+                    data-testid={`nav-${item.href.replace("/", "") || "dashboard"
+                      }`}
                   >
                     <Icon className="mr-3 h-5 w-5" />
                     {item.name}
@@ -169,7 +167,11 @@ export default function Sidebar({ onClose, isMobile = false }) {
                   {user?.name || "Guest"}
                 </p>
                 <p className="text-xs text-blue-200">
-                  {user?.role === "admin" ? "Administrator" : "User"}
+                  {user?.role === "admin"
+                    ? "Administrator"
+                    : user?.role === "engineer"
+                      ? "Engineer"
+                      : "User"}
                 </p>
               </div>
             </div>

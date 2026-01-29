@@ -60,7 +60,7 @@ const QuotationForm = ({
     const fetchDropdownData = async () => {
       try {
         const dropdownUrl =
-          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=DROPDOWN"
+          "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=DROPDOWN"
         const dropdownResponse = await fetch(dropdownUrl)
         const dropdownText = await dropdownResponse.text()
 
@@ -193,7 +193,7 @@ const QuotationForm = ({
 
         // Fetch from FMS sheet
         const fmsUrl =
-          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
+          "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
         const fmsResponse = await fetch(fmsUrl)
         const fmsText = await fmsResponse.text()
 
@@ -233,7 +233,7 @@ const QuotationForm = ({
 
         // Fetch from ENQUIRY TO ORDER sheet
         const enquiryUrl =
-          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
+          "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=Ticket_Enquiry"
 
         const enquiryResponse = await fetch(enquiryUrl)
         const enquiryText = await enquiryResponse.text()
@@ -303,7 +303,7 @@ const QuotationForm = ({
     const fetchProductData = async () => {
       try {
         const dropdownUrl =
-          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=DROPDOWN"
+          "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=DROPDOWN"
         const response = await fetch(dropdownUrl)
         const text = await response.text()
 
@@ -434,7 +434,7 @@ const QuotationForm = ({
       const companyPrefix = await getCompanyPrefix(companyName)
 
       // NEW: Use the new function
-      const scriptUrl = "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec"
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -660,7 +660,7 @@ const QuotationForm = ({
 
       // First try FMS sheet
       const fmsUrl =
-        "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=FMS"
+        "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=FMS"
       const fmsResponse = await fetch(fmsUrl)
       const fmsText = await fmsResponse.text()
 
@@ -747,7 +747,7 @@ const QuotationForm = ({
       if (!itemsFound) {
 
         const enquiryUrl =
-          "https://docs.google.com/spreadsheets/d/1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc/gviz/tq?tqx=out:json&sheet=ENQUIRY%20TO%20ORDER"
+          "https://docs.google.com/spreadsheets/d/1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw/gviz/tq?tqx=out:json&sheet=ENQUIRY%20TO%20ORDER"
         const enquiryResponse = await fetch(enquiryUrl)
         const enquiryText = await enquiryResponse.text()
 

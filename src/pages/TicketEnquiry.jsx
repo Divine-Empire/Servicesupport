@@ -44,7 +44,7 @@ const TicketEnquiry = () => {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+    "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
 
   const fetchTickets = async () => {
     try {
@@ -233,7 +233,9 @@ const TicketEnquiry = () => {
         Priority: formData.priority,
         Title: formData.title,
         Description: formData.description,
-        "Person Name": formData.personName, // Person Name goes to column DM
+        "Person Name": formData.personName,
+        "CREName": userName, // Key variation 1
+        // "CRE Name": userName, // Key variation 2 (matches sheet header usually)
         ColumnAData: formatDateTime(new Date()),
       };
 
@@ -346,8 +348,10 @@ const TicketEnquiry = () => {
 
   const filteredTickets =
     role === "user"
-      ? tickets.filter((item) => item["CRE Name"] === userName)
-      : tickets;
+      ? tickets.filter((item) => (item["CRE Name"] || item["CREName"]) === userName)
+      : role === "engineer"
+        ? tickets.filter((item) => (item["Engineer Assign"] || item["engineerAssign"]) === userName)
+        : tickets;
 
   const getRowColor = (ticket) => {
     if (ticket["Close Status"] === "Closed") {

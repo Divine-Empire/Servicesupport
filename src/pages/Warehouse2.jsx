@@ -47,8 +47,8 @@ export default function Warehouse() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
+    "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
+  const Sheet_Id = "1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw";
 
   const fetchWareHouseData = async () => {
     setFetchLoading(true); // start loading
@@ -607,12 +607,12 @@ export default function Warehouse() {
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
-  const filteredPendingData = role === "user" ? filteredPendingDataa.filter(
+  const filteredPendingData = (role === "user" || role === "engineer") ? filteredPendingDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredPendingDataa;
 
 
-  const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
+  const filteredHistoryData = (role === "user" || role === "engineer") ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
   ) : filteredHistoryDataa;
 

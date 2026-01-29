@@ -60,8 +60,8 @@ export default function FollowUp() {
   const [isCancelled, setIsCancelled] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
+    "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
+  const Sheet_Id = "1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw";
 
   const fetchData = async () => {
     setFetchLoading(true); // start loading
@@ -146,14 +146,22 @@ export default function FollowUp() {
           // Last Date Of Call	Status	Stage	What Did The Customer Say	Next Action	Next Date Of Call	Payment term	Against Delivery	Acceptance Via	Acceptance file	Payment  Terms	Payment Mode	Advance attachment 	Senior Approval
         }));
 
-        // Filter data based on your conditions
+        // Create a map to store unique tickets by ticketId, keeping the latest one
+        const uniqueTicketsMap = new Map();
+        allData.forEach((ticket) => {
+          if (ticket.ticketId) {
+            uniqueTicketsMap.set(ticket.ticketId, ticket);
+          }
+        });
 
-        const pending = allData.filter(
+        const uniqueAllData = Array.from(uniqueTicketsMap.values());
+
+        const pending = uniqueAllData.filter(
           (item) => item.planned4 !== "" && item.actual4 === ""
         );
         // console.log("pending", pending);
 
-        const history = allData.filter(
+        const history = uniqueAllData.filter(
           (item) => item.planned4 !== "" && item.actual4 !== ""
         );
 
@@ -926,10 +934,14 @@ export default function FollowUp() {
 
   const finalFilteredPendingData = role === "user" ? finalFilteredPendingDataa.filter(
     (item) => item["CREName"] === userName
+  ) : role === "engineer" ? finalFilteredPendingDataa.filter(
+    (item) => item["engineerAssign"] === userName
   ) : finalFilteredPendingDataa;
 
   const finalFilteredHistoryData = role === "user" ? finalFilteredHistoryDataa.filter(
     (item) => item["cre_name"] === userName
+  ) : role === "engineer" ? finalFilteredHistoryDataa.filter(
+    (item) => item["engineer_assign"] === userName
   ) : finalFilteredHistoryDataa;
 
   // console.log("finalFilteredPendingDataa", finalFilteredPendingDataa);

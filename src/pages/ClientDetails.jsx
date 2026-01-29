@@ -73,8 +73,8 @@ export default function ClientDetails() {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
+    "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
+  const Sheet_Id = "1S6rZkPWbEAaOL3VnW7z7kidRkhUi9e7BEJM1n08Hhpw";
 
   const fetchData = async () => {
     setFetchLoading(true); // start loading
@@ -125,13 +125,22 @@ export default function ClientDetails() {
           CREName: row[127], // NEW: Column DN (index 117 for DN column)
         }));
 
-        // Filter data based on your conditions
+        // Create a map to store unique tickets by Ticket ID, keeping the latest one
+        const uniqueTicketsMap = new Map();
+        allData.forEach((ticket) => {
+          if (ticket.ticketId) {
+            uniqueTicketsMap.set(ticket.ticketId, ticket);
+          }
+        });
 
-        // console.log("alldata",allData);
-        const pending = allData.filter(
+        // Convert map back to array
+        const uniqueAllData = Array.from(uniqueTicketsMap.values());
+
+        // Filter data based on your conditions
+        const pending = uniqueAllData.filter(
           (item) => item.planned1 && !item.actual1
         );
-        const history = allData.filter((item) => item.planned1 && item.actual1);
+        const history = uniqueAllData.filter((item) => item.planned1 && item.actual1);
 
         setPendingData(pending);
         setHistoryData(history);
@@ -948,11 +957,15 @@ export default function ClientDetails() {
 
   const filteredPendingData = role === "user" ? filteredPendingDataa.filter(
     (item) => item["CREName"] === userName
+  ) : role === "engineer" ? filteredPendingDataa.filter(
+    (item) => item["engineerAssign"] === userName
   ) : filteredPendingDataa;
 
   const filteredHistoryData = role === "user" ? filteredHistoryDataa.filter(
     (item) => item["CREName"] === userName
-  ) : filteredHistoryDataa
+  ) : role === "engineer" ? filteredHistoryDataa.filter(
+    (item) => item["engineerAssign"] === userName
+  ) : filteredHistoryDataa;
 
   // console.log("filteredPendingData", filteredPendingData);
   // console.log("filteredHistoryData", filteredHistoryData);

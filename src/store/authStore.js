@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const BACKEND_URL =
-  "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+  "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
 
 const useAuthStore = create(
   persist(
@@ -177,6 +177,12 @@ const useAuthStore = create(
       isAdmin: () => {
         const user = get().user;
         return user && user.role === "admin";
+      },
+
+      // Check if user is engineer
+      isEngineer: () => {
+        const user = get().user;
+        return user && user.role === "engineer";
       },
     }),
     {

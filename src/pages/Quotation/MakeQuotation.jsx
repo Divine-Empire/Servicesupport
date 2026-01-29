@@ -66,7 +66,7 @@ function MakeQuotation() {
     const fetchExistingQuotations = async () => {
       try {
         const scriptUrl =
-          "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+          "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
         const response = await fetch(scriptUrl, {
           method: "POST",
           headers: {
@@ -160,7 +160,7 @@ function MakeQuotation() {
 
     try {
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+        "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -549,7 +549,7 @@ function MakeQuotation() {
       const fileName = `Quotation_${finalQuotationNo}.pdf`;
 
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+        "https://script.google.com/macros/s/AKfycbwMQVO7Wc6LHKgH8sFm5XiH5X7MQqgE1oVvAyQcfHjhjw2APy25zZ4bGUgxp77wUpsl0Q/exec";
 
       const pdfParams = {
         action: "QuotationuploadPDF",

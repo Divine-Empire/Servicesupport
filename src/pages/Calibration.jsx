@@ -815,7 +815,9 @@ export default function Calibration() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
                         </th>
-
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice date
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Company Name
                         </th>
@@ -890,6 +892,9 @@ export default function Calibration() {
                               {ticket.quotationNo || `QT-${ticket.id}`}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp) || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || ""}
                             </td>
 
@@ -908,9 +913,9 @@ export default function Calibration() {
                             </td>
 
                             <td className="px-4 py-3">
-                              {ticket.attachmentNABL ? (
+                              {ticket.attachmentService ? (
                                 <a
-                                  href={ticket.attachmentNABL}
+                                  href={ticket.attachmentService}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs font-semibold text-blue-600 hover:text-blue-800"
@@ -923,9 +928,9 @@ export default function Calibration() {
                             </td>
 
                             <td className="px-4 py-3">
-                              {ticket.attachmentSpear ? (
+                              {ticket.attachmentNABL ? (
                                 <a
-                                  href={ticket.attachmentSpear}
+                                  href={ticket.attachmentNABL}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs font-semibold text-blue-600 hover:text-blue-800"
@@ -1014,6 +1019,14 @@ export default function Calibration() {
                               </div>
                               <div>
                                 <p className="font-medium text-gray-500">
+                                  Invoice date
+                                </p>
+                                <p className="text-blue-900">
+                                  {formatDate(ticket.timeStemp) || "—"}
+                                </p>
+                              </div>
+                              <div className="col-span-2">
+                                <p className="font-medium text-gray-500">
                                   Company
                                 </p>
                                 <p className="text-blue-900">
@@ -1047,7 +1060,7 @@ export default function Calibration() {
                                   NABL Invoice
                                 </p>
                                 <p className="text-blue-900">
-                                  {ticket.nablInvoice || "N/A"}
+                                  {ticket.invoiceNoNABL || "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -1075,9 +1088,9 @@ export default function Calibration() {
                                 <p className="font-medium text-gray-500">
                                   NABL Invoice
                                 </p>
-                                {ticket.attachmentSpear ? (
+                                {ticket.attachmentNABL ? (
                                   <a
-                                    href={ticket.attachmentSpear}
+                                    href={ticket.attachmentNABL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-blue-600 hover:text-blue-800"
@@ -1137,6 +1150,9 @@ export default function Calibration() {
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice date
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Company Name
@@ -1212,6 +1228,9 @@ export default function Calibration() {
                               {ticket.quotationNo || `QT-${ticket.id}`}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp) || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
@@ -1225,7 +1244,7 @@ export default function Calibration() {
                             </td>
 
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.nablInvoice}
+                              {ticket.invoiceNoNABL}
                             </td>
 
                             <td className="px-4 py-3">
@@ -1244,9 +1263,9 @@ export default function Calibration() {
                             </td>
 
                             <td className="px-4 py-3">
-                              {ticket.attachmentSpear ? (
+                              {ticket.attachmentNABL ? (
                                 <a
-                                  href={ticket.attachmentSpear}
+                                  href={ticket.attachmentNABL}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs font-semibold text-blue-600 hover:text-blue-800"
@@ -1349,6 +1368,14 @@ export default function Calibration() {
                               </div>
                               <div>
                                 <p className="font-medium text-gray-500">
+                                  Invoice date
+                                </p>
+                                <p className="text-blue-900">
+                                  {formatDate(ticket.timeStemp) || "—"}
+                                </p>
+                              </div>
+                              <div className="col-span-2">
+                                <p className="font-medium text-gray-500">
                                   Company
                                 </p>
                                 <p className="text-blue-900">
@@ -1382,7 +1409,7 @@ export default function Calibration() {
                                   NABL Invoice
                                 </p>
                                 <p className="text-blue-900">
-                                  {ticket.nablInvoice || "N/A"}
+                                  {ticket.invoiceNoNABL || "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -1410,9 +1437,9 @@ export default function Calibration() {
                                 <p className="font-medium text-gray-500">
                                   NABL Invoice
                                 </p>
-                                {ticket.attachmentSpear ? (
+                                {ticket.attachmentNABL ? (
                                   <a
-                                    href={ticket.attachmentSpear}
+                                    href={ticket.attachmentNABL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-blue-600 hover:text-blue-800"

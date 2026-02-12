@@ -381,49 +381,86 @@ export default function AccountablityApproval() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.hardCopyStatus && !formData.hardCopyAttachment) {
-      alert("Please Upload Hard Copy");
-      return;
-    }
-
-    if (formData.softCopyStatus && !formData.softCopyAttachment) {
-      alert("Please Upload Soft Copy");
-      return;
-    }
+    const hasData = (val) => val !== null && val !== undefined && String(val).trim() !== "";
 
     setIsSubmitting(true);
     let hardCopyAttachmentFile = "";
     let softCopyAttachmentFile = "";
 
-    // Handle all file uploads
-
-    if (formData.hardCopyAttachment) {
-      const uploadResult = await uploadImageToDrive(
-        formData.hardCopyAttachment
-      );
-      if (!uploadResult.success) {
-        throw new Error(
-          uploadResult.error || "Failed to upload calibration copy"
-        );
-      }
-      hardCopyAttachmentFile = uploadResult.fileUrl;
-    }
-    if (formData.softCopyAttachment) {
-      const uploadResult = await uploadImageToDrive(
-        formData.softCopyAttachment
-      );
-      if (!uploadResult.success) {
-        throw new Error(
-          uploadResult.error || "Failed to upload calibration copy"
-        );
-      }
-      softCopyAttachmentFile = uploadResult.fileUrl;
-    }
-
-    const currentDateTime = formatDateTime(new Date());
-    const id = selectedTicket?.id;
-
     try {
+      // Handle file uploads - upload if a new file is selected, allowing replacement
+      if (formData.hardCopyAttachment instanceof File) {
+        const uploadResult = await uploadImageToDrive(formData.hardCopyAttachment);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || "Failed to upload hard copy");
+        }
+        hardCopyAttachmentFile = uploadResult.fileUrl;
+      }
+
+      if (formData.softCopyAttachment instanceof File) {
+        const uploadResult = await uploadImageToDrive(formData.softCopyAttachment);
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error || "Failed to upload soft copy");
+        }
+        softCopyAttachmentFile = uploadResult.fileUrl;
+      }
+
+      const currentDateTime = formatDateTime(new Date());
+      const id = selectedTicket?.id;
+
+      // Build columnData dynamically - only include keys for fields modified in the form
+      const columnData = {};
+
+      // AU: Actual 16 (Timestamp) - Only set if not already present and requirements met
+      if (!hasData(selectedTicket.actual16)) {
+        const hardReady = (selectedTicket.hardCopyStatus === "Yes") || formData.hardCopyStatus;
+        const softReady = (selectedTicket.softCopyStatus === "Yes") || formData.softCopyStatus;
+        if (hardReady && softReady) {
+          columnData.AU = currentDateTime;
+        }
+      }
+
+      // AW: Accountability Approval
+      if (formData.accountabilityApporval) {
+        columnData.AW = formData.accountabilityApporval;
+      }
+
+      // AX: Hard Copy Status
+      if (formData.hardCopyStatus) {
+        columnData.AX = "Yes";
+      }
+
+      // AY: Hard Copy Attachment
+      if (hardCopyAttachmentFile) {
+        columnData.AY = hardCopyAttachmentFile;
+      }
+
+      // AZ: Soft Copy Status
+      if (formData.softCopyStatus) {
+        columnData.AZ = "Yes";
+      }
+
+      // BA: Soft Copy Attachment
+      if (softCopyAttachmentFile) {
+        columnData.BA = softCopyAttachmentFile;
+      }
+
+      // BB: Sender Name
+      if (formData.senderName) {
+        columnData.BB = formData.senderName;
+      }
+
+      // Only proceed if there's data to update
+      if (Object.keys(columnData).length === 0) {
+        toast({
+          title: "Info",
+          description: "No new changes to submit.",
+        });
+        setIsSubmitting(false);
+        setShowCalibrationModal(false);
+        return;
+      }
+
       const response = await fetch(sheet_url, {
         method: "POST",
         headers: {
@@ -434,18 +471,7 @@ export default function AccountablityApproval() {
           sheetName: "Invoice",
           action: "update",
           rowIndex: (id + 6).toString(),
-          columnData: JSON.stringify({
-            AU:
-              formData.hardCopyStatus && formData.softCopyStatus
-                ? currentDateTime
-                : null,
-            AW: formData.accountabilityApporval || "",
-            AX: formData.hardCopyStatus ? "Yes" : "",
-            AY: hardCopyAttachmentFile || "",
-            AZ: formData.softCopyStatus ? "Yes" : "",
-            BA: softCopyAttachmentFile || "",
-            BB: formData.senderName || "",
-          }),
+          columnData: JSON.stringify(columnData),
         }).toString(),
       });
 
@@ -1569,13 +1595,20 @@ export default function AccountablityApproval() {
                     <Label className="text-sm font-medium text-gray-700">
                       Hard Copy Attachment
                     </Label>
-                    {selectedTicket.hardCopyAttachment ? (
-                      <Input
-                        value={selectedTicket.hardCopyAttachment}
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                        data-testid="input-hard-copy-attachment"
-                      />
-                    ) : (
+                    <div className="flex flex-col space-y-2">
+                      {selectedTicket.hardCopyAttachment && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Current:</span>
+                          <a
+                            href={selectedTicket.hardCopyAttachment}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-blue-600 truncate max-w-[200px] hover:underline"
+                          >
+                            {selectedTicket.hardCopyAttachment}
+                          </a>
+                        </div>
+                      )}
                       <Input
                         type="file"
                         onChange={(e) =>
@@ -1587,7 +1620,7 @@ export default function AccountablityApproval() {
                         className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         data-testid="input-hard-copy-attachment"
                       />
-                    )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1609,7 +1642,7 @@ export default function AccountablityApproval() {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <Label
-                    htmlFor="hardCopyStatus"
+                    htmlFor="softCopyStatus"
                     className="flex items-center gap-5 text-sm font-medium text-gray-700"
                   >
                     <h1>Soft Copy Status</h1>
@@ -1630,13 +1663,20 @@ export default function AccountablityApproval() {
                     <Label className="text-sm font-medium text-gray-700">
                       Soft Copy Attachment
                     </Label>
-                    {selectedTicket.softCopyAttachment ? (
-                      <Input
-                        value={selectedTicket.softCopyAttachment}
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                        data-testid="input-hard-copy-attachment"
-                      />
-                    ) : (
+                    <div className="flex flex-col space-y-2">
+                      {selectedTicket.softCopyAttachment && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Current:</span>
+                          <a
+                            href={selectedTicket.softCopyAttachment}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-blue-600 truncate max-w-[200px] hover:underline"
+                          >
+                            {selectedTicket.softCopyAttachment}
+                          </a>
+                        </div>
+                      )}
                       <Input
                         type="file"
                         onChange={(e) =>
@@ -1648,7 +1688,7 @@ export default function AccountablityApproval() {
                         className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         data-testid="input-soft-copy-attachment"
                       />
-                    )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -352,31 +352,25 @@ export default function ClientDetails() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.title?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.title || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();
 
   const filteredHistoryDataa = historyData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();
@@ -2264,11 +2258,11 @@ export default function ClientDetails() {
                               setShowDropdown(true);
 
                               // Check if entered value matches any existing company
-                              const matchedCompany = clientData.find(
-                                (c) =>
-                                  c.companyName.toLowerCase() ===
-                                  value.toLowerCase()
-                              );
+                               const matchedCompany = clientData.find(
+                                 (c) =>
+                                   String(c.companyName || "").toLowerCase() ===
+                                   String(value || "").toLowerCase()
+                               );
 
                               if (matchedCompany) {
                                 handleCompanySelection(
@@ -2289,10 +2283,10 @@ export default function ClientDetails() {
                           <datalist id="company-suggestions">
                             {clientData
                               .filter((company) =>
-                                company.companyName
+                                String(company.companyName || "")
                                   .toLowerCase()
                                   .includes(
-                                    (formData.companyName || "").toLowerCase()
+                                    String(formData.companyName || "").toLowerCase()
                                   )
                               )
                               .map((company, index) => (
@@ -2335,9 +2329,9 @@ export default function ClientDetails() {
                             </div>
                             {clientData
                               .filter((company) =>
-                                company.companyName
+                                String(company.companyName || "")
                                   .toLowerCase()
-                                  .includes(formData.companyName.toLowerCase())
+                                  .includes(String(formData.companyName || "").toLowerCase())
                               )
                               .map((company, index) => (
                                 <div
@@ -2352,9 +2346,9 @@ export default function ClientDetails() {
                                 </div>
                               ))}
                             {clientData.filter((company) =>
-                              company.companyName
+                              String(company.companyName || "")
                                 .toLowerCase()
-                                .includes(formData.companyName.toLowerCase())
+                                .includes(String(formData.companyName || "").toLowerCase())
                             ).length === 0 && (
                                 <div className="px-3 py-2 text-gray-500">
                                   No matching companies found

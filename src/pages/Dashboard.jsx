@@ -304,11 +304,10 @@ export default function Dashboard() {
         const warrantyCheckCounts = allData.reduce((acc, item) => {
           if (item.warrantyCheck) {
             // Convert to proper case for consistent comparison
-            const status = item.warrantyCheck.trim();
-
-            if (status.toLowerCase() === "yes") {
+            const status = String(item.warrantyCheck || "").trim().toLowerCase();
+            if (status === "yes") {
               acc.yes = (acc.yes || 0) + 1;
-            } else if (status.toLowerCase() === "no") {
+            } else if (status === "no") {
               acc.no = (acc.no || 0) + 1;
             }
           }

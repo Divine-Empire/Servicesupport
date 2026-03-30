@@ -525,28 +525,22 @@ export default function Conformation() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();
 
   const filteredHistoryDataa = historyData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
-      // const matchesParty =
-      //   filterParty === "all" || item.partyName === filterParty;
-      // return matchesSearch && matchesParty;
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();

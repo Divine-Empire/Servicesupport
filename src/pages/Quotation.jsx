@@ -243,11 +243,12 @@ export default function Quotation() {
   const filteredPendingDataa = pendingData
     .filter((item) => {
       const phoneNumberStr = String(item.phoneNumber || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
 
       // Handle totalQutation comparison - convert to string and trim
       // Include items where totalQutation is 0, "0", empty string, or any other value
@@ -272,12 +273,13 @@ export default function Quotation() {
   const filteredHistoryDataa = quotationData.filter((item) => {
     const phoneNumberStr = String(item.phone_number || "");
     const quotationNoStr = String(item["quotation_no."] || "");
+    const q = searchItem.toLowerCase();
     const matchesSearch =
-      item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-      quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
+      String(item.ticket_id || "").toLowerCase().includes(q) ||
+      String(item.client_name || "").toLowerCase().includes(q) ||
+      String(item.company_name || "").toLowerCase().includes(q) ||
+      String(item.phone_number || "").toLowerCase().includes(q) ||
+      String(item["quotation_no."] || "").toLowerCase().includes(q);
 
     return matchesSearch;
   });

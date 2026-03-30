@@ -738,28 +738,26 @@ export default function Invoice() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const quotationNoStr = String(item.quotationNo || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();
 
   const filteredHistoryDataa = historyData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const quotationNoStr = String(item.quotationNo || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase());
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();

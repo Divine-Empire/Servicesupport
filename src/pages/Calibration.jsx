@@ -698,24 +698,24 @@ export default function Calibration() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const searchTerm = searchItem.toLowerCase();
+      const q = searchItem.toLowerCase();
       return (
-        item.ticketId?.toLowerCase().includes(searchTerm) ||
-        item.clientName?.toLowerCase().includes(searchTerm) ||
-        item.companyName?.toLowerCase().includes(searchTerm) ||
-        String(item.phoneNumber || "").toLowerCase().includes(searchTerm)
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q)
       );
     })
     .reverse();
 
   const filteredHistoryDataa = historyData
     .filter((item) => {
-      const searchTerm = searchItem.toLowerCase();
+      const q = searchItem.toLowerCase();
       return (
-        item.ticketId?.toLowerCase().includes(searchTerm) ||
-        item.clientName?.toLowerCase().includes(searchTerm) ||
-        item.companyName?.toLowerCase().includes(searchTerm) ||
-        String(item.phoneNumber || "").toLowerCase().includes(searchTerm)
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q)
       );
     })
     .reverse();

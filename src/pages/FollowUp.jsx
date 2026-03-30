@@ -876,28 +876,26 @@ export default function FollowUp() {
 
   const filteredPendingData = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
-      const quotationNoStr = String(item.quotationNo || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticketId?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.clientName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.companyName?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();
 
   const filteredHistoryData = followUpData
     .filter((item) => {
-      const phoneNumberStr = String(item.phone_number || "");
-      const quotationNoStr = String(item.quotation_no || "");
+      const q = searchItem.toLowerCase();
       const matchesSearch =
-        item.ticket_id?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.client_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        item.company_name?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        phoneNumberStr?.toLowerCase().includes(searchItem.toLowerCase()) ||
-        quotationNoStr?.toLowerCase().includes(searchItem.toLowerCase());
+        String(item.ticket_id || "").toLowerCase().includes(q) ||
+        String(item.client_name || "").toLowerCase().includes(q) ||
+        String(item.company_name || "").toLowerCase().includes(q) ||
+        String(item.phone_number || "").toLowerCase().includes(q) ||
+        String(item.quotation_no || "").toLowerCase().includes(q);
       return matchesSearch;
     })
     .reverse();

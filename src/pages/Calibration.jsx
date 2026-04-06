@@ -78,7 +78,7 @@ export default function Calibration() {
             id: index + 1,
             timeStemp: getValue(0),
             ticketId: getValue(1),
-            quotationNo: getValue(2),
+            quotationNo: getValue(2).replace(/^Quo:-/i, ""),
             clientName: getValue(3),
             phoneNumber: getValue(4),
             emailAddress: getValue(5),
@@ -703,7 +703,8 @@ export default function Calibration() {
         String(item.ticketId || "").toLowerCase().includes(q) ||
         String(item.clientName || "").toLowerCase().includes(q) ||
         String(item.companyName || "").toLowerCase().includes(q) ||
-        String(item.phoneNumber || "").toLowerCase().includes(q)
+        String(item.phoneNumber || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q)
       );
     })
     .reverse();
@@ -715,7 +716,8 @@ export default function Calibration() {
         String(item.ticketId || "").toLowerCase().includes(q) ||
         String(item.clientName || "").toLowerCase().includes(q) ||
         String(item.companyName || "").toLowerCase().includes(q) ||
-        String(item.phoneNumber || "").toLowerCase().includes(q)
+        String(item.phoneNumber || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q)
       );
     })
     .reverse();
@@ -754,16 +756,16 @@ export default function Calibration() {
         <CardContent className="sm:pt-6">
           <div className="flex flex-col items-end gap-4 md:flex-row">
             <div className="w-full">
-              <Label
+                <Label
                 htmlFor="searchFilter"
                 className="text-sm font-medium text-blue-700"
               >
-                Search (Ticket ID, Client, Company, Phone)
+                Search (Ticket ID, Client, Company, Phone, Quotation No.)
               </Label>
               <div className="relative mt-1">
                 <Input
                   id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
+                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
                   className="w-full py-2 pl-10 bg-white border-blue-200 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   data-testid="input-search-filter"
                   onChange={(e) => setSearchItem(e.target.value)}

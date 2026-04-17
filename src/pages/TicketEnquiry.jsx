@@ -17,8 +17,14 @@ import {
   SelectValue,
 } from "../components/ui/select";
 
-import { LoaderIcon, Plus } from "lucide-react";
+import { LoaderIcon, Plus, Search, Calendar, XCircle, RotateCcw } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 const TicketEnquiry = () => {
   const [showForm, setShowForm] = useState(false);
@@ -28,6 +34,12 @@ const TicketEnquiry = () => {
   const [masterData, setMasterData] = useState({});
   const [categories, setCategories] = useState([]);
   const [employeeNames, setEmployeeNames] = useState([]);
+
+  // Filter States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
   // const [activeTab, setActiveTab] = useState("ticket");
 
@@ -346,12 +358,77 @@ const TicketEnquiry = () => {
   const parsedData = JSON.parse(roleStorage);
   const role = parsedData.state.user.role;
 
-  const filteredTickets =
-    role === "user"
-      ? tickets.filter((item) => (item["CRE Name"] || item["CREName"]) === userName)
-      : role === "engineer"
-        ? tickets.filter((item) => (item["Engineer Assign"] || item["engineerAssign"]) === userName)
-        : tickets;
+  const availableCategories = [...new Set(tickets.map((t) => t.Category).filter(Boolean))];
+
+  const filteredTickets = tickets.filter((ticket) => {
+    // 1. Role-based filtering
+    const isVisible =
+      role === "user"
+        ? (ticket["CRE Name"] || ticket["CREName"]) === userName
+        : role === "engineer"
+          ? (ticket["Engineer Assign"] || ticket["engineerAssign"]) === userName
+          : true;
+
+    if (!isVisible) return false;
+
+    // 2. Search filter (Ticket ID, Client Name, Employee Name, Company Name)
+    const matchesSearch =
+      searchTerm === "" ||
+      [
+        ticket["Ticket ID"],
+        ticket["ticket_id"],
+        ticket["Client Name"],
+        ticket["Person Name"],
+        ticket["Title"],
+      ].some((val) =>
+        String(val || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+
+    if (!matchesSearch) return false;
+
+    // 3. Category filter
+    const matchesCategory =
+      categoryFilter === "all" || ticket["Category"] === categoryFilter;
+
+    if (!matchesCategory) return false;
+
+    // 4. Date range filter (using ColumnAData as requested)
+    if (dateRange.start || dateRange.end) {
+      const ticketDateStr = ticket["ColumnAData"] || ticket["Timestamp"];
+      if (!ticketDateStr) return false;
+
+      // Handle "dd/mm/yyyy" or Date Objects
+      let ticketDate;
+      if (typeof ticketDateStr === "string" && ticketDateStr.includes("/")) {
+        const [datePart] = ticketDateStr.split(" ");
+        const [day, month, year] = datePart.split("/").map(Number);
+        ticketDate = new Date(year, month - 1, day);
+      } else {
+        ticketDate = new Date(ticketDateStr);
+      }
+
+      if (isNaN(ticketDate.getTime())) return true; // If invalid date, don't filter it out
+
+      const start = dateRange.start ? new Date(dateRange.start) : null;
+      const end = dateRange.end ? new Date(dateRange.end) : null;
+
+      if (start) start.setHours(0, 0, 0, 0);
+      if (end) end.setHours(23, 59, 59, 999);
+
+      if (start && ticketDate < start) return false;
+      if (end && ticketDate > end) return false;
+    }
+
+    return true;
+  });
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setDateRange({ start: "", end: "" });
+  };
 
   const getRowColor = (ticket) => {
     if (ticket["Close Status"] === "Closed") {
@@ -369,23 +446,21 @@ const TicketEnquiry = () => {
   };
 
   const calculateDelay = (timestamp) => {
-    if (!timestamp) return "00:00:00";
+    if (!timestamp) return "0d 0h";
 
     const ticketDate = new Date(timestamp);
     const now = new Date();
 
     // Calculate difference in milliseconds
     const diffMs = now - ticketDate;
+    
+    // Ensure we don't show negative delay
+    if (diffMs < 0) return "0d 0h";
 
-    // Convert to hours, minutes, seconds
-    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}:${String(seconds).padStart(2, "0")}`;
+    return `${days}d ${hours}h`;
   };
 
   return (
@@ -407,11 +482,6 @@ const TicketEnquiry = () => {
         </CardHeader>
       </Card>
 
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-blue-800">All Tickets</CardTitle>
-        </div>
-      </CardHeader>
 
       {/* Pop-up Form */}
       {showForm && (
@@ -725,6 +795,72 @@ const TicketEnquiry = () => {
 
       {/* Tickets Table - FIXED: Fully Scrollable with Header */}
       <Card className="border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-md">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <CardTitle className="text-blue-800 whitespace-nowrap min-w-fit">All Tickets</CardTitle>
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-3 w-full lg:w-auto">
+              {/* Search Bar */}
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
+                <Input
+                  placeholder="Search Ticket, Client..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 border-blue-200 focus:ring-blue-500 bg-white/70 backdrop-blur-sm h-9 text-sm"
+                />
+              </div>
+
+              {/* Date Filter Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsDateModalOpen(true)}
+                className={`border-blue-200 text-blue-700 hover:bg-blue-50 whitespace-nowrap h-9 ${
+                  (dateRange.start || dateRange.end) ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-200" : "bg-white/70"
+                }`}
+              >
+                <Calendar className="mr-2 h-4 w-4 text-indigo-500" />
+                {(dateRange.start || dateRange.end) ? (
+                  <span className="text-xs font-semibold text-indigo-700">
+                    {dateRange.start && dateRange.end 
+                      ? `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`
+                      : (dateRange.start ? `From ${formatDate(dateRange.start)}` : `To ${formatDate(dateRange.end)}`)}
+                  </span>
+                ) : "Date Range"}
+              </Button>
+
+              {/* Category Dropdown */}
+              <div className="w-full md:w-[160px]">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="border-blue-200 bg-white/70 backdrop-blur-sm text-blue-800 h-9 text-sm">
+                    <SelectValue placeholder="Category: All" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-blue-100">
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {availableCategories.map((cat, i) => (
+                      <SelectItem key={i} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clear Button */}
+              {(searchTerm || categoryFilter !== "all" || dateRange.start || dateRange.end) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 px-2 h-9 min-w-fit"
+                  title="Clear All Filters"
+                >
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
         <CardContent>
           <div className="relative overflow-x-auto">
             {/* Table container with fixed header and scrollable body */}
@@ -748,8 +884,8 @@ const TicketEnquiry = () => {
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                       Email Address
                     </th>
-                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                      Delay In Hr
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-center w-[180px] whitespace-nowrap sticky top-0">
+                      Delay in Days
                     </th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                       Category
@@ -810,7 +946,7 @@ const TicketEnquiry = () => {
                         <td className="px-4 py-3 text-blue-900">
                           {ticket["Email Address"]}
                         </td>
-                        <td className="px-4 py-3 text-red-900">
+                        <td className="px-4 py-3 text-red-900 whitespace-nowrap text-center">
                           {calculateDelay(ticket["Timestamp"])}
                         </td>
                         <td className="px-4 py-3 text-blue-900">
@@ -947,6 +1083,53 @@ const TicketEnquiry = () => {
           </div>
         </CardContent>
       </Card>
+      <Dialog open={isDateModalOpen} onOpenChange={setIsDateModalOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-white border-blue-100">
+          <DialogHeader>
+            <DialogTitle className="text-blue-800 flex items-center">
+              <Calendar className="mr-2 h-5 w-5 text-blue-600" />
+              Filter by Date Range
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="start" className="text-blue-700 font-medium">Start Date</Label>
+              <Input
+                id="start"
+                type="date"
+                className="border-blue-200 focus:ring-blue-500"
+                value={dateRange.start}
+                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end" className="text-blue-700 font-medium">End Date</Label>
+              <Input
+                id="end"
+                type="date"
+                className="border-blue-200 focus:ring-blue-500"
+                value={dateRange.end}
+                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="flex justify-between gap-3 mt-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setDateRange({ start: "", end: "" })} 
+              className="border-blue-200 text-blue-600 hover:bg-blue-50"
+            >
+              Reset Range
+            </Button>
+            <Button 
+              onClick={() => setIsDateModalOpen(false)} 
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md px-8"
+            >
+              Apply Filter
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

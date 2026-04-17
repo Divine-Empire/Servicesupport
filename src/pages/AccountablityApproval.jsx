@@ -230,8 +230,6 @@ export default function AccountablityApproval() {
       calibrationCertificatePlanDate: "",
       accountabilityApporval: "",
       calibrationDate: "",
-      hardCopyStatus: "",
-      hardCopyAttachment: "",
       softCopyStatus: "",
       softCopyAttachment: "",
 
@@ -384,7 +382,6 @@ export default function AccountablityApproval() {
     const hasData = (val) => val !== null && val !== undefined && String(val).trim() !== "";
 
     setIsSubmitting(true);
-    let hardCopyAttachmentFile = "";
     let softCopyAttachmentFile = "";
 
     try {
@@ -413,9 +410,8 @@ export default function AccountablityApproval() {
 
       // AU: Actual 16 (Timestamp) - Only set if not already present and requirements met
       if (!hasData(selectedTicket.actual16)) {
-        const hardReady = (selectedTicket.hardCopyStatus === "Yes") || formData.hardCopyStatus;
         const softReady = (selectedTicket.softCopyStatus === "Yes") || formData.softCopyStatus;
-        if (hardReady && softReady) {
+        if (softReady) {
           columnData.AU = currentDateTime;
         }
       }
@@ -425,15 +421,6 @@ export default function AccountablityApproval() {
         columnData.AW = formData.accountabilityApporval;
       }
 
-      // AX: Hard Copy Status
-      if (formData.hardCopyStatus) {
-        columnData.AX = "Yes";
-      }
-
-      // AY: Hard Copy Attachment
-      if (hardCopyAttachmentFile) {
-        columnData.AY = hardCopyAttachmentFile;
-      }
 
       // AZ: Soft Copy Status
       if (formData.softCopyStatus) {
@@ -481,7 +468,7 @@ export default function AccountablityApproval() {
       }
 
       if (result.success) {
-        if (formData.hardCopyStatus && formData.softCopyStatus) {
+        if (formData.softCopyStatus) {
           console.log("Ram");
 
           setPendingData((prev) =>
@@ -495,9 +482,6 @@ export default function AccountablityApproval() {
                 formData.calibrationCertificatePlanDate,
               certificateUpdatePerson: formData.accountabilityApporval,
               calibrationDate: formData.calibrationDate,
-              hardCopyStatus: formData.hardCopyStatus || "",
-              hardCopyAttachmentFile: hardCopyAttachmentFile || "",
-
               softCopyStatus: formData.softCopyStatus || "",
               softCopyAttachmentFile: softCopyAttachmentFile || "",
 
@@ -525,8 +509,6 @@ export default function AccountablityApproval() {
           category: "",
           priority: "",
           title: "",
-          hardCopyStatus: "",
-          hardCopyAttachment: "",
           softCopyStatus: "",
           softCopyAttachment: "",
           senderName: "",
@@ -1429,9 +1411,9 @@ export default function AccountablityApproval() {
       >
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto p-2"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-h-[70vh] overflow-y-auto p-2"
         >
-          <div className="flex items-center mb-10 space-x-2">
+          <div className="flex items-center mb-10 space-x-2 md:col-span-3">
             <input
               type="checkbox"
               id="cancelTicket"
@@ -1444,7 +1426,6 @@ export default function AccountablityApproval() {
             </Label>
           </div>
 
-          <div></div>
 
           {/* Pre-filled fields */}
           <div className="space-y-1">
@@ -1549,75 +1530,22 @@ export default function AccountablityApproval() {
                 </Select>
               </div>
 
-              <div></div>
-
-              {/* Hard Copy Status Checkbox and File Input */}
               <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="hardCopyStatus"
-                    checked={
-                      selectedTicket?.hardCopyAttachment ||
-                      formData?.hardCopyStatus ||
-                      false
-                    }
-                    onChange={(e) =>
-                      handleInputChange("hardCopyStatus", e.target.checked)
-                    }
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <Label
-                    htmlFor="hardCopyStatus"
-                    className="flex items-center gap-5 text-sm font-medium text-gray-700"
-                  >
-                    <h1>Hard Copy Status</h1>
-                    {selectedTicket?.hardCopyAttachment && (
-                      <a
-                        href={selectedTicket?.hardCopyAttachment}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-800"
-                      >
-                        View
-                      </a>
-                    )}
-                  </Label>
-                </div>
-                {formData.hardCopyStatus && (
-                  <div className="mt-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Hard Copy Attachment
-                    </Label>
-                    <div className="flex flex-col space-y-2">
-                      {selectedTicket.hardCopyAttachment && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Current:</span>
-                          <a
-                            href={selectedTicket.hardCopyAttachment}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-medium text-blue-600 truncate max-w-[200px] hover:underline"
-                          >
-                            {selectedTicket.hardCopyAttachment}
-                          </a>
-                        </div>
-                      )}
-                      <Input
-                        type="file"
-                        onChange={(e) =>
-                          handleInputChange(
-                            "hardCopyAttachment",
-                            e.target.files[0] || ""
-                          )
-                        }
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                        data-testid="input-hard-copy-attachment"
-                      />
-                    </div>
-                  </div>
-                )}
+                <Label className="text-sm font-medium text-gray-700">
+                  Sender Name
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Enter certificate type"
+                  value={formData.senderName || ""}
+                  onChange={(e) =>
+                    handleInputChange("senderName", e.target.value)
+                  }
+                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  data-testid="input-certificate-type"
+                />
               </div>
+
 
               {/* Soft Copy Status Checkbox and File Input */}
               <div className="space-y-1">
@@ -1687,23 +1615,8 @@ export default function AccountablityApproval() {
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-sm font-medium text-gray-700">
-                  Sender Name
-                </Label>
-                <Input
-                  type="text"
-                  placeholder="Enter certificate type"
-                  value={formData.senderName || ""}
-                  onChange={(e) =>
-                    handleInputChange("senderName", e.target.value)
-                  }
-                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  data-testid="input-certificate-type"
-                />
-              </div>
 
-              <div className="flex justify-end pt-6 space-x-4 md:col-span-2">
+              <div className="flex justify-end pt-6 space-x-4 md:col-span-3">
                 <Button
                   type="button"
                   variant="outline"

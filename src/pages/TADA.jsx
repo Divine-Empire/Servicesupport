@@ -55,6 +55,11 @@ export default function TADA() {
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [showQuotationModal, setShowQuotationModal] = useState(false);
+  const [selectedQuotationTicket, setSelectedQuotationTicket] = useState(null);
+  const [quotationFormData, setQuotationFormData] = useState({});
+  const [quotationLoading, setQuotationLoading] = useState(false);
+
   const sheet_url =
     "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
   const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
@@ -558,7 +563,13 @@ export default function TADA() {
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Warranty Check
@@ -584,13 +595,16 @@ export default function TADA() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Transportation
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-center w-[120px] sticky top-0">
+                          Quotation PDF
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={12}
+                            colSpan={15}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -632,7 +646,13 @@ export default function TADA() {
                               {ticket.clientName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.phoneNumber}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "-"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.warrantyCheck}
@@ -659,6 +679,21 @@ export default function TADA() {
                               <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                 {ticket.transportation || ""}
                               </span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {ticket.quotationPdfLink ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full p-1"
+                                  onClick={() => window.open(ticket.quotationPdfLink, "_blank")}
+                                  title="View Quotation PDF"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </Button>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                           </tr>
                         ))
@@ -700,6 +735,29 @@ export default function TADA() {
                                 <p className="text-sm text-gray-600">
                                   {ticket.clientName}
                                 </p>
+                                <div className="mt-2 space-y-1 border-t border-gray-100 pt-2">
+                                  <p className="text-sm">
+                                    <span className="font-medium text-gray-500">Company:</span>{" "}
+                                    <span className="text-blue-700">{ticket.companyName || "N/A"}</span>
+                                  </p>
+                                  <p className="text-sm">
+                                    <span className="font-medium text-gray-500">Quotation No:</span>{" "}
+                                    <span className="text-blue-700">{ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "N/A"}</span>
+                                  </p>
+                                  {ticket.quotationPdfLink && (
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-sm font-medium text-gray-500">PDF:</span>
+                                      <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="h-auto p-0 text-blue-600 font-medium flex items-center gap-1"
+                                        onClick={() => window.open(ticket.quotationPdfLink, "_blank")}
+                                      >
+                                        <Eye className="w-3 h-3" /> View
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               <Button
                                 size="sm"
@@ -830,6 +888,12 @@ export default function TADA() {
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Engineer Assign
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -847,13 +911,16 @@ export default function TADA() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Amount
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-center w-[120px] sticky top-0">
+                          Quotation PDF
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
                       {filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={8}
+                            colSpan={11}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -883,6 +950,12 @@ export default function TADA() {
                               {ticket.clientName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.engineerAssign || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
@@ -899,6 +972,21 @@ export default function TADA() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               ₹{ticket.amount || "0"}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {ticket.quotationPdfLink ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full p-1"
+                                  onClick={() => window.open(ticket.quotationPdfLink, "_blank")}
+                                  title="View Quotation PDF"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </Button>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                           </tr>
                         ))
@@ -939,6 +1027,20 @@ export default function TADA() {
                               <p className="text-sm text-gray-600">
                                 {ticket.clientName}
                               </p>
+                              <div className="mt-2 space-y-1 border-t border-gray-100 pt-2 text-sm">
+                                <p><span className="font-medium text-gray-500">Company:</span> <span className="text-blue-700">{ticket.companyName || "N/A"}</span></p>
+                                <p><span className="font-medium text-gray-500">Quotation No:</span> <span className="text-blue-700">{ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "N/A"}</span></p>
+                                {ticket.quotationPdfLink && (
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="p-0 h-auto text-blue-600 font-medium flex items-center gap-1 mt-1"
+                                    onClick={() => window.open(ticket.quotationPdfLink, "_blank")}
+                                  >
+                                    <Eye className="w-3 h-3" /> View Quotation
+                                  </Button>
+                                )}
+                              </div>
                             </div>
 
                             {/* Engineer & Amount */}

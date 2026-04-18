@@ -797,7 +797,12 @@ const TicketEnquiry = () => {
       <Card className="border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-md">
         <CardHeader className="pb-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <CardTitle className="text-blue-800 whitespace-nowrap min-w-fit">All Tickets</CardTitle>
+            <CardTitle className="text-blue-800 whitespace-nowrap min-w-fit flex items-center gap-2">
+              All Tickets
+              <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-sm font-medium border border-blue-200">
+                {filteredTickets.length}
+              </span>
+            </CardTitle>
             
             <div className="flex flex-col md:flex-row md:items-center justify-end gap-3 w-full lg:w-auto">
               {/* Search Bar */}

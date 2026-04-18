@@ -48,6 +48,7 @@ const navigation = [
 
   {
     name: "Accountability & Approvals",
+    label: "Certificate Copy Shared",
     href: "/accountabilityApprovals",
     icon: Settings,
   },
@@ -138,7 +139,7 @@ export default function Sidebar({ onClose, isMobile = false }) {
                       }`}
                   >
                     <Icon className="mr-3 h-5 w-5" />
-                    {item.name}
+                    {item.label || item.name}
                   </NavLink>
                 );
               })}

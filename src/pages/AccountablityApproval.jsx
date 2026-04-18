@@ -723,7 +723,7 @@ export default function AccountablityApproval() {
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <CardTitle className="text-blue-800">
-                Pending Calibrations
+                Pending Shared Certificates
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -786,7 +786,7 @@ export default function AccountablityApproval() {
                               </div>
                             ) : (
                               <h1 className="text-blue-700">
-                                No pending calibrations found.
+                                No pending shared certificates found.
                               </h1>
                             )}
                           </td>
@@ -885,7 +885,7 @@ export default function AccountablityApproval() {
                           </div>
                         ) : (
                           <h1 className="text-blue-700">
-                            No pending calibrations found.
+                            No pending shared certificates found.
                           </h1>
                         )}
                       </div>
@@ -1040,7 +1040,7 @@ export default function AccountablityApproval() {
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <CardTitle className="text-blue-800">
-                Calibration History
+                Shared Certificates History
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1110,7 +1110,7 @@ export default function AccountablityApproval() {
                               </div>
                             ) : (
                               <h1 className="text-blue-700">
-                                No calibration history found.
+                                No shared certificates history found.
                               </h1>
                             )}
                           </td>
@@ -1221,7 +1221,7 @@ export default function AccountablityApproval() {
                           </div>
                         ) : (
                           <h1 className="text-blue-700">
-                            No calibration history found.
+                            No shared certificates history found.
                           </h1>
                         )}
                       </div>
@@ -1493,7 +1493,7 @@ export default function AccountablityApproval() {
             <>
               <div className="space-y-1">
                 <Label className="text-sm font-medium text-gray-700">
-                  Accountability & Approvals
+                  Certificate Copy Shared
                   <span className="text-red-500">*</span>
                 </Label>
                 <Select

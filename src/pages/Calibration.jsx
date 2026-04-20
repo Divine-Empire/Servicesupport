@@ -883,7 +883,7 @@ export default function Calibration() {
                     <SelectTrigger className="bg-white border-blue-200 text-blue-900">
                       <SelectValue placeholder="All Companies" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white z-50">
                       <SelectItem value="all">All Companies</SelectItem>
                       {companyOptions.map((opt) => (
                         <SelectItem key={opt} value={opt}>

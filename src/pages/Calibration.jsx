@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -32,7 +32,7 @@ import {
 import { Modal } from "../components/ui/modal";
 import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast.js";
-import { Loader2Icon, LoaderIcon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, Search, RefreshCcw, Calendar, Filter, X, ChevronDown } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 
 export default function Calibration() {
@@ -42,6 +42,11 @@ export default function Calibration() {
   const [formData, setFormData] = useState({});
   const [searchItem, setSearchItem] = useState("");
   const [isCancelled, setIsCancelled] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("all");
+  const [selectedClient, setSelectedClient] = useState("all");
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { toast } = useToast();
 
   // console.log("SelectedTicket",selectedTicket);
@@ -66,6 +71,26 @@ export default function Calibration() {
       const response = await fetch(`${sheet_url}?sheet=Invoice&t=${Date.now()}`);
       const json = await response.json();
 
+      // Fetch Ticket_Enquiry data for Payment Term and Payment Mode
+      const enquiryResponse = await fetch(`${sheet_url}?sheet=Ticket_Enquiry&t=${Date.now()}`);
+      const enquiryJson = await enquiryResponse.json();
+
+      let enquiryLookup = {};
+      if (enquiryJson.success && Array.isArray(enquiryJson.data)) {
+        // Ticket No is Col B (index 1)
+        // Payment Term is Col AZ (index 51)
+        // Payment Mode is Col BC (index 54)
+        enquiryJson.data.slice(1).forEach(row => {
+          const ticketNo = String(row[1] || "").trim();
+          if (ticketNo) {
+            enquiryLookup[ticketNo] = {
+              paymentTerm: String(row[51] || "").trim(),
+              paymentMode: String(row[54] || "").trim()
+            };
+          }
+        });
+      }
+
       if (json.success && Array.isArray(json.data)) {
         const allData = json.data.slice(6).map((row, index) => {
           // Helper to safely get and trim values from the row array
@@ -74,10 +99,13 @@ export default function Calibration() {
             return val !== null && val !== undefined ? String(val).trim() : "";
           };
 
+          const ticketId = getValue(1);
+          const paymentInfo = enquiryLookup[ticketId] || { paymentTerm: "", paymentMode: "" };
+
           return {
             id: index + 1,
             timeStemp: getValue(0),
-            ticketId: getValue(1),
+            ticketId: ticketId,
             quotationNo: getValue(2).replace(/^Quo:-/i, ""),
             clientName: getValue(3),
             phoneNumber: getValue(4),
@@ -123,6 +151,8 @@ export default function Calibration() {
             calibrationUploadFile: getValue(44),
             calibrationDueDate: getValue(74), // Column BW (index 74)
             CREName: getValue(73),
+            paymentTerm: paymentInfo.paymentTerm,
+            paymentMode: paymentInfo.paymentMode,
           };
         });
 
@@ -696,30 +726,62 @@ export default function Calibration() {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  const activeData = activeTab === "pending" ? pendingData : historyData;
+
+  const companyOptions = useMemo(() => {
+    const companies = [...new Set(activeData.map(item => item.companyName))].filter(Boolean);
+    return companies.sort();
+  }, [activeData]);
+
+  const clientOptions = useMemo(() => {
+    const clients = [...new Set(activeData.map(item => item.clientName))].filter(Boolean);
+    return clients.sort();
+  }, [activeData]);
+
+  const filterRecord = (item) => {
+    // 1. Search filter
+    const q = searchItem.toLowerCase();
+    const matchesSearch = !searchItem || (
+      String(item.ticketId || "").toLowerCase().includes(q) ||
+      String(item.clientName || "").toLowerCase().includes(q) ||
+      String(item.companyName || "").toLowerCase().includes(q) ||
+      String(item.phoneNumber || "").toLowerCase().includes(q) ||
+      String(item.quotationNo || "").toLowerCase().includes(q) ||
+      String(item.invoiceNoSERVICE || "").toLowerCase().includes(q) ||
+      String(item.invoiceNoNABL || "").toLowerCase().includes(q)
+    );
+
+    // 2. Company filter
+    const matchesCompany = selectedCompany === "all" || item.companyName === selectedCompany;
+
+    // 3. Client filter
+    const matchesClient = selectedClient === "all" || item.clientName === selectedClient;
+
+    // 4. Date range filter
+    let matchesDate = true;
+    if (startDate || endDate) {
+      const itemDate = new Date(item.timeStemp);
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (itemDate < start) matchesDate = false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (itemDate > end) matchesDate = false;
+      }
+    }
+
+    return matchesSearch && matchesCompany && matchesClient && matchesDate;
+  };
+
   const filteredPendingDataa = pendingData
-    .filter((item) => {
-      const q = searchItem.toLowerCase();
-      return (
-        String(item.ticketId || "").toLowerCase().includes(q) ||
-        String(item.clientName || "").toLowerCase().includes(q) ||
-        String(item.companyName || "").toLowerCase().includes(q) ||
-        String(item.phoneNumber || "").toLowerCase().includes(q) ||
-        String(item.quotationNo || "").toLowerCase().includes(q)
-      );
-    })
+    .filter(filterRecord)
     .reverse();
 
   const filteredHistoryDataa = historyData
-    .filter((item) => {
-      const q = searchItem.toLowerCase();
-      return (
-        String(item.ticketId || "").toLowerCase().includes(q) ||
-        String(item.clientName || "").toLowerCase().includes(q) ||
-        String(item.companyName || "").toLowerCase().includes(q) ||
-        String(item.phoneNumber || "").toLowerCase().includes(q) ||
-        String(item.quotationNo || "").toLowerCase().includes(q)
-      );
-    })
+    .filter(filterRecord)
     .reverse();
 
   const userName = localStorage.getItem("currentUsername") || "";
@@ -755,21 +817,37 @@ export default function Calibration() {
       <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
         <CardContent className="sm:pt-6">
           <div className="flex flex-col items-end gap-4 md:flex-row">
-            <div className="w-full">
-                <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone, Quotation No.)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
-                  className="w-full py-2 pl-10 bg-white border-blue-200 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-2 font-bold text-blue-600 text-4xl">
+                <h1 className="whitespace-nowrap">
+                  Calibration
+                </h1>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:flex-1 md:justify-end">
+                <div className="md:max-w-xl w-full relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company, phone, quotation or invoice no..."
+                    className="w-full py-2 pl-10 bg-white border-blue-200 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    fetchMasterSheet();
+                    fetchInvoiceSheet();
+                  }}
+                  disabled={fetchLoading}
+                  className="bg-white border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 shadow-sm flex items-center gap-2 px-4 whitespace-nowrap"
+                >
+                  <RefreshCcw className={`w-4 h-4 ${fetchLoading ? "animate-spin" : ""}`} />
+                  <span>Refresh Records</span>
+                </Button>
               </div>
             </div>
           </div>
@@ -778,31 +856,144 @@ export default function Calibration() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History ({filteredHistoryData.length})
-          </TabsTrigger>
-        </TabsList>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-6">
+            <div className="mb-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+              <TabsList className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 w-full lg:w-auto">
+                <TabsTrigger
+                  value="pending"
+                  data-testid="tab-pending"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white flex-1 lg:flex-none"
+                >
+                  Pending ({filteredPendingData.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  data-testid="tab-history"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white flex-1 lg:flex-none"
+                >
+                  History ({filteredHistoryData.length})
+                </TabsTrigger>
+              </TabsList>
 
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Calibrations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <div className="flex flex-wrap items-center gap-3 lg:ml-auto">
+                {/* Company Filter */}
+                <div className="w-[180px]">
+                  <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                    <SelectTrigger className="bg-white border-blue-200 text-blue-900">
+                      <SelectValue placeholder="All Companies" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Companies</SelectItem>
+                      {companyOptions.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Client Filter */}
+                <div className="w-[180px]">
+                  <Select value={selectedClient} onValueChange={setSelectedClient}>
+                    <SelectTrigger className="bg-white border-blue-200 text-blue-900">
+                      <SelectValue placeholder="All Clients" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white z-50">
+                      <SelectItem value="all">All Clients</SelectItem>
+                      {clientOptions.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Date Filter */}
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className={`bg-white border-blue-200 text-blue-600 hover:bg-blue-50 ${
+                      startDate || endDate ? "border-blue-500 ring-1 ring-blue-500" : ""
+                    }`}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {startDate || endDate ? "Date Active" : "Date"}
+                    <ChevronDown className={`w-3 h-3 ml-2 transition-transform ${showDatePicker ? "rotate-180" : ""}`} />
+                  </Button>
+
+                  {showDatePicker && (
+                    <div className="absolute right-0 top-full mt-2 p-4 bg-white border border-blue-200 rounded-lg shadow-xl z-50 w-72 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-blue-900">Filter by Invoice Date</span>
+                        <Button variant="ghost" size="sm" onClick={() => setShowDatePicker(false)} className="h-6 w-6 p-0">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-blue-600">Start Date</Label>
+                        <Input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-blue-600">End Date</Label>
+                        <Input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          className="flex-1 text-xs h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            setStartDate("");
+                            setEndDate("");
+                          }}
+                        >
+                          Clear
+                        </Button>
+                        <Button
+                          variant="default"
+                          className="flex-1 text-xs h-8 bg-blue-600 hover:bg-blue-700"
+                          onClick={() => setShowDatePicker(false)}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Reset All */}
+                {(selectedCompany !== "all" || selectedClient !== "all" || startDate || endDate) && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSelectedCompany("all");
+                      setSelectedClient("all");
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2"
+                  >
+                    <Filter className="w-4 h-4 mr-1" />
+                    Reset
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <TabsContent value="pending" className="mt-0 border-0 p-0 shadow-none">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden w-full sm:block">
@@ -838,6 +1029,12 @@ export default function Calibration() {
                           Invoice No (NABL)
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Payment Term
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Payment Mode
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Invoice Copy (Service)
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -853,7 +1050,7 @@ export default function Calibration() {
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={15}
+                            colSpan={17}
                             className="py-8 text-center bg-white"
                             data-testid="text-no-pending"
                           >
@@ -912,6 +1109,12 @@ export default function Calibration() {
 
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.invoiceNoNABL}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900 border-l border-blue-100">
+                              {ticket.paymentTerm || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentMode || "—"}
                             </td>
 
                             <td className="px-4 py-3">
@@ -1007,6 +1210,26 @@ export default function Calibration() {
                               >
                                 Calibration
                               </Button>
+                            </div>
+
+                            {/* Quotation & Company Info */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="font-medium text-gray-500">
+                                  Payment Term
+                                </p>
+                                <p className="text-blue-900 border-b border-blue-50">
+                                  {ticket.paymentTerm || "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-500">
+                                  Payment Mode
+                                </p>
+                                <p className="text-blue-900 border-b border-blue-50">
+                                  {ticket.paymentMode || "N/A"}
+                                </p>
+                              </div>
                             </div>
 
                             {/* Quotation & Company Info */}
@@ -1130,18 +1353,9 @@ export default function Calibration() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Calibration History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <TabsContent value="history" className="mt-0 border-0 p-0 shadow-none">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden w-full sm:block">
@@ -1171,6 +1385,12 @@ export default function Calibration() {
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Invoice No (NABL)
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Payment Term
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Payment Mode
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Invoice Copy (Service)
@@ -1247,6 +1467,12 @@ export default function Calibration() {
 
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.invoiceNoNABL}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900 border-l border-blue-100">
+                              {ticket.paymentTerm || "—"}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.paymentMode || "—"}
                             </td>
 
                             <td className="px-4 py-3">
@@ -1396,6 +1622,26 @@ export default function Calibration() {
                               </p>
                             </div>
 
+                            {/* Payment Info */}
+                            <div className="grid grid-cols-2 gap-2 text-sm border-t border-blue-50/50 pt-2">
+                              <div>
+                                <p className="font-medium text-gray-500">
+                                  Payment Term
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.paymentTerm || "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-500">
+                                  Payment Mode
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.paymentMode || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+
                             {/* Invoice Numbers */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
@@ -1519,9 +1765,9 @@ export default function Calibration() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsContent>
+          </CardContent>
+        </Card>
       </Tabs>
 
       {/* Calibration Modal */}

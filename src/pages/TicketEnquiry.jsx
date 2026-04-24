@@ -86,10 +86,28 @@ const TicketEnquiry = () => {
             }
           });
           ticket["ColumnAData"] = row[0] || "";
+          
+          // Internal fields for pending logic from other pages
+          ticket["_planned1"] = row[9] || "";
+          ticket["_actual1"] = row[10] || "";
+          ticket["_planned2"] = row[31] || "";
+          ticket["_actual2"] = row[32] || "";
+          ticket["_planned3"] = row[37] || "";
+          ticket["_actual3"] = row[38] || "";
+          
           return ticket;
         });
 
-        setTickets(formattedTickets);
+        // Apply uniqueness check by Ticket ID, keeping the latest one (matching other pages)
+        const uniqueTicketsMap = new Map();
+        formattedTickets.forEach((ticket) => {
+          const ticketId = ticket["Ticket ID"] || ticket["ticket_id"];
+          if (ticketId) {
+            uniqueTicketsMap.set(ticketId, ticket);
+          }
+        });
+
+        setTickets(Array.from(uniqueTicketsMap.values()));
       } else {
         toast({
           title: "error",
@@ -420,6 +438,13 @@ const TicketEnquiry = () => {
       if (start && ticketDate < start) return false;
       if (end && ticketDate > end) return false;
     }
+
+    // 5. "Exists in Pending records" filter
+    const isPendingClient = ticket["_planned1"] && !ticket["_actual1"];
+    const isPendingVideo = ticket["_planned2"] !== "" && ticket["_actual2"] === "";
+    const isPendingQuotation = ticket["_planned3"] !== "" && ticket["_actual3"] === "";
+
+    if (!(isPendingClient || isPendingVideo || isPendingQuotation)) return false;
 
     return true;
   });

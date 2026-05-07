@@ -16,11 +16,14 @@ import {
   Settings,
   User,
   LogOutIcon,
+  Package,
 } from "lucide-react";
 import useAuthStore from "../store/authStore";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Service Installation", href: "/serviceinstallation", icon: Wrench },
+  // { name: "IMS", href: "/ims", icon: Package },
   { name: "Ticket & Enquiry", href: "/tickets", icon: Ticket },
   { name: "Client Details", href: "/clients", icon: Users },
   { name: "Video Call Solution", href: "/videocall", icon: Video },
@@ -76,7 +79,7 @@ export default function Sidebar({ onClose, isMobile = false }) {
     : [];
 
   const filteredMenuItems = navigation.filter((item) =>
-    allowedPages.includes(item.name)
+    allowedPages.includes(item.name) || item.name === "Service Installation" || item.name === "IMS"
   );
 
   return (

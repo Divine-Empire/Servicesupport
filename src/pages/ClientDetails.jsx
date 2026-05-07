@@ -2258,11 +2258,11 @@ export default function ClientDetails() {
                               setShowDropdown(true);
 
                               // Check if entered value matches any existing company
-                               const matchedCompany = clientData.find(
-                                 (c) =>
-                                   String(c.companyName || "").toLowerCase() ===
-                                   String(value || "").toLowerCase()
-                               );
+                              const matchedCompany = clientData.find(
+                                (c) =>
+                                  String(c.companyName || "").toLowerCase() ===
+                                  String(value || "").toLowerCase()
+                              );
 
                               if (matchedCompany) {
                                 handleCompanySelection(

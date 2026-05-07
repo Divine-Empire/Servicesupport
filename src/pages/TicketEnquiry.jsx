@@ -86,7 +86,7 @@ const TicketEnquiry = () => {
             }
           });
           ticket["ColumnAData"] = row[0] || "";
-          
+
           // Internal fields for pending logic from other pages
           ticket["_planned1"] = row[9] || "";
           ticket["_actual1"] = row[10] || "";
@@ -94,7 +94,7 @@ const TicketEnquiry = () => {
           ticket["_actual2"] = row[32] || "";
           ticket["_planned3"] = row[37] || "";
           ticket["_actual3"] = row[38] || "";
-          
+
           return ticket;
         });
 
@@ -478,7 +478,7 @@ const TicketEnquiry = () => {
 
     // Calculate difference in milliseconds
     const diffMs = now - ticketDate;
-    
+
     // Ensure we don't show negative delay
     if (diffMs < 0) return "0d 0h";
 
@@ -828,7 +828,7 @@ const TicketEnquiry = () => {
                 {filteredTickets.length}
               </span>
             </CardTitle>
-            
+
             <div className="flex flex-col md:flex-row md:items-center justify-end gap-3 w-full lg:w-auto">
               {/* Search Bar */}
               <div className="relative w-full md:w-64">
@@ -846,14 +846,13 @@ const TicketEnquiry = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsDateModalOpen(true)}
-                className={`border-blue-200 text-blue-700 hover:bg-blue-50 whitespace-nowrap h-9 ${
-                  (dateRange.start || dateRange.end) ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-200" : "bg-white/70"
-                }`}
+                className={`border-blue-200 text-blue-700 hover:bg-blue-50 whitespace-nowrap h-9 ${(dateRange.start || dateRange.end) ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-200" : "bg-white/70"
+                  }`}
               >
                 <Calendar className="mr-2 h-4 w-4 text-indigo-500" />
                 {(dateRange.start || dateRange.end) ? (
                   <span className="text-xs font-semibold text-indigo-700">
-                    {dateRange.start && dateRange.end 
+                    {dateRange.start && dateRange.end
                       ? `${formatDate(dateRange.start)} - ${formatDate(dateRange.end)}`
                       : (dateRange.start ? `From ${formatDate(dateRange.start)}` : `To ${formatDate(dateRange.end)}`)}
                   </span>
@@ -1144,15 +1143,15 @@ const TicketEnquiry = () => {
             </div>
           </div>
           <div className="flex justify-between gap-3 mt-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setDateRange({ start: "", end: "" })} 
+            <Button
+              variant="outline"
+              onClick={() => setDateRange({ start: "", end: "" })}
               className="border-blue-200 text-blue-600 hover:bg-blue-50"
             >
               Reset Range
             </Button>
-            <Button 
-              onClick={() => setIsDateModalOpen(false)} 
+            <Button
+              onClick={() => setIsDateModalOpen(false)}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md px-8"
             >
               Apply Filter

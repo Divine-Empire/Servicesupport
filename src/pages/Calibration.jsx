@@ -916,9 +916,8 @@ export default function Calibration() {
                   <Button
                     variant="outline"
                     onClick={() => setShowDatePicker(!showDatePicker)}
-                    className={`bg-white border-blue-200 text-blue-600 hover:bg-blue-50 ${
-                      startDate || endDate ? "border-blue-500 ring-1 ring-blue-500" : ""
-                    }`}
+                    className={`bg-white border-blue-200 text-blue-600 hover:bg-blue-50 ${startDate || endDate ? "border-blue-500 ring-1 ring-blue-500" : ""
+                      }`}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     {startDate || endDate ? "Date Active" : "Date"}

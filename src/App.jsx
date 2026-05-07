@@ -5,6 +5,7 @@ import { Toaster as ShadcnToaster } from './components/ui/toaster';
 
 import Dashboard from "./pages/Dashboard";
 import TicketEnquiry from "./pages/TicketEnquiry";
+import ServiceInstallation from "./pages/ServiceInstallation";
 import ClientDetails from "./pages/ClientDetails";
 import VideoCallSolution from "./pages/VideoCallSolution";
 import Quotation from "./pages/Quotation";
@@ -17,6 +18,7 @@ import Invoice from "./pages/Invoice";
 import AccountVerification from "./pages/AccountVerification";
 import Warehouse from "./pages/Warehouse2";
 import Calibration from "./pages/Calibration";
+import IMS from "./pages/IMS";
 import NotFound from "./pages/not-found";
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -46,6 +48,7 @@ function App() {
         }>
           <Route path="/" element={<Dashboard />} />
           <Route path="/tickets" element={<TicketEnquiry />} />
+          <Route path="/serviceinstallation" element={<ServiceInstallation />} />
           <Route path="/clients" element={<ClientDetails />} />
           <Route path="/videocall" element={<VideoCallSolution />} />
           <Route path="/quotation" element={<Quotation />} />
@@ -61,6 +64,7 @@ function App() {
           <Route path="/account" element={<AccountVerification />} />
           <Route path="/warehouse2" element={<Warehouse />} />
           <Route path="/calibration" element={<Calibration />} />
+          <Route path="/ims" element={<IMS />} />
 
           <Route path="/accountabilityApprovals" element={<AccountablityApproval />} />
           <Route path="/calibrationCertificate" element={<CalibrationCertificate />} />

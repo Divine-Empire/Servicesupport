@@ -93,6 +93,7 @@ const ServiceInstallation = () => {
             item._planned1 = row[14] || ""; // Column O
             item._actual1 = row[15] || "";  // Column P
             item["INVOICE DATE"] = row[10] || ""; // Column K
+            item["Invoice Copy"] = row[12] || ""; // Column M
             item._rowIndex = headerRowIndex + index + 2; // For update logic
             return item;
           });
@@ -618,6 +619,20 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Invoice Date</p>
                     <p className="text-sm text-gray-700">{item["INVOICE DATE"] || "N/A"}</p>
                   </div>
+                  {item["Invoice Copy"] && item["Invoice Copy"].toString().startsWith("http") && (
+                    <div className="space-y-1 col-span-2">
+                      <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Invoice Copy</p>
+                      <a
+                        href={item["Invoice Copy"]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors font-semibold text-xs border border-indigo-200 mt-1"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        View Invoice
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -701,6 +716,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Item Name</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Date</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice No</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Copy</th>
                     {/* <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Material Rcvd</th> */}
                   </>
                 ) : (
@@ -712,6 +728,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Date</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">What Did Customer's Say</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Report</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Copy</th>
                   </>
                 )}
               </tr>
@@ -741,6 +758,21 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                         <td className="px-6 py-4 text-gray-600 min-w-[200px]">{item["Item-Name"]}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateTime(item["INVOICE DATE"])}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["INVOICE NO"]}</td>
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                          {item["Invoice Copy"] && item["Invoice Copy"].toString().startsWith("http") ? (
+                            <a
+                              href={item["Invoice Copy"]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors font-semibold text-xs border border-indigo-200"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              View Invoice
+                            </a>
+                          ) : (
+                            item["Invoice Copy"] || "-"
+                          )}
+                        </td>
                         {/* <td className="px-6 py-4 text-gray-600 text-center">{item["Actual material rcvd"]}</td> */}
                       </>
                     ) : (
@@ -767,6 +799,21 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["What Did Customer's Say"] || "-"}</td>
                         <td className="px-6 py-4 text-gray-600 truncate max-w-[150px]" title={item["Service Report"]}>
                           {item["Service Report"] || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                          {item["Invoice Copy"] && item["Invoice Copy"].toString().startsWith("http") ? (
+                            <a
+                              href={item["Invoice Copy"]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors font-semibold text-xs border border-indigo-200"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              View Invoice
+                            </a>
+                          ) : (
+                            item["Invoice Copy"] || "-"
+                          )}
                         </td>
                       </>
                     )}

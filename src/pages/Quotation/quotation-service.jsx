@@ -12,7 +12,7 @@ import { useQuotationData } from "./use-quotation-data"
 
 // export const getNextQuotationNumber = async (companyPrefix = "OT") => {
 //   const scriptUrl =
-//     "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+//     import.meta.env.VITE_APPS_SCRIPT_API
 
 //   try {
 //     const params = {
@@ -54,7 +54,7 @@ import { useQuotationData } from "./use-quotation-data"
 
 export const getNextQuotationNumber = async (companyPrefix = "OT") => {
   const scriptUrl =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+    import.meta.env.VITE_APPS_SCRIPT_API
 
   try {
     const params = {
@@ -111,7 +111,7 @@ export const getNextQuotationNumber = async (companyPrefix = "OT") => {
 
 export const getCompanyPrefix = async (companyName) => {
   const scriptUrl =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+    import.meta.env.VITE_APPS_SCRIPT_API
 
   try {
     const params = {
@@ -196,7 +196,7 @@ function Quotation() {
       try {
         console.log("Fetching existing quotations...")
         const scriptUrl =
-          "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+          import.meta.env.VITE_APPS_SCRIPT_API
         const response = await fetch(scriptUrl, {
           method: "POST",
           headers: {
@@ -309,7 +309,7 @@ function Quotation() {
 
     try {
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+        import.meta.env.VITE_APPS_SCRIPT_API
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -494,7 +494,7 @@ function Quotation() {
       const fileName = `Quotation_${finalQuotationNo}.pdf`
 
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec"
+        import.meta.env.VITE_APPS_SCRIPT_API
 
       const pdfParams = {
         action: "uploadPDF",

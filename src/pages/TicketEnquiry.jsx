@@ -56,7 +56,7 @@ const TicketEnquiry = () => {
   const { toast } = useToast();
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+    import.meta.env.VITE_APPS_SCRIPT_API;
 
   const fetchTickets = async () => {
     try {

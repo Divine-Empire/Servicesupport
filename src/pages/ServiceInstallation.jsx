@@ -66,9 +66,9 @@ const ServiceInstallation = () => {
   const [fileData, setFileData] = useState({ name: "", base64: "" });
   const fileInputRef = useRef(null);
 
-  const sheet_url = "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
-  const Folder_Id = "1a3dDFmdRQ2PeyV00soOb273xjMNFdHfC";
+  const sheet_url = import.meta.env.VITE_APPS_SCRIPT_API;
+  const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
+  const Folder_Id = import.meta.env.VITE_SERVICE_INSTALLATION_FOLDER_ID;
 
   const fetchInstallations = async () => {
     try {

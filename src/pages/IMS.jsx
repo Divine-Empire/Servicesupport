@@ -24,15 +24,15 @@ const IMS = () => {
   const [modalFilterIndenter, setModalFilterIndenter] = useState("All");
   const { toast } = useToast();
 
-  const script_url = "https://script.google.com/macros/s/AKfycbxkB72Tu0iDEEyQ5cdkYUTdJq7Ifj80hgqbXpwc9WnF3ruWs1Yppe3Z1TJce4yr9Gg/exec";
-  const sheet_id = "1O-fEA6iQvlJhSP6xcn2G-n0XxWE5LUX2kg2z6BVQLJw";
+  const script_url = import.meta.env.VITE_IMS_SCRIPT_API;
+  const sheet_id = import.meta.env.VITE_IMS_SHEET_ID;
   const sheet_name = "IMS";
 
   const fetchIMSData = async () => {
     try {
       setLoading(true);
       if (activeTab === "indent") {
-        const SHEET_ID = "1_KAokqi4ZxBGj2xA7TOdUMj6H44szaf4CQMI_OINdAo";
+        const SHEET_ID = import.meta.env.VITE_INDENT_LIFT_SHEET_ID;
         const SHEET_NAME = "INDENT-LIFT";
         const url = `${script_url}?id=${SHEET_ID}&sheetName=${SHEET_NAME}`;
         
@@ -78,7 +78,7 @@ const IMS = () => {
         }
       } else {
         // Reorder logic — via Next.js server-side proxy (supports restricted sheets)
-        const NEXT_API = "http://localhost:3000/api/reorder-data";
+        const NEXT_API = import.meta.env.VITE_REORDER_API_URL;
         const response = await fetch(NEXT_API);
         const jsonData = await response.json();
 

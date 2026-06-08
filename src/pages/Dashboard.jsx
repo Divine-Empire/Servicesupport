@@ -39,8 +39,8 @@ export default function Dashboard() {
   const COLORS = ["#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
+    import.meta.env.VITE_APPS_SCRIPT_API;
+  const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
 
   const fetchData = async () => {
     setFetchLoading(true); // start loading

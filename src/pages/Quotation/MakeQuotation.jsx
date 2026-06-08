@@ -66,7 +66,7 @@ function MakeQuotation() {
     const fetchExistingQuotations = async () => {
       try {
         const scriptUrl =
-          "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+          import.meta.env.VITE_APPS_SCRIPT_API;
         const response = await fetch(scriptUrl, {
           method: "POST",
           headers: {
@@ -160,7 +160,7 @@ function MakeQuotation() {
 
     try {
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+        import.meta.env.VITE_APPS_SCRIPT_API;
       const response = await fetch(scriptUrl, {
         method: "POST",
         headers: {
@@ -399,7 +399,7 @@ function MakeQuotation() {
 
       // Upload PDF to Google Drive (this creates a permanent copy)
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbzVseC0GMn77c4hbt-caHpWgb4zmh99VByIaNfReJjBsR4eUZ63uaLJ670c3p116t3lcQ/exec";
+        import.meta.env.VITE_QUOTATION_EMAIL_API;
       const pdfFileName = `Quotation_${quotationData.quotationNo}.pdf`;
 
       const pdfResponse = await fetch(scriptUrl, {
@@ -549,7 +549,7 @@ function MakeQuotation() {
       const fileName = `Quotation_${finalQuotationNo}.pdf`;
 
       const scriptUrl =
-        "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
+        import.meta.env.VITE_APPS_SCRIPT_API;
 
       const pdfParams = {
         action: "QuotationuploadPDF",

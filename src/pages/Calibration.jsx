@@ -61,8 +61,8 @@ export default function Calibration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sheet_url =
-    "https://script.google.com/macros/s/AKfycbwu7wzvou_bj7zZvM1q5NCzTgHMaO6WMZVswb3aNG8VJ42Jz1W_sAd4El42tgmg3JKC/exec";
-  const Sheet_Id = "1teE4IIdCw7qnQvm_W7xAPgmGgpU13dtYw6y5ui01HHc";
+    import.meta.env.VITE_APPS_SCRIPT_API;
+  const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
 
   const fetchInvoiceSheet = useCallback(async () => {
     setFetchLoading(true);
@@ -395,7 +395,7 @@ export default function Calibration() {
         totalChunks: totalChunks.toString(),
         fileId: fileId,
         mimeType: mimeType,
-        folderId: "1HfdNf6hCpqGh-3M1RWFaaOrM3HWS1LPX",
+        folderId: import.meta.env.VITE_DRIVE_FOLDER_ID,
       }),
     });
     return response.json();
@@ -427,7 +427,7 @@ export default function Calibration() {
             fileName: fileName,
             base64Data: base64Data,
             mimeType: mimeType,
-            folderId: "1HfdNf6hCpqGh-3M1RWFaaOrM3HWS1LPX",
+            folderId: import.meta.env.VITE_DRIVE_FOLDER_ID,
           }),
         });
 

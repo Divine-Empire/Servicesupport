@@ -113,11 +113,8 @@ export default function TicketAndEnquiry() {
 
         const uniqueAllData = Array.from(uniqueTicketsMap.values());
 
-        // Show pending items where planned1 is defined and actual1 is empty
-        const pending = uniqueAllData.filter(
-          (item) => item.planned1 && !item.actual1
-        );
-        setPendingData(pending);
+        // Show all tickets in the system
+        setPendingData(uniqueAllData);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

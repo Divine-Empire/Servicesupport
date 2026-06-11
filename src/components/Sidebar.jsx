@@ -24,13 +24,12 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Service Installation", href: "/serviceinstallation", icon: Wrench },
   // { name: "IMS", href: "/ims", icon: Package },
-  { name: "Ticket & Enquiry", href: "/tickets", icon: Ticket },
-  { name: "Client Details", href: "/clients", icon: Users },
+  { name: "Ticket-and-Enquiry", href: "/ticket-and-enquiry", icon: Ticket },
   { name: "Video Call Solution", href: "/videocall", icon: Video },
+  { name: "Warranty Check", href: "/warranty-check", icon: CheckCircle },
   { name: "Quotation", href: "/quotation", icon: FileText },
   { name: "Follow-Up", href: "/followup", icon: Phone },
   { name: "Site Visit Plan", href: "/siteplan", icon: MapPin },
-  { name: "Warehouse1", href: "/warehouse1", icon: Warehouse },
   { name: "TADA", href: "/tada", icon: Plane },
   { name: "Expense Approval By Senior", href: "/sitevisit", icon: Wrench },
   {
@@ -46,7 +45,6 @@ const navigation = [
   { name: "Site Visit Detail", href: "/site_visit_detail", icon: CheckCircle },
   { name: "Invoice", href: "/invoice", icon: Receipt },
   { name: "Account Verification", href: "/account", icon: UserCheck },
-  { name: "Warehouse2", href: "/warehouse2", icon: Warehouse },
   { name: "Calibration", href: "/calibration", icon: Settings },
 
   {
@@ -75,7 +73,7 @@ export default function Sidebar({ onClose, isMobile = false }) {
   };
 
   const allowedPages = user?.page
-    ? user.page.split(",").map((page) => page.trim())
+    ? user.page.split(",").map((page) => page.trim()).map((page) => (page === "Client Details" || page === "Ticket & Enquiry" ? "Ticket-and-Enquiry" : page))
     : [];
 
   const filteredMenuItems = navigation.filter((item) =>

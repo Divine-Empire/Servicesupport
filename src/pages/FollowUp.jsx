@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -17,35 +15,25 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
-import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
-import { Loader2Icon, LoaderIcon } from "lucide-react";
+import { LoaderIcon, Loader2Icon } from "lucide-react";
 
 export default function FollowUp() {
   const [activeTab, setActiveTab] = useState("pending");
   const [dateFilterTab, setDateFilterTab] = useState("");
 
-  const [pendingTickets, setPendingTickets] = useState([]);
-  const [historyTickets, setHistoryTickets] = useState([]);
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
   const [followUpData, setFollowUpData] = useState([]);
   const [searchItem, setSearchItem] = useState("");
+  const [clientAttachmentFilter, setClientAttachmentFilter] = useState("all");
 
   const { toast } = useToast();
 
@@ -55,13 +43,16 @@ export default function FollowUp() {
 
   const [pendingData, setPendingData] = useState([]);
   const [historyData, setHistoryData] = useState([]);
+  const [ticketsMap, setTicketsMap] = useState({});
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelled, setIsCancelled] = useState(false);
+  const [isUploadingClientAttachment, setIsUploadingClientAttachment] = useState(false);
+  const [isUploadingSeniorAttachment, setIsUploadingSeniorAttachment] = useState(false);
+  const [isUploadingAdvancePayment, setIsUploadingAdvancePayment] = useState(false);
 
   const sheet_url =
     import.meta.env.VITE_APPS_SCRIPT_API;
-  const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
 
   const fetchData = async () => {
     setFetchLoading(true); // start loading
@@ -70,81 +61,65 @@ export default function FollowUp() {
       const json = await response.json();
 
       if (json.success && Array.isArray(json.data)) {
-        // Process the data to match your requirements
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
-          timeStemp: row[0],
-          ticketId: row[1], // Column A (assuming this is Ticket id)
-          clientName: row[2], // Column C
-          phoneNumber: row[3], // Column D
-          emailAddress: row[4], // Column E
-          category: row[5], // Column F
-          priority: row[6], // Column G
-          title: row[7], // Column H
-          description: row[8], // Column I
-          planned1: row[9], // Column J
-          actual1: row[10], // Column K
+          timeStemp: row[0] || "",
+          ticketId: row[1] || "",
+          sourceOfEnquiry: row[12] || "",
+          callType: row[13] || "",
+          enquiryReceiverName: row[14] || "",
+          clientType: row[15] || "",
+          companyName: row[16] || "",
+          clientName: row[17] || "",
+          phoneNumber: row[18] || "",
+          gstAddress: row[19] || "",
+          siteAddress: row[20] || "",
+          gstNo: row[21] || "",
+          machineName: row[22] || "",
+          category: row[23] || "",
+          mentionIssue: row[24] || "",
+          serviceLocation: row[25] || "",
 
-          delay1: row[11], // Delay1
-          callType: row[12], // Call type
-          requirementServiceCategory: row[13], // Enquiry Type (first one)
-          videoCall: row[14], // Enquiry Type (first one)
+          // Remaining columns & Stage specific
+          emailAddress: row[4] || "",
+          title: row[7] || "",
+          description: row[8] || "",
 
-          sourceOfEnquiry: row[15], // Source of enquiry
-          enquiryReceiverName: row[16], // Enquiry Receiver Name
-          warrantyCheck: row[17], // Warranty Check
-          billNumberInput: row[18], // Bill Number Input
+          quotationNo: row[40] || "",
+          basicAmount: row[41] || "",
+          totalAmoutWithTex: row[42] || "",
+          quotationPdfLink: row[43] || "",
+          quotationShareByPersonName: row[44] || "",
+          ShareThrough: row[45] || "",
+          quotationremarks: row[46] || "",
 
-          billAttachmentFile: row[19], // Bill Number Input
+          planned4: row[47] || "",
+          actual4: row[48] || "",
 
-          machineName: row[20], // Machine Name
-          enquiryType: row[21], // Enquiry Type (second one)
-          siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
-          state: row[26], // State
-          pinCode: row[27], // PIN Code
-          engineerAssign: row[28], // Engineer Name
-          serviceLocation: row[29], // Service Location
-          uploadChallan: row[30],
-
-          planned2: row[31],
-          actual2: row[32],
-          delay2: row[33],
-          videoCallServicesSolve: row[34],
-          afterVideoCallGenerateOTP: row[35],
-          otpVarificationStatus: row[36],
-
-          planned3: row[37],
-          actual3: row[38],
-          delay3: row[39],
-          quotationNo: row[40], // <-- THIS IS COLUMN AO
-          basicAmount: row[41],
-          totalAmoutWithTex: row[42],
-          quotationPdfLink: row[43],
-          quotationShareByPersonName: row[44],
-          ShareThrough: row[45],
-          quotationremarks: row[46],
-
-          planned4: row[47],
-          actual4: row[48],
-
-          stage: row[50],
-          paymentTerm: row[51],
-          acceptanceVia: row[52],
-          acceptanceAttachemntFile: row[53],
-          paymentMode: row[54],
-          seniorApproval: row[55],
-          approvalAttachmentFile: row[56],
-          whatDidTheCustomerSay: row[57],
-          nextAction: row[58],
-          nextDateOfCall: row[59],
-          followUpRemarks: row[60],
-          CREName: row[127],
-
-          // Last Date Of Call	Status	Stage	What Did The Customer Say	Next Action	Next Date Of Call	Payment term	Against Delivery	Acceptance Via	Acceptance file	Payment  Terms	Payment Mode	Advance attachment 	Senior Approval
+          stage: row[50] || "",
+          paymentTerm: row[51] || "",
+          acceptanceVia: row[52] || "",
+          acceptanceAttachemntFile: row[53] || "",
+          clientAttachment: row[56] || "",
+          paymentMode: row[54] || "",
+          seniorApproval: row[55] || "",
+          approvalAttachmentFile: row[56] || "",
+          whatDidTheCustomerSay: row[57] || "",
+          nextAction: row[58] || "",
+          nextDateOfCall: row[59] || "",
+          followUpRemarks: row[60] || "",
+          CREName: row[127] || "",
+          engineerAssign: row[130] || row[28] || "",
         }));
+
+        // Store standard lookup map for history enrichment
+        const ticketsMapObj = {};
+        allData.forEach((ticket) => {
+          if (ticket.ticketId) {
+            ticketsMapObj[ticket.ticketId] = ticket;
+          }
+        });
+        setTicketsMap(ticketsMapObj);
 
         // Create a map to store unique tickets by ticketId, keeping the latest one
         const uniqueTicketsMap = new Map();
@@ -159,7 +134,6 @@ export default function FollowUp() {
         const pending = uniqueAllData.filter(
           (item) => item.planned4 !== "" && item.actual4 === ""
         );
-        // console.log("pending", pending);
 
         const history = uniqueAllData.filter(
           (item) => item.planned4 !== "" && item.actual4 !== ""
@@ -257,14 +231,29 @@ export default function FollowUp() {
     fetchFllowUpSheet();
   }, []);
 
-  useEffect(() => {
-    const tickets = storage.getTickets();
-    const pending = tickets.filter((t) => t.status === "quotation-completed");
-    const history = tickets.filter((t) => t.status === "follow-up-completed");
 
-    setPendingTickets(pending);
-    setHistoryTickets(history);
-  }, []);
+
+  const formatInputDate = (dateStr) => {
+    if (!dateStr) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    const cleanStr = dateStr.split(" ")[0];
+    const parts = cleanStr.split("/");
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, "0");
+      const month = parts[1].padStart(2, "0");
+      const year = parts[2];
+      if (year.length === 4) {
+        return `${year}-${month}-${day}`;
+      }
+    }
+    try {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split("T")[0];
+      }
+    } catch (e) {}
+    return "";
+  };
 
   const handleFollowUpClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -280,23 +269,24 @@ export default function FollowUp() {
       engineerAssign: ticket.engineerAssign || "",
       siteName: ticket.siteName || "",
       basicAmount: ticket.basicAmount || "",
-      totalAmountWithTax: ticket.totalAmountWithTax || "",
+      totalAmountWithTax: ticket.totalAmoutWithTex || "",
       quotationPdfLink: ticket.quotationPdfLink || "",
-      quotationShareBy: ticket.quotationShareBy || "",
-      shareThrough: ticket.shareThrough || "",
-      remarks: ticket.remarks || "",
+      quotationShareBy: ticket.quotationShareByPersonName || "",
+      shareThrough: ticket.ShareThrough || "",
+      remarks: ticket.quotationremarks || "",
       lastDateOfCall: "",
       status: "",
-      stage: "",
-      whatDidCustomerSay: "",
-      nextAction: "",
-      nextDateOfCall: "",
-      paymentTerm: "",
+      stage: ticket.stage || "",
+      whatDidCustomerSay: ticket.whatDidTheCustomerSay || "",
+      nextAction: ticket.nextAction || "",
+      nextDateOfCall: formatInputDate(ticket.nextDateOfCall),
+      paymentTerm: ticket.paymentTerm || "",
       againstDelivery: "",
-      acceptanceVia: "",
-      paymentMode: "",
-      advanceAttachment: "",
-      seniorApproval: "",
+      acceptanceVia: ticket.acceptanceVia || "",
+      paymentMode: ticket.paymentMode || "",
+      acceptanceAttachmentUrl: ticket.acceptanceAttachemntFile || "",
+      clientAttachmentUrl: ticket.clientAttachment || "",
+      seniorApproval: ticket.seniorApproval || "",
     });
     setShowFollowUpModal(true);
   };
@@ -356,6 +346,84 @@ export default function FollowUp() {
     }
   };
 
+  const handleClientAttachmentChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingClientAttachment(true);
+    try {
+      const result = await uploadImageToDrive(file);
+      if (result.success && result.fileUrl) {
+        handleInputChange("clientAttachmentUrl", result.fileUrl);
+        toast({
+          title: "Success",
+          description: "Client Attachment uploaded successfully",
+        });
+      } else {
+        e.target.value = null;
+        handleInputChange("clientAttachmentUrl", "");
+      }
+    } catch (error) {
+      console.error(error);
+      e.target.value = null;
+      handleInputChange("clientAttachmentUrl", "");
+    } finally {
+      setIsUploadingClientAttachment(false);
+    }
+  };
+
+  const handleSeniorAttachmentChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingSeniorAttachment(true);
+    try {
+      const result = await uploadImageToDrive(file);
+      if (result.success && result.fileUrl) {
+        handleInputChange("acceptanceAttachmentUrl", result.fileUrl);
+        toast({
+          title: "Success",
+          description: "Senior Attachment uploaded successfully",
+        });
+      } else {
+        e.target.value = null;
+        handleInputChange("acceptanceAttachmentUrl", "");
+      }
+    } catch (error) {
+      console.error(error);
+      e.target.value = null;
+      handleInputChange("acceptanceAttachmentUrl", "");
+    } finally {
+      setIsUploadingSeniorAttachment(false);
+    }
+  };
+
+  const handleAdvancePaymentChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingAdvancePayment(true);
+    try {
+      const result = await uploadImageToDrive(file);
+      if (result.success && result.fileUrl) {
+        handleInputChange("advanceAttachmentUrl", result.fileUrl);
+        toast({
+          title: "Success",
+          description: "Advance Payment Attachment uploaded successfully",
+        });
+      } else {
+        e.target.value = null;
+        handleInputChange("advanceAttachmentUrl", "");
+      }
+    } catch (error) {
+      console.error(error);
+      e.target.value = null;
+      handleInputChange("advanceAttachmentUrl", "");
+    } finally {
+      setIsUploadingAdvancePayment(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -382,13 +450,18 @@ export default function FollowUp() {
         alert("Please Select Next Date of Call");
         return;
       }
-    } else {
-      if (!formData.approvalAttachmentFile) {
-        alert("Please add file for client Attachment");
+    } else if (formData.stage === "Order Received") {
+      if (!formData.clientAttachmentUrl) {
+        alert("Please add and upload file for client Attachment");
         return;
       }
-      if (!formData.acceptanceAttachemntFile) {
-        alert("Please add file for Senior Attachment");
+    } else {
+      if (!formData.clientAttachmentUrl) {
+        alert("Please add and upload file for client Attachment");
+        return;
+      }
+      if (!formData.acceptanceAttachmentUrl) {
+        alert("Please add and upload file for Senior Attachment");
         return;
       }
       if (!formData.paymentTerm) {
@@ -417,51 +490,18 @@ export default function FollowUp() {
         formData.paymentMode === "Partial Advance+PDC" ||
         formData.paymentMode === "Current Date Cheque"
       ) {
-        if (!formData.followupremarkFile) {
-          alert("please add file for Advance Payment Attachment");
+        if (!formData.advanceAttachmentUrl) {
+          alert("please add and upload file for Advance Payment Attachment");
           return;
         }
       }
     }
 
     setIsSubmitting(true);
-    let acceptanceFile = "";
-    let approvalFile = "";
+    let acceptanceFile = formData.acceptanceAttachmentUrl || "";
+    let approvalFile = formData.clientAttachmentUrl || "";
 
-    let followupremarkFileUrl = "";
-
-    if (formData.followupremarkFile) {
-      const uploadResult = await uploadImageToDrive(
-        formData.followupremarkFile
-      );
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error || "Failed to upload image");
-      }
-      followupremarkFileUrl = uploadResult.fileUrl;
-      // console.log("acceptanceFile", acceptanceFile);
-    }
-
-    if (formData.acceptanceAttachemntFile) {
-      const uploadResult = await uploadImageToDrive(
-        formData.acceptanceAttachemntFile
-      );
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error || "Failed to upload image");
-      }
-      acceptanceFile = uploadResult.fileUrl;
-      // console.log("acceptanceFile", acceptanceFile);
-    }
-
-    if (formData.approvalAttachmentFile) {
-      const uploadResult = await uploadImageToDrive(
-        formData.approvalAttachmentFile
-      );
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error || "Failed to upload image");
-      }
-      approvalFile = uploadResult.fileUrl;
-      // console.log("approvalFile", approvalFile);
-    }
+    let followupremarkFileUrl = formData.advanceAttachmentUrl || "";
 
     const currentDateTime = formatDateTime(new Date());
 
@@ -543,6 +583,10 @@ export default function FollowUp() {
           title: "Success",
           description: "follow-up added successfully",
         });
+
+        // Trigger GET actions to instantly load the recently updated data
+        fetchData();
+        fetchFllowUpSheet();
       } else {
         throw new Error(result.error || "Failed to save ticket");
       }
@@ -702,31 +746,69 @@ export default function FollowUp() {
         <>
           {/* Editable fields */}
           <div>
-            <Label>Client Attachments *</Label>
+            <Label className="flex items-center gap-2">
+              Client Attachments *
+              {isUploadingClientAttachment && (
+                <LoaderIcon className="animate-spin w-4 h-4 text-blue-600" />
+              )}
+            </Label>
             <Input
               type="file"
-              placeholder="Client Attachments"
-              onChange={(e) =>
-                handleInputChange("approvalAttachmentFile", e.target.files[0])
-              }
+              disabled={isUploadingClientAttachment}
+              onChange={handleClientAttachmentChange}
               data-testid="approval-attachments"
             />
+            {isUploadingClientAttachment && (
+              <p className="text-xs text-blue-600 mt-1">Uploading file, please wait...</p>
+            )}
+            {formData.clientAttachmentUrl && (
+              <p className="mt-1 text-sm text-green-600">
+                Current attachment:{" "}
+                <a
+                  href={formData.clientAttachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-green-800 font-medium"
+                >
+                  View File
+                </a>
+              </p>
+            )}
           </div>
 
           <div>
-            <Label>Senior Attachments *</Label>
+            <Label className="flex items-center gap-2">
+              Senior Attachments
+              {isUploadingSeniorAttachment && (
+                <LoaderIcon className="animate-spin w-4 h-4 text-blue-600" />
+              )}
+            </Label>
             <Input
               type="file"
-              placeholder="Senior Attachments"
-              onChange={(e) =>
-                handleInputChange("acceptanceAttachemntFile", e.target.files[0])
-              }
+              disabled={isUploadingSeniorAttachment}
+              onChange={handleSeniorAttachmentChange}
               data-testid="acceptance-attachments"
             />
+            {isUploadingSeniorAttachment && (
+              <p className="text-xs text-blue-600 mt-1">Uploading file, please wait...</p>
+            )}
+            {formData.acceptanceAttachmentUrl && (
+              <p className="mt-1 text-sm text-green-600">
+                Current attachment:{" "}
+                <a
+                  href={formData.acceptanceAttachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-green-800 font-medium"
+                >
+                  View File
+                </a>
+              </p>
+            )}
           </div>
 
           <div>
-            <Label>Payment Term *</Label>
+            <Label>Payment Term</Label>
             <Select
               value={formData.paymentTerm || undefined} // Use undefined instead of empty string
               onValueChange={(value) => handleInputChange("paymentTerm", value)}
@@ -760,7 +842,7 @@ export default function FollowUp() {
           {/* Acceptance Via with Mail fix */}
 
           <div>
-            <Label>Acceptance Via *</Label>
+            <Label>Acceptance Via</Label>
             <Select
               value={formData.acceptanceVia || undefined} // Use undefined instead of empty string
               onValueChange={(value) =>
@@ -782,7 +864,7 @@ export default function FollowUp() {
           </div>
 
           <div>
-            <Label>Payment Mode *</Label>
+            <Label>Payment Mode</Label>
             <Select
               value={formData.paymentMode || undefined} // Use undefined instead of empty string
               onValueChange={(value) => handleInputChange("paymentMode", value)}
@@ -819,22 +901,41 @@ export default function FollowUp() {
               formData.paymentMode === "Partial Advance+PDC" ||
               formData.paymentMode === "Current Date Cheque") && (
               <div>
-                <Label>Advance Payment Attachment *</Label>
+                <Label className="flex items-center gap-2">
+                  Advance Payment Attachment
+                  {isUploadingAdvancePayment && (
+                    <LoaderIcon className="animate-spin w-4 h-4 text-blue-600" />
+                  )}
+                </Label>
                 <Input
                   type="file"
-                  placeholder="Advance Payment"
-                  onChange={(e) =>
-                    handleInputChange("followupremarkFile", e.target.files[0])
-                  }
+                  disabled={isUploadingAdvancePayment}
+                  onChange={handleAdvancePaymentChange}
                   data-testid="attachment"
                 />
+                {isUploadingAdvancePayment && (
+                  <p className="text-xs text-blue-600 mt-1">Uploading file, please wait...</p>
+                )}
+                {formData.advanceAttachmentUrl && (
+                  <p className="mt-1 text-sm text-green-600">
+                    Current attachment:{" "}
+                    <a
+                      href={formData.advanceAttachmentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-green-800 font-medium"
+                    >
+                      View File
+                    </a>
+                  </p>
+                )}
               </div>
             )}
 
           {formData.paymentMode !== "" &&
             formData.paymentMode !== "FullyAdvance" && (
               <div>
-                <Label>Senior Approval *</Label>
+                <Label>Senior Approval</Label>
                 <Select
                   value={formData.seniorApproval || undefined} // Use undefined instead of empty string
                   onValueChange={(value) =>
@@ -887,14 +988,42 @@ export default function FollowUp() {
     })
     .reverse();
 
-  const filteredHistoryData = followUpData
+  const enrichedFollowUpData = followUpData.map((item) => {
+    const ticketDetails = ticketsMap[item.ticket_id] || {};
+    return {
+      ...item,
+      // 16 core pipeline properties
+      timeStemp: ticketDetails.timeStemp || item.timestamp || "",
+      ticketId: item.ticket_id || "",
+      sourceOfEnquiry: ticketDetails.sourceOfEnquiry || "",
+      callType: ticketDetails.callType || "",
+      enquiryReceiverName: ticketDetails.enquiryReceiverName || "",
+      clientType: ticketDetails.clientType || "",
+      companyName: ticketDetails.companyName || "",
+      clientName: ticketDetails.clientName || "",
+      phoneNumber: ticketDetails.phoneNumber || "",
+      gstAddress: ticketDetails.gstAddress || "",
+      siteAddress: ticketDetails.siteAddress || "",
+      gstNo: ticketDetails.gstNo || "",
+      machineName: ticketDetails.machineName || "",
+      category: ticketDetails.category || "",
+      mentionIssue: ticketDetails.mentionIssue || "",
+      serviceLocation: ticketDetails.serviceLocation || "",
+
+      // Roles lookup fallback
+      cre_name: item.cre_name || ticketDetails.CREName || "",
+      engineer_assign: item.engineer_assign || ticketDetails.engineerAssign || "",
+    };
+  });
+
+  const filteredHistoryData = enrichedFollowUpData
     .filter((item) => {
       const q = searchItem.toLowerCase();
       const matchesSearch =
-        String(item.ticket_id || "").toLowerCase().includes(q) ||
-        String(item.client_name || "").toLowerCase().includes(q) ||
-        String(item.company_name || "").toLowerCase().includes(q) ||
-        String(item.phone_number || "").toLowerCase().includes(q) ||
+        String(item.ticketId || "").toLowerCase().includes(q) ||
+        String(item.clientName || "").toLowerCase().includes(q) ||
+        String(item.companyName || "").toLowerCase().includes(q) ||
+        String(item.phoneNumber || "").toLowerCase().includes(q) ||
         String(item.quotation_no || "").toLowerCase().includes(q);
       return matchesSearch;
     })
@@ -919,7 +1048,16 @@ export default function FollowUp() {
     });
   };
 
-  const finalFilteredPendingDataa = filterByDateCategory(filteredPendingData);
+  const attachmentFilteredPendingData = filteredPendingData.filter((item) => {
+    if (clientAttachmentFilter === "hasAttachment") {
+      return item.clientAttachment && String(item.clientAttachment).trim() !== "";
+    } else if (clientAttachmentFilter === "noAttachment") {
+      return !item.clientAttachment || String(item.clientAttachment).trim() === "";
+    }
+    return true;
+  });
+
+  const finalFilteredPendingDataa = filterByDateCategory(attachmentFilteredPendingData);
   const finalFilteredHistoryDataa = filterByDateCategory(filteredHistoryData);
 
 
@@ -947,103 +1085,108 @@ export default function FollowUp() {
 
 
   return (
-    <div className="space-y-2">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="2">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                {/* UPDATED SEARCH LABEL */}
-                Search (Ticket ID, Client, Company, Phone, Quotation No)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
-                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+    <div >
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-2">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
+              
+              {/* Left Side: Tabs buttons and Date Category Filters */}
+              <div className="flex flex-wrap items-center gap-4">
+                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <TabsTrigger
+                    value="pending"
+                    data-testid="tab-pending"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    Pending ({finalFilteredPendingData.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    data-testid="tab-history"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    History ({finalFilteredHistoryData.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setDateFilterTab("")}
+                    className={`px-4 py-2 rounded-md text-sm transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500`}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateFilterTab("today")}
+                    className={`px-4 py-2 rounded-md text-sm transition-all ${
+                      dateFilterTab === "today"
+                        ? "bg-green-600 text-white shadow-md"
+                        : "bg-transparent text-gray-700 hover:bg-green-100"
+                    }`}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateFilterTab("upcoming")}
+                    className={`px-4 py-2 rounded-md text-sm transition-all ${
+                      dateFilterTab === "upcoming"
+                        ? "bg-green-600 text-white shadow-md"
+                        : "bg-transparent text-gray-700 hover:bg-green-100"
+                    }`}
+                  >
+                    Upcoming
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateFilterTab("overdue")}
+                    className={`px-4 py-2 rounded-md text-sm transition-all ${
+                      dateFilterTab === "overdue"
+                        ? "bg-red-600 text-white shadow-md"
+                        : "bg-transparent text-gray-700 hover:bg-red-100"
+                    }`}
+                  >
+                    Overdue
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Side: Search Input and Client Attachment Filter */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company, phone or quotation no..."
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
+
+                {activeTab === "pending" && (
+                  <div className="w-full sm:w-56">
+                    <select
+                      id="clientAttachmentFilter"
+                      value={clientAttachmentFilter}
+                      onChange={(e) => setClientAttachmentFilter(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      data-testid="select-client-attachment-filter"
+                    >
+                      <option value="all">All Attachments</option>
+                      <option value="hasAttachment">Client Attachment Not Empty</option>
+                      <option value="noAttachment">Client Attachment Empty</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="sm:flex justify-between">
-          <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-            <TabsTrigger
-              value="pending"
-              data-testid="tab-pending"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-            >
-              Pending ({finalFilteredPendingData.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              data-testid="tab-history"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-            >
-              History ({finalFilteredHistoryData.length})
-            </TabsTrigger>
-          </TabsList>
+            <div className="mt-6">
 
-          <div className="mb-4 flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
-            <button
-              type="button"
-              onClick={() => setDateFilterTab("")}
-              className={`px-4 py-2 rounded-md transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500`}
-            >
-              Reset
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDateFilterTab("today")}
-              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "today"
-                ? "bg-green-600 text-white shadow-md"
-                : "bg-transparent text-gray-700 hover:bg-green-100"
-                }`}
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              onClick={() => setDateFilterTab("upcoming")}
-              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "upcoming"
-                ? "bg-green-600 text-white shadow-md"
-                : "bg-transparent text-gray-700 hover:bg-green-100"
-                }`}
-            >
-              Upcoming
-            </button>
-            <button
-              type="button"
-              onClick={() => setDateFilterTab("overdue")}
-              className={`px-4 py-2 rounded-md transition-all ${dateFilterTab === "overdue"
-                ? "bg-red-600 text-white shadow-md"
-                : "bg-transparent text-gray-700 hover:bg-red-100"
-                }`}
-            >
-              Overdue
-            </button>
-          </div>
-        </div>
-
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Follow-Ups
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
@@ -1053,11 +1196,25 @@ export default function FollowUp() {
                           Action
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
                         </th>
-                        {/* NEW COLUMN HEADER */}
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Quotation No.
+                          Ticket-ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
@@ -1065,23 +1222,29 @@ export default function FollowUp() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Receiver
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Warranty Check
+                          GST No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Engineer Assign
+                          Service Location
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Quotation No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Basic Amount
@@ -1091,6 +1254,9 @@ export default function FollowUp() {
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation PDF
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Attachment
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Shared By
@@ -1113,7 +1279,7 @@ export default function FollowUp() {
                       {finalFilteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={17} // <-- Updated colSpan
+                            colSpan={27}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -1148,35 +1314,55 @@ export default function FollowUp() {
                               </Button>
                             </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
                             </td>
-                            {/* NEW COLUMN CELL */}
-                            <td className="px-4 py-3 font-medium text-blue-800">
-                              {ticket.quotationNo}
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.sourceOfEnquiry || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.phoneNumber}
+                              {ticket.callType || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.enquiryReceiverName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.warrantyCheck || "0"}
+                              {ticket.clientType || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.machineName || "0"}
+                              {ticket.companyName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType || "0"}
+                              {ticket.clientName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.engineerAssign || ""}
+                              {ticket.phoneNumber || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.machineName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.category || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.mentionIssue || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation || ""}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
+                              {ticket.quotationNo || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.basicAmount || ""}
@@ -1199,6 +1385,20 @@ export default function FollowUp() {
                                 >
                                   Download
                                 </button>
+                              ) : (
+                                <span className="text-gray-400">No file</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientAttachment ? (
+                                <a
+                                  href={ticket.clientAttachment}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                >
+                                  View
+                                </a>
                               ) : (
                                 <span className="text-gray-400">No file</span>
                               )}
@@ -1433,28 +1633,62 @@ export default function FollowUp() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">Follow-Up History</CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Timestamp
+                          Date
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Ticket ID
+                          Ticket-ID
                         </th>
-                        {/* NEW COLUMN HEADER */}
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          GST No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Machine Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Location
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
                         </th>
@@ -1473,7 +1707,6 @@ export default function FollowUp() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           PAYMENT MODE
                         </th>
-
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Senior approval
                         </th>
@@ -1489,16 +1722,13 @@ export default function FollowUp() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Next Date Of Call
                         </th>
-                        {/* <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Remarks
-                        </th> */}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-blue-100">
                       {finalFilteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={13} // <-- Updated colSpan
+                            colSpan={27}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -1515,8 +1745,6 @@ export default function FollowUp() {
                         </tr>
                       ) : (
                         [...finalFilteredHistoryData]
-                          .reverse()
-                          .reverse()
                           .map((ticket, ind) => (
                             <tr
                               key={ind}
@@ -1525,26 +1753,65 @@ export default function FollowUp() {
                               }
                             >
                               <td className="px-4 py-3 font-medium text-blue-800">
-                                {formatDate(ticket.timestamp)}
+                                {formatDate(ticket.timeStemp)}
                               </td>
                               <td className="px-4 py-3 font-medium text-blue-800">
-                                {ticket.ticket_id}
+                                {ticket.ticketId}
                               </td>
-                              {/* NEW COLUMN CELL */}
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.sourceOfEnquiry || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.callType || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.enquiryReceiverName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.clientType || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.companyName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.clientName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.phoneNumber || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.gstAddress || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.siteAddress || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.gstNo || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.machineName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.category || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.mentionIssue || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.serviceLocation || ""}
+                              </td>
                               <td className="px-4 py-3 font-medium text-blue-800">
                                 {ticket.quotation_no || ""}
                               </td>
                               <td className="px-4 py-3 font-medium text-blue-800">
                                 {ticket.stage || ""}
                               </td>
-
                               <td className="px-4 py-3">
                                 {ticket.payment_term_ || ""}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.acceptance_via || ""}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.acceptance_attachments_ ? (
                                   <a
@@ -1559,15 +1826,12 @@ export default function FollowUp() {
                                   ""
                                 )}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.payment_mode || ""}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.senior_approval || ""}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.approval_attachment ? (
                                   <a
@@ -1582,22 +1846,15 @@ export default function FollowUp() {
                                   ""
                                 )}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.what_did_the_customer_say || ""}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {ticket.next_action || ""}
                               </td>
-
                               <td className="px-4 py-3 text-blue-900">
                                 {formatDate(ticket.next_date_of_call) || ""}
                               </td>
-
-                              {/* <td className="px-4 py-3 text-blue-900">
-                                {ticket.quotationremarks || ""}
-                              </td> */}
                             </tr>
                           ))
                       )}
@@ -1768,9 +2025,10 @@ export default function FollowUp() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
       </Tabs>
 
       {/* Follow-Up Modal */}
@@ -1882,6 +2140,7 @@ export default function FollowUp() {
               <div className="md:col-span-2 flex space-x-4 pt-4">
                 <Button
                   type="submit"
+                  disabled={isSubmitting || isUploadingClientAttachment || isUploadingSeniorAttachment || isUploadingAdvancePayment}
                   data-testid="button-submit-followup"
                   className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
                 >

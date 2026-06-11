@@ -9,36 +9,18 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
-import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
 import { Eye, Loader2Icon, LoaderIcon } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
 import { Textarea } from "../components/ui/textarea";
 
 export default function TADA() {
   const [activeTab, setActiveTab] = useState("pending");
-  const [pendingTickets, setPendingTickets] = useState([]);
-  const [historyTickets, setHistoryTickets] = useState([]);
   const [showTADAModal, setShowTADAModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
@@ -55,11 +37,6 @@ export default function TADA() {
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [showQuotationModal, setShowQuotationModal] = useState(false);
-  const [selectedQuotationTicket, setSelectedQuotationTicket] = useState(null);
-  const [quotationFormData, setQuotationFormData] = useState({});
-  const [quotationLoading, setQuotationLoading] = useState(false);
-
   const sheet_url =
     import.meta.env.VITE_APPS_SCRIPT_API;
   const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
@@ -74,112 +51,91 @@ export default function TADA() {
         // Process the data to match your requirements
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
-          timeStemp: row[0],
-          ticketId: row[1], // Column A (assuming this is Ticket id)
-          clientName: row[2], // Column C
-          phoneNumber: row[3], // Column D
-          emailAddress: row[4], // Column E
-          category: row[5], // Column F
-          priority: row[6], // Column G
-          title: row[7], // Column H
-          description: row[8], // Column I
-          planned1: row[9], // Column J
-          actual1: row[10], // Column K
+          timeStemp: row[0] || "",
+          ticketId: row[1] || "",
+          sourceOfEnquiry: row[12] || "",
+          callType: row[13] || "",
+          enquiryReceiverName: row[14] || "",
+          clientType: row[15] || "",
+          companyName: row[16] || "",
+          clientName: row[17] || "",
+          phoneNumber: row[18] || "",
+          gstAddress: row[19] || "",
+          siteAddress: row[20] || "",
+          gstNo: row[21] || "",
+          machineName: row[22] || "",
+          category: row[23] || "",
+          mentionIssue: row[24] || "",
+          serviceLocation: row[25] || "",
 
-          delay1: row[11], // Delay1
-          callType: row[12], // Call type
-          requirementServiceCategory: row[13], // Enquiry Type (first one)
-          videoCall: row[14], // Enquiry Type (first one)
+          // Stage specific and other columns
+          emailAddress: row[4] || "",
+          title: row[7] || "",
+          description: row[8] || "",
+          
+          engineerAssign: row[130] || row[28] || "",
+          warrantyCheck: row[134] || "",
+          siteName: row[20] || "",
 
-          sourceOfEnquiry: row[15], // Source of enquiry
-          enquiryReceiverName: row[16], // Enquiry Receiver Name
-          warrantyCheck: row[17], // Warranty Check
-          billNumberInput: row[18], // Bill Number Input
+          planned1: row[9] || "",
+          actual1: row[10] || "",
+          delay1: row[11] || "",
 
-          billAttachmentFile: row[19], // Bill Number Input
+          quotationNo: row[40] || "",
+          basicAmount: row[41] || "",
+          totalAmoutWithTex: row[42] || "",
+          quotationPdfLink: row[43] || "",
+          quotationShareByPersonName: row[44] || "",
+          ShareThrough: row[45] || "",
+          quotationremarks: row[46] || "",
 
-          machineName: row[20], // Machine Name
-          enquiryType: row[21], // Enquiry Type (second one)
-          siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
-          state: row[26], // State
-          pinCode: row[27], // PIN Code
-          engineerAssign: row[28], // Engineer Name
-          serviceLocation: row[29], // Service Location
-          uploadChallan: row[30],
+          planned4: row[47] || "",
+          actual4: row[48] || "",
+          stage: row[50] || "",
+          paymentTerm: row[51] || "",
+          acceptanceVia: row[52] || "",
+          acceptanceAttachemntFile: row[53] || "",
+          paymentMode: row[54] || "",
+          seniorApproval: row[55] || "",
+          approvalAttachmentFile: row[56] || "",
+          whatDidTheCustomerSay: row[57] || "",
+          nextAction: row[58] || "",
+          nextDateOfCall: row[59] || "",
+          followUpRemarks: row[60] || "",
 
-          planned2: row[31],
-          actual2: row[32],
-          delay2: row[33],
-          videoCallServicesSolve: row[34],
-          afterVideoCallGenerateOTP: row[35],
-          otpVarificationStatus: row[36],
+          planned5: row[61] || "",
+          actual5: row[62] || "",
+          delay5: row[63] || "",
+          dateOfVisit: row[64] || "",
+          transportation: row[65] || "",
 
-          planned3: row[37],
-          actual3: row[38],
-          delay3: row[39],
-          quotationNo: row[40],
-          basicAmount: row[41],
-          totalAmoutWithTex: row[42],
-          quotationPdfLink: row[43],
-          quotationShareByPersonName: row[44],
-          ShareThrough: row[45],
-          quotationremarks: row[46],
+          planned6: row[66] || "",
+          actual6: row[67] || "",
+          spareDetails: row[69] || "",
+          dnCopyFileUpload: row[70] || "",
+          dnNumber: row[71] || "",
+          serviceAssets: row[72] || "",
+          equipmentName: row[73] || "",
+          attachment: row[74] || "",
+          machineReceiverName: row[75] || "",
+          machineReceiverNumber: row[76] || "",
+          challanAttachment: row[77] || "",
+          invoiceStatus: row[78] || "",
 
-          planned4: row[47],
-          actual4: row[48],
-          stage: row[50],
-          paymentTerm: row[51],
-          acceptanceVia: row[52],
-          acceptanceAttachemntFile: row[53],
-          paymentMode: row[54],
-          seniorApproval: row[55],
-          approvalAttachmentFile: row[56],
-          whatDidTheCustomerSay: row[57],
-          nextAction: row[58],
-          nextDateOfCall: row[59],
-          followUpRemarks: row[60],
-
-          planned5: row[61],
-          actual5: row[62],
-          delay5: row[63],
-          dateOfVisit: row[64],
-          transportation: row[65],
-
-          planned6: row[66],
-          actual6: row[67],
-          spareDetails: row[69],
-          dnCopyFileUpload: row[70],
-          dnNumber: row[71],
-          serviceAssets: row[72],
-          equipmentName: row[73],
-          attachment: row[74],
-          machineReceiverName: row[75],
-          machineReceiverNumber: row[76],
-          challanAttachment: row[77],
-          invoiceStatus: row[78],
-
-          planned7: row[79],
-          actual7: row[80],
-          delay7: row[81],
-          travelDate: row[82],
-          returnDate: row[83],
-          destinationInput: row[84],
-          purposeOfTravel: row[85],
-          amount: row[86],
-          CREName: row[127],
+          planned7: row[79] || "",
+          actual7: row[80] || "",
+          delay7: row[81] || "",
+          travelDate: row[82] || "",
+          returnDate: row[83] || "",
+          destinationInput: row[84] || "",
+          purposeOfTravel: row[85] || "",
+          amount: row[86] || "",
+          CREName: row[127] || "",
         }));
-
-        // Filter data based on your conditions
-
-        // console.log("Alldata", allData);
 
         const pending = allData.filter(
           (item) => item.planned7 !== "" && item.actual7 === ""
         );
-        // console.log("pending", pending);
 
         const history = allData.filter(
           (item) => item.planned7 !== "" && item.actual7 !== ""
@@ -243,16 +199,24 @@ export default function TADA() {
     fetchData();
   }, []);
 
+  // Auto-open modal when arriving via a TADA deep-link (e.g. /tada?ticketId=XXX)
   useEffect(() => {
-    const tickets = storage.getTickets();
-    const pending = tickets.filter(
-      (t) => t.status === "site-visit-plan-completed"
-    );
-    const history = tickets.filter((t) => t.status === "tada-completed");
+    if (pendingData.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const ticketIdFromUrl = params.get("ticketId");
+    if (ticketIdFromUrl) {
+      const targetTicket = pendingData.find(
+        (t) => t.ticketId === decodeURIComponent(ticketIdFromUrl)
+      );
+      if (targetTicket) {
+        handleTADAClick(targetTicket);
+        // Clean the query param from the URL without reloading
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    }
+  }, [pendingData]);
 
-    setPendingTickets(pending);
-    setHistoryTickets(history);
-  }, []);
 
   const handleTADAClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -265,7 +229,7 @@ export default function TADA() {
       machineName: ticket.machineName || "",
       enquiryType: ticket.enquiryType || "",
       engineerAssign: ticket.engineerAssign || "",
-      siteName: ticket.siteName || "",
+      siteName: ticket.siteAddress || ticket.siteName || "",
       status: ticket.status || "",
       dateOfVisit: ticket.dateOfVisit || "",
       transportation: ticket.transportation || "",
@@ -497,57 +461,48 @@ export default function TADA() {
   // console.log("filteredHistoryDataa", filteredHistoryDataa);
 
   return (
-    <div className="space-y-2">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="pt-2">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
-                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+    <div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-2">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
+              
+              {/* Left Side: Tabs buttons */}
+              <div className="flex flex-wrap items-center gap-4">
+                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <TabsTrigger
+                    value="pending"
+                    data-testid="tab-pending"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    Pending ({filteredPendingData.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    data-testid="tab-history"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    History ({filteredHistoryData.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Right Side: Search Input */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company or phone..."
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History ({filteredHistoryData.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">Pending TADA</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <div className="mt-6">
+              <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
@@ -556,17 +511,53 @@ export default function TADA() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
                           Action
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Date
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
                           Ticket ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Phone Number
+                          GST No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Machine Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Location
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
@@ -575,19 +566,10 @@ export default function TADA() {
                           Warranty Check
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Machine Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Engineer Assign
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Site Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Status
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Date of Visit
@@ -604,7 +586,7 @@ export default function TADA() {
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={15}
+                            colSpan={24}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -639,17 +621,53 @@ export default function TADA() {
                                 <span className="font-medium">TADA</span>
                               </Button>
                             </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
+                              {ticket.sourceOfEnquiry || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.callType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.enquiryReceiverName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientType || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || "-"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
                               {ticket.phoneNumber}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.machineName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.category || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.mentionIssue || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "-"}
@@ -658,19 +676,10 @@ export default function TADA() {
                               {ticket.warrantyCheck}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.machineName || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
                               {ticket.engineerAssign || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.siteName || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.status || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {formatDate(ticket.dateOfVisit) || ""}
@@ -802,10 +811,10 @@ export default function TADA() {
                               </div>
                               <div>
                                 <p className="text-gray-500 font-medium">
-                                  Enquiry Type
+                                  Call Type
                                 </p>
                                 <p className="text-blue-900">
-                                  {ticket.enquiryType}
+                                  {ticket.callType || "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -830,16 +839,8 @@ export default function TADA() {
                               </div>
                             </div>
 
-                            {/* Status & Visit Date */}
+                            {/* Visit Date & Transportation */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  Status
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.status || "N/A"}
-                                </p>
-                              </div>
                               <div>
                                 <p className="text-gray-500 font-medium">
                                   Visit Date
@@ -848,16 +849,14 @@ export default function TADA() {
                                   {formatDate(ticket.dateOfVisit) || "N/A"}
                                 </p>
                               </div>
-                            </div>
-
-                            {/* Transportation */}
-                            <div>
-                              <p className="text-gray-500 font-medium text-sm">
-                                Transportation
-                              </p>
-                              <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {ticket.transportation || "N/A"}
-                              </span>
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Transportation
+                                </p>
+                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                  {ticket.transportation || "N/A"}
+                                </span>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
@@ -866,29 +865,61 @@ export default function TADA() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">TADA History</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Date
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
                           Ticket ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          GST No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Machine Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Location
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
@@ -920,7 +951,7 @@ export default function TADA() {
                       {filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={11}
+                            colSpan={24}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -943,14 +974,53 @@ export default function TADA() {
                               ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
                             }
                           >
+                            <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.sourceOfEnquiry || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.callType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.enquiryReceiverName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || "-"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.companyName || "-"}
+                              {ticket.phoneNumber}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.machineName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.category || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.mentionIssue || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.quotationNo ? String(ticket.quotationNo).replace(/^(Quotation|Quo|QUO|Quo\.)[:\-\s.]*/i, "").trim() : "-"}
@@ -1109,10 +1179,11 @@ export default function TADA() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </div>
+        </CardContent>
+      </Card>
+    </Tabs>
 
       {/* TADA Modal */}
       <Modal

@@ -32,7 +32,7 @@ import {
 import { Modal } from "../components/ui/modal";
 import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
-import { Loader2Icon, LoaderIcon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, Plus, Trash2 } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 
 export default function VideoCallSolution() {
@@ -52,6 +52,36 @@ export default function VideoCallSolution() {
   const { toast } = useToast();
 
   const [isVideoCallSolved, setIsVideoCallSolved] = useState(false);
+  const [itemRows, setItemRows] = useState([{ item: "", qty: "" }]);
+
+  const handleAddItemRow = () => {
+    if (itemRows.length < 15) {
+      setItemRows([...itemRows, { item: "", qty: "" }]);
+    }
+  };
+
+  const handleItemRowChange = (index, field, value) => {
+    const newRows = [...itemRows];
+    newRows[index][field] = value;
+    setItemRows(newRows);
+  };
+
+  const handleDeleteItemRow = (index) => {
+    if (itemRows.length > 1) {
+      const newRows = itemRows.filter((_, i) => i !== index);
+      setItemRows(newRows);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   const sheet_url =
     import.meta.env.VITE_APPS_SCRIPT_API;
@@ -67,49 +97,55 @@ export default function VideoCallSolution() {
         // Process the data to match your requirements
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
-          timeStemp: row[0],
-          ticketId: row[1], // Column A (assuming this is Ticket id)
-          clientName: row[2], // Column C
-          phoneNumber: row[3], // Column D
-          emailAddress: row[4], // Column E
-          category: row[5], // Column F
-          priority: row[6], // Column G
-          title: row[7], // Column H
-          description: row[8], // Column I
-          planned1: row[9], // Column J
-          actual1: row[10], // Column K
+          timeStemp: row[0] || "",
+          ticketId: row[1] || "", // Column B
+          clientName: row[17] || "", // Column R
+          phoneNumber: row[18] || "", // Column S
+          emailAddress: row[4] || "", // Column E
+          category: row[23] || "", // Column X
+          priority: row[6] || "", // Column G
+          title: row[7] || "", // Column H
+          description: row[8] || "", // Column I
+          planned1: row[9] || "", // Column J
+          actual1: row[10] || "", // Column K
 
-          delay1: row[11], // Delay1
-          callType: row[12], // Call type
-          requirementServiceCategory: row[13], // Enquiry Type (first one)
-          videoCall: row[14], // Enquiry Type (first one)
+          delay1: row[11] || "", // Delay1
+          callType: row[13] || "", // Call type (Col N)
+          requirementServiceCategory: row[13] || "", // Enquiry Type (first one)
+          videoCall: row[14] || "", // Enquiry Type (first one)
 
-          sourceOfEnquiry: row[15], // Source of enquiry
-          enquiryReceiverName: row[16], // Enquiry Receiver Name
-          warrantyCheck: row[17], // Warranty Check
-          billNumberInput: row[18], // Bill Number Input
+          sourceOfEnquiry: row[12] || "", // Source of enquiry (Col M)
+          enquiryReceiverName: row[14] || "", // Enquiry Receiver Name (Col O)
+          warrantyCheck: row[17] || "", // Warranty Check (Col R)
+          billNumberInput: row[18] || "", // Bill Number Input
+          billAttachmentFile: row[19] || "", // Bill Number Input
 
-          billAttachmentFile: row[19], // Bill Number Input
+          clientType: row[15] || "", // Client Type (Col P)
+          gstNo: row[21] || "", // GST No. (Col V)
+          mentionIssue: row[24] || "", // Mention Issue (Col Y)
 
-          machineName: row[20], // Machine Name
-          enquiryType: row[21], // Enquiry Type (second one)
-          siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          gstAddress: row[24], // GST Address
-          siteAddress: row[25], // Site Address
-          state: row[26], // State
-          pinCode: row[27], // PIN Code
-          engineerAssign: row[28], // Engineer Name
-          serviceLocation: row[29], // Service Location
-          uploadChallan: row[30],
+          machineName: row[22] || "", // Machine Name (Col W)
+          enquiryType: row[21] || "", // Enquiry Type (second one)
+          siteName: row[22] || "", // Site Name
+          companyName: row[16] || "", // Company Name (Col Q)
+          gstAddress: row[19] || "", // GST Address (Col T)
+          siteAddress: row[20] || "", // Site Address (Col U)
+          state: row[26] || "", // State
+          pinCode: row[27] || "", // PIN Code
+          engineerAssign: row[130] || "", // Engineer Name (Col EA, fallback to AC)
+          serviceType: row[131] || "", // Service Type (Col EB)
+          serviceLocation: row[25] || "", // Service Location (Col Z)
+          uploadChallan: row[30] || "",
 
-          planned2: row[31],
-          actual2: row[32],
-          delay2: row[33],
-          videoCallServicesSolve: row[34],
-          afterVideoCallGenerateOTP: row[35],
-          otpVarificationStatus: row[36],
-          CREName: row[127],
+          planned2: row[31] || "", // Col AF
+          actual2: row[32] || "", // Col AG
+          delay2: row[33] || "",
+          videoCallServicesSolve: row[34] || "", // Col AI
+          afterVideoCallGenerateOTP: row[35] || "", // Col AJ
+          otpVarificationStatus: row[36] || "", // Col AK
+          CREName: row[127] || "",
+          remarks: row[128] || "", // Col DY
+          itemQty: row[129] || "", // Col DZ
         }));
 
         // Filter data based on your conditions
@@ -136,7 +172,7 @@ export default function VideoCallSolution() {
 
   const fetchMasterSheet = async () => {
     try {
-      const response = await fetch(`${sheet_url}?sheet=Master`);
+      const response = await fetch(`${sheet_url}?sheet=DROPDOWN`);
       const result = await response.json();
 
       if (result.success && result.data && result.data.length > 0) {
@@ -183,6 +219,17 @@ export default function VideoCallSolution() {
 
   const handleSolutionClick = (ticket) => {
     setSelectedTicket(ticket);
+    setFormData({
+      videoCallServicesSolve: "",
+      otpVerification: "",
+      remarks: "",
+      cancelRemarks: "",
+      engineerAssign: ticket.engineerAssign || "",
+      serviceType: ticket.serviceType || "",
+    });
+    setItemRows([{ item: "", qty: "" }]);
+    setIsVideoCallSolved(false);
+    setIsCancelled(false);
     setShowSolutionModal(true);
   };
 
@@ -201,20 +248,61 @@ export default function VideoCallSolution() {
       return;
     }
 
+    if (!formData.engineerAssign) {
+      alert("Please Select Engineer Name");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (formData.videoCallServicesSolve === "no" && !formData.serviceType) {
+      alert("Please Select Service Type");
+      setIsSubmitting(false);
+      return;
+    }
+
     if (isVideoCallSolved) {
       if (
+        !formData.otpVerification ||
         formData.otpVerification.toString() !==
         selectedTicket.afterVideoCallGenerateOTP.toString()
       ) {
-        alert("Wrong OPT, Please Enter Right OTP");
+        alert("Wrong OTP, Please Enter Right OTP");
+        setIsSubmitting(false);
+        return;
+      }
+    } else if (formData.videoCallServicesSolve === "no") {
+      const validRows = itemRows.filter(row => row.item.trim() !== "" && row.qty.toString().trim() !== "");
+      if (validRows.length === 0) {
+        alert("Please add at least one item and quantity.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const hasEmptyField = itemRows.some(row => {
+        return (row.item.trim() !== "" && !row.qty) || (row.item.trim() === "" && row.qty);
+      });
+      if (hasEmptyField) {
+        alert("Please complete both Item Name and Quantity for all rows.");
         setIsSubmitting(false);
         return;
       }
     }
 
     const currentDateTime = formatDateTime(new Date());
-    // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
+
+    const columnData = {
+      EA: formData.engineerAssign,
+      EB: formData.videoCallServicesSolve === "no" ? (formData.serviceType || "") : "",
+      AG: currentDateTime,
+      AI: formData.videoCallServicesSolve,
+      AK: formData.videoCallServicesSolve === "yes" ? "Verified" : "Skipped",
+      DY: formData.remarks || "",
+    };
+
+    if (formData.videoCallServicesSolve === "no") {
+      columnData.DZ = JSON.stringify(itemRows.filter(row => row.item.trim() !== ""));
+    }
 
     try {
       const response = await fetch(sheet_url, {
@@ -227,11 +315,7 @@ export default function VideoCallSolution() {
           sheetName: "Ticket_Enquiry",
           action: "update",
           rowIndex: (id + 6).toString(),
-          columnData: JSON.stringify({
-            AG: currentDateTime,
-
-            AI: formData.videoCallServicesSolve,
-          }),
+          columnData: JSON.stringify(columnData),
         }).toString(),
       });
 
@@ -251,20 +335,21 @@ export default function VideoCallSolution() {
             ...selectedTicket,
             actual2: currentDateTime,
             videoCallServicesSolve: formData.videoCallServicesSolve,
-            otpVarificationStatus:
-              formData?.otpVerification?.toString() ===
-                selectedTicket?.afterVideoCallGenerateOTP?.toString()
-                ? "Yes"
-                : "No",
+            otpVarificationStatus: formData.videoCallServicesSolve === "yes" ? "Yes" : "Skipped",
+            remarks: formData.remarks || "",
+            engineerAssign: formData.engineerAssign,
+            serviceType: formData.videoCallServicesSolve === "no" ? formData.serviceType : "",
+            itemQty: formData.videoCallServicesSolve === "no"
+              ? JSON.stringify(itemRows.filter(row => row.item.trim() !== ""))
+              : "",
           },
           ...prevHistory,
         ]);
         toast({
           title: "Success",
-          description: "Submited successfully",
+          description: "Submitted successfully",
         });
         setShowSolutionModal(false);
-        // fetchTickets(); // Refresh the ticket list
       } else {
         throw new Error(result.error || "Failed to save ticket details");
       }
@@ -533,59 +618,49 @@ export default function VideoCallSolution() {
   // console.log("filteredHistoryData", filteredHistoryData);
 
   return (
-    <div className="space-y-2 sm:space-y-6">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="sm:pt-6">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
-                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+    <div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-2">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
+              
+              {/* Left Side: Tabs buttons */}
+              <div className="flex flex-wrap items-center gap-4">
+                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <TabsTrigger
+                    value="pending"
+                    data-testid="tab-pending"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    Pending ({filteredPendingData?.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    data-testid="tab-history"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    History ({filteredHistoryData?.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Right Side: Search Input */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company or phone..."
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData?.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History({filteredHistoryData?.length})
-          </TabsTrigger>
-        </TabsList>
+            <div className="mt-6">
 
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Video Call Solutions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
                 {/* Table container with fixed header and scrollable body */}
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
@@ -597,7 +672,25 @@ export default function VideoCallSolution() {
                           Action
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
@@ -606,46 +699,22 @@ export default function VideoCallSolution() {
                           Phone Number
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                          Email Address
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Call Type
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Source of Enquiry
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Receiver Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Warranty Check
+                          GST No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
+                          Category
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          GST Address
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Address
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          State
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          PIN Code
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Engineer Assign
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Service Location
@@ -657,7 +726,7 @@ export default function VideoCallSolution() {
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={19}
+                            colSpan={17}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -691,8 +760,26 @@ export default function VideoCallSolution() {
                                 <span className="font-medium">Solution</span>
                               </Button>
                             </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.sourceOfEnquiry}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.callType}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.enquiryReceiverName}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientType}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
@@ -701,49 +788,25 @@ export default function VideoCallSolution() {
                               {ticket.phoneNumber}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.emailAddress}
+                              {ticket.gstAddress}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.callType || ""}
+                              {ticket.siteAddress}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.sourceOfEnquiry || ""}
+                              {ticket.gstNo}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryReceiverName || ""}
+                              {ticket.machineName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.warrantyCheck || ""}
+                              {ticket.category}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.machineName || ""}
+                              {ticket.mentionIssue}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.companyName || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.gstAddress || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteAddress || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.state || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.pinCode || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.engineerAssign || ""}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.serviceLocation || ""}
+                              {ticket.serviceLocation}
                             </td>
                           </tr>
                         ))
@@ -781,8 +844,8 @@ export default function VideoCallSolution() {
                                 <h3 className="font-bold text-blue-800 text-lg">
                                   {ticket.ticketId}
                                 </h3>
-                                <p className="text-sm text-gray-600">
-                                  {ticket.clientName}
+                                <p className="text-sm text-gray-500">
+                                  {formatDate(ticket.timeStemp)}
                                 </p>
                               </div>
                               <Button
@@ -795,164 +858,86 @@ export default function VideoCallSolution() {
                               </Button>
                             </div>
 
-                            {/* Contact Info */}
+                            {/* Client & Company */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Phone
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.phoneNumber}
-                                </p>
+                                <p className="text-gray-500 font-medium">Client Name</p>
+                                <p className="text-blue-900">{ticket.clientName || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Email
-                                </p>
-                                <p className="text-blue-900 truncate">
-                                  {ticket.emailAddress}
-                                </p>
+                                <p className="text-gray-500 font-medium">Company Name</p>
+                                <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Contact Details */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Phone Number</p>
+                                <p className="text-blue-900">{ticket.phoneNumber || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Client Type</p>
+                                <p className="text-blue-900">{ticket.clientType || "N/A"}</p>
                               </div>
                             </div>
 
                             {/* Call Details */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Call Type
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.callType || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Call Type</p>
+                                <p className="text-blue-900">{ticket.callType || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Enquiry Source
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.sourceOfEnquiry || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Source of Enquiry</p>
+                                <p className="text-blue-900">{ticket.sourceOfEnquiry || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Receiver & Warranty */}
+                            {/* Receiver & GST No */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Receiver Name
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.enquiryReceiverName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Receiver Name</p>
+                                <p className="text-blue-900">{ticket.enquiryReceiverName || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Warranty
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.warrantyCheck || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">GST No.</p>
+                                <p className="text-blue-900">{ticket.gstNo || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Machine & Enquiry Info */}
+                            {/* Machine & Category */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Machine Name
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.machineName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Machine Name</p>
+                                <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Enquiry Type
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.enquiryType || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Category</p>
+                                <p className="text-blue-900">{ticket.category || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Site & Company */}
+                            {/* Issue & Service Location */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Site Name
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.siteName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Mention Issue</p>
+                                <p className="text-blue-900">{ticket.mentionIssue || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Company
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.companyName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Service Location</p>
+                                <p className="text-blue-900">{ticket.serviceLocation || "N/A"}</p>
                               </div>
                             </div>
 
                             {/* Address Info */}
                             <div>
-                              <p className="text-gray-500 font-medium text-sm">
-                                Site Address
-                              </p>
-                              <p className="text-blue-900 line-clamp-2">
-                                {ticket.siteAddress || "N/A"}
-                              </p>
+                              <p className="text-gray-500 font-medium text-xs">Site Address</p>
+                              <p className="text-blue-900 text-sm">{ticket.siteAddress || "N/A"}</p>
                             </div>
-
-                            {/* GST Address */}
                             <div>
-                              <p className="text-gray-500 font-medium text-sm">
-                                GST Address
-                              </p>
-                              <p className="text-blue-900 line-clamp-2">
-                                {ticket.gstAddress || "N/A"}
-                              </p>
-                            </div>
-
-                            {/* Location Details */}
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  State
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.state || "N/A"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  PIN Code
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.pinCode || "N/A"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Engineer & Service */}
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  Engineer
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.engineerAssign || "N/A"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  Service Location
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.serviceLocation || "N/A"}
-                                </p>
-                              </div>
+                              <p className="text-gray-500 font-medium text-xs">GST Address</p>
+                              <p className="text-blue-900 text-sm">{ticket.gstAddress || "N/A"}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -961,18 +946,9 @@ export default function VideoCallSolution() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Video Call Solution History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
                 {/* Table container with fixed header and scrollable body */}
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
@@ -981,7 +957,25 @@ export default function VideoCallSolution() {
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
@@ -989,25 +983,28 @@ export default function VideoCallSolution() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Receiver Name
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Warranty Check
+                          GST No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Engineer Assign
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
+                          Service Location
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
                           Video Call Services Solve
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -1020,7 +1017,7 @@ export default function VideoCallSolution() {
                       {filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={11}
+                            colSpan={18}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -1043,8 +1040,26 @@ export default function VideoCallSolution() {
                               ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"
                             }
                           >
+                            <td className="px-4 py-3 text-blue-900">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.sourceOfEnquiry}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.callType}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.enquiryReceiverName}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientType}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.clientName}
@@ -1053,22 +1068,25 @@ export default function VideoCallSolution() {
                               {ticket.phoneNumber}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryReceiverName || ""}
+                              {ticket.gstAddress}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.warrantyCheck || ""}
+                              {ticket.siteAddress}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.machineName || ""}
+                              {ticket.gstNo}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.engineerAssign || ""}
+                              {ticket.machineName}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType || ""}
+                              {ticket.category}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
+                              {ticket.mentionIssue}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation}
                             </td>
                             <td className="px-4 py-3">
                               <span
@@ -1083,9 +1101,19 @@ export default function VideoCallSolution() {
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                {ticket.otpVarificationStatus
+                              <span
+                                className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  ticket.otpVarificationStatus === "Yes" || ticket.otpVarificationStatus === "Verified"
+                                    ? "bg-green-100 text-green-800"
+                                    : ticket.otpVarificationStatus === "Skipped"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {ticket.otpVarificationStatus === "Yes" || ticket.otpVarificationStatus === "Verified"
                                   ? "Verified"
+                                  : ticket.otpVarificationStatus === "Skipped"
+                                  ? "Skipped"
                                   : "Not Verified"}
                               </span>
                             </td>
@@ -1124,89 +1152,99 @@ export default function VideoCallSolution() {
                               <h3 className="font-bold text-blue-800 text-lg">
                                 {ticket.ticketId}
                               </h3>
-                              <p className="text-sm text-gray-600">
-                                {ticket.clientName}
+                              <p className="text-sm text-gray-500">
+                                {formatDate(ticket.timeStemp)}
                               </p>
                             </div>
 
-                            {/* Contact & Receiver Info */}
+                            {/* Client & Company */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Phone
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.phoneNumber}
-                                </p>
+                                <p className="text-gray-500 font-medium">Client Name</p>
+                                <p className="text-blue-900">{ticket.clientName || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Receiver Name
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.enquiryReceiverName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Company Name</p>
+                                <p className="text-blue-900">{ticket.companyName || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Warranty & Machine */}
+                            {/* Contact Details */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Warranty
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.warrantyCheck || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Phone Number</p>
+                                <p className="text-blue-900">{ticket.phoneNumber || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Machine Name
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.machineName || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Client Type</p>
+                                <p className="text-blue-900">{ticket.clientType || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Engineer & Enquiry Type */}
+                            {/* Call Details */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Engineer
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.engineerAssign || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Call Type</p>
+                                <p className="text-blue-900">{ticket.callType || "N/A"}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Enquiry Type
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.enquiryType || "N/A"}
-                                </p>
+                                <p className="text-gray-500 font-medium">Source of Enquiry</p>
+                                <p className="text-blue-900">{ticket.sourceOfEnquiry || "N/A"}</p>
                               </div>
                             </div>
 
-                            {/* Site Name */}
+                            {/* Receiver & GST No */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Receiver Name</p>
+                                <p className="text-blue-900">{ticket.enquiryReceiverName || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">GST No.</p>
+                                <p className="text-blue-900">{ticket.gstNo || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Machine & Category */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Machine Name</p>
+                                <p className="text-blue-900">{ticket.machineName || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Category</p>
+                                <p className="text-blue-900">{ticket.category || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Issue & Service Location */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">Mention Issue</p>
+                                <p className="text-blue-900">{ticket.mentionIssue || "N/A"}</p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">Service Location</p>
+                                <p className="text-blue-900">{ticket.serviceLocation || "N/A"}</p>
+                              </div>
+                            </div>
+
+                            {/* Address Info */}
                             <div>
-                              <p className="text-gray-500 font-medium text-sm">
-                                Site Name
-                              </p>
-                              <p className="text-blue-900">
-                                {ticket.siteName || "N/A"}
-                              </p>
+                              <p className="text-gray-500 font-medium text-xs">Site Address</p>
+                              <p className="text-blue-900 text-sm">{ticket.siteAddress || "N/A"}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 font-medium text-xs">GST Address</p>
+                              <p className="text-blue-900 text-sm">{ticket.gstAddress || "N/A"}</p>
                             </div>
 
                             {/* Solution Status */}
-                            <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="grid grid-cols-2 gap-3 text-sm border-t border-blue-100 pt-2 mt-2">
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  Video Call Solved
-                                </p>
+                                <p className="text-gray-500 font-medium">Video Call Solved</p>
                                 <span
-                                  className={`px-2 py-1 text-xs font-semibold rounded-full ${ticket.videoCallServicesSolve === "yes"
+                                  className={`px-2 py-0.5 text-xs font-semibold rounded-full ${ticket.videoCallServicesSolve === "yes"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"
                                     }`}
@@ -1217,12 +1255,20 @@ export default function VideoCallSolution() {
                                 </span>
                               </div>
                               <div>
-                                <p className="text-gray-500 font-medium">
-                                  OTP Status
-                                </p>
-                                <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                  {ticket.otpVarificationStatus
+                                <p className="text-gray-500 font-medium">OTP Status</p>
+                                <span
+                                  className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                    ticket.otpVarificationStatus === "Yes" || ticket.otpVarificationStatus === "Verified"
+                                      ? "bg-green-100 text-green-800"
+                                      : ticket.otpVarificationStatus === "Skipped"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {ticket.otpVarificationStatus === "Yes" || ticket.otpVarificationStatus === "Verified"
                                     ? "Verified"
+                                    : ticket.otpVarificationStatus === "Skipped"
+                                    ? "Skipped"
                                     : "Not Verified"}
                                 </span>
                               </div>
@@ -1234,9 +1280,10 @@ export default function VideoCallSolution() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
       </Tabs>
 
       {/* Video Call Solution Modal */}
@@ -1337,10 +1384,11 @@ export default function VideoCallSolution() {
 
                   {/* Editable fields */}
                   <div className="space-y-1">
-                    <Label className="text-gray-600 font-medium">
+                    <Label className="text-gray-600 font-medium font-sans">
                       Video Call Services Solve *
                     </Label>
                     <Select
+                      value={formData.videoCallServicesSolve || ""}
                       onValueChange={(value) => {
                         handleInputChange("videoCallServicesSolve", value);
                         setIsVideoCallSolved(value === "yes");
@@ -1363,49 +1411,193 @@ export default function VideoCallSolution() {
                     </Select>
                   </div>
 
-                  {isVideoCallSolved && (
+                  <div className="space-y-1">
+                    <Label className="text-gray-600 font-medium font-sans">
+                      Engineer Name *
+                    </Label>
+                    <Select
+                      value={formData.engineerAssign || ""}
+                      onValueChange={(value) => {
+                        handleInputChange("engineerAssign", value);
+                      }}
+                    >
+                      <SelectTrigger
+                        data-testid="select-engineer-assign"
+                        className="border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <SelectValue placeholder="Select Engineer" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white rounded-lg border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                        {(masterData[0]?.["Engineer Assign Name"] || []).map((name, idx) => (
+                          <SelectItem key={idx} value={name} className="hover:bg-gray-50">
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {formData.videoCallServicesSolve === "no" && (
                     <div className="space-y-1">
-                      <Label className="text-gray-600 font-medium">
-                        OTP Verification *
+                      <Label className="text-gray-600 font-medium font-sans">
+                        Service Type *
                       </Label>
-                      <Input
-                        maxLength={6}
-                        placeholder="Enter 6-digit OTP"
-                        value={formData.otpVerification || ""}
-                        onChange={(e) =>
-                          handleInputChange("otpVerification", e.target.value)
-                        }
-                        data-testid="input-otp"
-                        className="text-center text-lg tracking-widest border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <div className="w-full flex justify-center items-center flex-col">
-                        <div
-                          onClick={
-                            canGenerateOtp(selectedTicket?.ticketId)
-                              ? ResendOTP
-                              : null
-                          }
-                          data-testid="button-resend-otp"
-                          className={`px-2 py-1 ${canGenerateOtp(selectedTicket?.ticketId)
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
-                            : "bg-gray-400 cursor-not-allowed"
-                            } text-white rounded-lg transition-all duration-300 shadow-lg text-center w-full flex justify-center items-center`}
+                      <Select
+                        value={formData.serviceType || ""}
+                        onValueChange={(value) => {
+                          handleInputChange("serviceType", value);
+                        }}
+                      >
+                        <SelectTrigger
+                          data-testid="select-service-type"
+                          className="border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
-                          {isResending ? (
-                            <span className="flex items-center">
-                              <LoaderIcon className="animate-spin mr-2" />
-                              Resend OTPing...
-                            </span>
-                          ) : (
-                            "Resend OTP"
+                          <SelectValue placeholder="Select Service Type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white rounded-lg border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                          {(masterData[0]?.["Service Location"] || []).map((name, idx) => (
+                            <SelectItem key={idx} value={name} className="hover:bg-gray-50">
+                              {name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {isVideoCallSolved && (
+                    <>
+                      <div className="space-y-1">
+                        <Label className="text-gray-600 font-medium">
+                          OTP Verification *
+                        </Label>
+                        <Input
+                          maxLength={6}
+                          placeholder="Enter 6-digit OTP"
+                          value={formData.otpVerification || ""}
+                          onChange={(e) =>
+                            handleInputChange("otpVerification", e.target.value)
+                          }
+                          data-testid="input-otp"
+                          className="text-center text-lg tracking-widest border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <div className="w-full flex justify-center items-center flex-col mt-2">
+                          <div
+                            onClick={
+                              canGenerateOtp(selectedTicket?.ticketId)
+                                ? ResendOTP
+                                : null
+                            }
+                            data-testid="button-resend-otp"
+                            className={`px-2 py-1 ${canGenerateOtp(selectedTicket?.ticketId)
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 cursor-pointer"
+                              : "bg-gray-400 cursor-not-allowed"
+                              } text-white rounded-lg transition-all duration-300 shadow-lg text-center w-full flex justify-center items-center`}
+                          >
+                            {isResending ? (
+                              <span className="flex items-center">
+                                <LoaderIcon className="animate-spin mr-2" />
+                                Resend OTPing...
+                              </span>
+                            ) : (
+                              "Resend OTP"
+                            )}
+                          </div>
+
+                          {!canGenerateOtp(selectedTicket?.ticketId) && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Next OTP available tomorrow
+                            </p>
                           )}
                         </div>
+                      </div>
 
-                        {!canGenerateOtp(selectedTicket?.ticketId) && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Next OTP available tomorrow
-                          </p>
-                        )}
+                      <div className="space-y-1 md:col-span-2">
+                        <Label className="text-gray-600 font-medium">Remarks</Label>
+                        <Textarea
+                          placeholder="Enter remarks..."
+                          value={formData.remarks || ""}
+                          onChange={(e) => handleInputChange("remarks", e.target.value)}
+                          className="border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {!isVideoCallSolved && formData.videoCallServicesSolve === "no" && (
+                    <div className="space-y-4 md:col-span-2 border-t border-blue-100 pt-4 mt-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-semibold text-blue-800">Item & Quantity Details *</h4>
+                        <Button
+                          type="button"
+                          onClick={handleAddItemRow}
+                          disabled={itemRows.length >= 15}
+                          className="flex items-center space-x-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs shadow transition-all duration-300"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Row ({itemRows.length}/15)</span>
+                        </Button>
+                      </div>
+
+                      <div className="border rounded-lg overflow-hidden border-blue-100">
+                        <table className="min-w-full divide-y divide-blue-100">
+                          <thead className="bg-blue-50">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-blue-700">Item Name *</th>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-blue-700 w-24">Qty *</th>
+                              <th className="px-4 py-2 text-center text-xs font-semibold text-blue-700 w-16">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-blue-50">
+                            {itemRows.map((row, index) => (
+                              <tr key={index}>
+                                <td className="px-4 py-2">
+                                  <Input
+                                    placeholder="Enter item name..."
+                                    value={row.item}
+                                    onChange={(e) => handleItemRowChange(index, "item", e.target.value)}
+                                    className="w-full border-gray-200 rounded focus:ring-1 focus:ring-blue-500 text-sm h-8"
+                                    required={index === 0}
+                                  />
+                                </td>
+                                <td className="px-4 py-2">
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Qty"
+                                    value={row.qty}
+                                    onChange={(e) => handleItemRowChange(index, "qty", e.target.value)}
+                                    className="w-full border-gray-200 rounded focus:ring-1 focus:ring-blue-500 text-sm h-8"
+                                    required={index === 0}
+                                  />
+                                </td>
+                                <td className="px-4 py-2 text-center">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteItemRow(index)}
+                                    disabled={itemRows.length <= 1}
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 h-auto rounded-md disabled:opacity-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-gray-600 font-medium">Remarks</Label>
+                        <Textarea
+                          placeholder="Enter remarks..."
+                          value={formData.remarks || ""}
+                          onChange={(e) => handleInputChange("remarks", e.target.value)}
+                          className="border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={3}
+                        />
                       </div>
                     </div>
                   )}
@@ -1414,7 +1606,10 @@ export default function VideoCallSolution() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setShowSolutionModal(false)}
+                      onClick={() => {
+                        setShowSolutionModal(false);
+                        setIsVideoCallSolved(false);
+                      }}
                       data-testid="button-cancel-solution"
                       className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
                     >

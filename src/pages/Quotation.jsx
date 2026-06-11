@@ -2,21 +2,11 @@ import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
 import {
   Tabs,
   TabsContent,
@@ -24,26 +14,25 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
-import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
 import { Loader2Icon, LoaderIcon } from "lucide-react";
 import MakeQuotation from "./Quotation/MakeQuotation";
 
 export default function Quotation() {
   const [activeTab, setActiveTab] = useState("pending");
-  const [pendingTickets, setPendingTickets] = useState([]);
-  const [historyTickets, setHistoryTickets] = useState([]);
   const [showQuotationModal, setShowQuotationModal] = useState(false);
   const [masterData, setMasterData] = useState({});
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
 
   const [quotationData, setQuotationData] = useState([]);
+  const [ticketsMap, setTicketsMap] = useState({});
 
   const [pendingData, setPendingData] = useState([]);
   const [historyData, setHistoryData] = useState([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingQuotation, setIsUploadingQuotation] = useState(false);
   const [searchItem, setSearchItem] = useState("");
   const [filterTotalQuotation, setFilterTotalQuotation] = useState("all");
   const [isCancelled, setIsCancelled] = useState(false);
@@ -52,8 +41,6 @@ export default function Quotation() {
 
   const sheet_url =
     import.meta.env.VITE_APPS_SCRIPT_API;
-
-  const Sheet_Id = import.meta.env.VITE_GOOGLE_SHEET_ID;
 
   const fetchData = async () => {
     setFetchLoading(true);
@@ -64,56 +51,44 @@ export default function Quotation() {
       if (json.success && Array.isArray(json.data)) {
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
-          timeStemp: row[0],
-          ticketId: row[1],
-          clientName: row[2],
-          phoneNumber: row[3],
-          emailAddress: row[4],
-          category: row[5],
-          priority: row[6],
-          title: row[7],
-          description: row[8],
-          planned1: row[9],
-          actual1: row[10],
-          delay1: row[11],
-          callType: row[12],
-          requirementServiceCategory: row[13],
-          videoCall: row[14],
-          sourceOfEnquiry: row[15],
-          enquiryReceiverName: row[16],
-          warrantyCheck: row[17],
-          billNumberInput: row[18],
-          billAttachmentFile: row[19],
-          machineName: row[20],
-          enquiryType: row[21],
-          siteName: row[22],
-          companyName: row[23],
-          siteAddress: row[24],
-          gstAddress: row[25],
-          state: row[26],
-          pinCode: row[27],
-          engineerAssign: row[28],
-          serviceLocation: row[29],
-          uploadChallan: row[30],
-          planned2: row[31],
-          actual2: row[32],
-          delay2: row[33],
-          videoCallServicesSolve: row[34],
-          afterVideoCallGenerateOTP: row[35],
-          otpVarificationStatus: row[36],
-          planned3: row[37],
-          actual3: row[38],
-          delay3: row[39],
-          quotationNo: row[40],
-          basicAmount: row[41],
-          totalAmoutWithTex: row[42],
-          quotationPdfLink: row[43],
-          quotationShareByPersonName: row[44],
-          ShareThrough: row[45],
-          quotationRemarks: row[46],
+          timeStemp: row[0] || "",
+          ticketId: row[1] || "",
+          sourceOfEnquiry: row[12] || "",
+          callType: row[13] || "",
+          enquiryReceiverName: row[14] || "",
+          clientType: row[15] || "",
+          companyName: row[16] || "",
+          clientName: row[17] || "",
+          phoneNumber: row[18] || "",
+          gstAddress: row[19] || "",
+          siteAddress: row[20] || "",
+          gstNo: row[21] || "",
+          machineName: row[22] || "",
+          category: row[23] || "",
+          mentionIssue: row[24] || "",
+          serviceLocation: row[25] || "",
+
+          // Stage specific
+          emailAddress: row[4] || "",
+          title: row[7] || "",
+          description: row[8] || "",
+          otpVarificationStatus: row[36] || "",
+
+          planned3: row[37] || "",
+          actual3: row[38] || "",
           totalQutation: row[125] || row[99] || row[100] || "",
-          CREName: row[127],
+          CREName: row[127] || "",
+          engineerAssign: row[130] || row[28] || "",
         }));
+
+        // Store standard lookup map for history enrichment
+        const ticketsMapObj = {};
+        allData.forEach((ticket) => {
+          if (ticket.ticketId) {
+            ticketsMapObj[ticket.ticketId] = ticket;
+          }
+        });
+        setTicketsMap(ticketsMapObj);
 
         const pending = allData.filter(
           (item) => item.planned3 !== "" && item.actual3 === ""
@@ -242,7 +217,6 @@ export default function Quotation() {
 
   const filteredPendingDataa = pendingData
     .filter((item) => {
-      const phoneNumberStr = String(item.phoneNumber || "");
       const q = searchItem.toLowerCase();
       const matchesSearch =
         String(item.ticketId || "").toLowerCase().includes(q) ||
@@ -270,28 +244,47 @@ export default function Quotation() {
     })
     .reverse();
 
-  const filteredHistoryDataa = quotationData.filter((item) => {
-    const phoneNumberStr = String(item.phone_number || "");
-    const quotationNoStr = String(item["quotation_no."] || "");
+  const enrichedQuotationData = quotationData.map((item) => {
+    const ticketDetails = ticketsMap[item.ticket_id] || {};
+    return {
+      ...item,
+      // 16 core pipeline properties
+      timeStemp: ticketDetails.timeStemp || item.timestamp || "",
+      ticketId: item.ticket_id || "",
+      sourceOfEnquiry: ticketDetails.sourceOfEnquiry || "",
+      callType: ticketDetails.callType || "",
+      enquiryReceiverName: ticketDetails.enquiryReceiverName || "",
+      clientType: ticketDetails.clientType || "",
+      companyName: ticketDetails.companyName || item.company_name || "",
+      clientName: ticketDetails.clientName || item.client_name || "",
+      phoneNumber: ticketDetails.phoneNumber || item.phone_number || "",
+      gstAddress: ticketDetails.gstAddress || "",
+      siteAddress: ticketDetails.siteAddress || "",
+      gstNo: ticketDetails.gstNo || "",
+      machineName: ticketDetails.machineName || "",
+      category: ticketDetails.category || "",
+      mentionIssue: ticketDetails.mentionIssue || "",
+      serviceLocation: ticketDetails.serviceLocation || "",
+
+      // Roles lookup fallback
+      CREName: ticketDetails.CREName || "",
+      engineerAssign: ticketDetails.engineerAssign || "",
+    };
+  });
+
+  const filteredHistoryDataa = enrichedQuotationData.filter((item) => {
     const q = searchItem.toLowerCase();
     const matchesSearch =
-      String(item.ticket_id || "").toLowerCase().includes(q) ||
-      String(item.client_name || "").toLowerCase().includes(q) ||
-      String(item.company_name || "").toLowerCase().includes(q) ||
-      String(item.phone_number || "").toLowerCase().includes(q) ||
-      String(item["quotation_no."] || "").toLowerCase().includes(q);
+      String(item.ticketId || "").toLowerCase().includes(q) ||
+      String(item.clientName || "").toLowerCase().includes(q) ||
+      String(item.companyName || "").toLowerCase().includes(q) ||
+      String(item.phoneNumber || "").toLowerCase().includes(q) ||
+      String(item["quotation_no."] || item.quotation_no || "").toLowerCase().includes(q);
 
     return matchesSearch;
   });
 
-  useEffect(() => {
-    const tickets = storage.getTickets();
-    const pending = tickets.filter((t) => t.status === "video-call-completed");
-    const history = tickets.filter((t) => t.status === "quotation-completed");
 
-    setPendingTickets(pending);
-    setHistoryTickets(history);
-  }, []);
 
   const handleQuotationClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -373,6 +366,35 @@ export default function Quotation() {
     }
   };
 
+  const handleQuotationChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingQuotation(true);
+    try {
+      const result = await uploadImageToDrive(file);
+      if (result.success && result.fileUrl) {
+        handleInputChange("quotationPdfUrl", result.fileUrl);
+        handleInputChange("quotationPdfLink", result.fileUrl);
+        toast({
+          title: "Success",
+          description: "Quotation details uploaded successfully",
+        });
+      } else {
+        e.target.value = null;
+        handleInputChange("quotationPdfUrl", "");
+        handleInputChange("quotationPdfLink", "");
+      }
+    } catch (error) {
+      console.error(error);
+      e.target.value = null;
+      handleInputChange("quotationPdfUrl", "");
+      handleInputChange("quotationPdfLink", "");
+    } finally {
+      setIsUploadingQuotation(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -392,15 +414,7 @@ export default function Quotation() {
     }
 
     setIsSubmitting(true);
-    let fileUrl = "";
-
-    if (formData.quotationPdfLink) {
-      const uploadResult = await uploadImageToDrive(formData.quotationPdfLink);
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error || "Failed to upload image");
-      }
-      fileUrl = uploadResult.fileUrl;
-    }
+    let fileUrl = formData.quotationPdfUrl || formData.quotationPdfLink || "";
 
     const currentDateTime = formatDateTime(new Date());
 
@@ -551,6 +565,16 @@ export default function Quotation() {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   const userName = localStorage.getItem("currentUsername");
 
   const roleStorage = localStorage.getItem("o2d-auth-storage");
@@ -569,101 +593,82 @@ export default function Quotation() {
   // console.log("filteredHistoryData", filteredHistoryData);
 
   return (
-    <div className="space-y-2 sm:space-y-6">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="pt-2">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
-                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+    <div >
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-2">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
+              
+              {/* Left Side: Tabs buttons and Make Quotation Button */}
+              <div className="flex flex-wrap items-center gap-4">
+                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <TabsTrigger
+                    value="pending"
+                    data-testid="tab-pending"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    Pending ({filteredPendingData?.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    data-testid="tab-history"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    History ({filteredHistoryData?.length})
+                  </TabsTrigger>
+                </TabsList>
+                
+
+              </div>
+
+              {/* Right Side: Search and Dropdown Filter */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company or phone..."
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
+
+                {activeTab === "pending" && (
+                  <div className="w-full sm:w-48">
+                    <select
+                      id="totalQuotationFilter"
+                      value={filterTotalQuotation}
+                      onChange={(e) => setFilterTotalQuotation(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      data-testid="select-total-quotation-filter"
+                    >
+                      <option value="all">All Quotation Revice</option>
+                      {uniquePendingTotalQuotations.map((quotation) => (
+                        <option key={quotation} value={quotation}>
+                          {quotation}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-gradient-to-br from-green-50 to-emerald-50 text-green-600 border-green-200 hover:from-green-100 hover:to-emerald-100 shadow-sm"
+                  onClick={() => {
+                    setSelectedTicket(null);
+                    setShowMakeQuotationModal(true);
+                  }}
+                >
+                  <span className="font-medium">Make Quotation</span>
+                </Button>
               </div>
             </div>
 
-            {activeTab === "pending" && (
-              <div className="w-full md:w-64">
-                <Label
-                  htmlFor="totalQuotationFilter"
-                  className="text-sm font-medium text-blue-700"
-                >
-                  Quotation Revice
-                </Label>
-                <select
-                  id="totalQuotationFilter"
-                  value={filterTotalQuotation}
-                  onChange={(e) => setFilterTotalQuotation(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  data-testid="select-total-quotation-filter"
-                >
-                  <option value="all">All Quotation Revice</option>
-                  {uniquePendingTotalQuotations.map((quotation) => (
-                    <option key={quotation} value={quotation}>
-                      {quotation}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="mt-6">
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex  items-center justify-between">
-          <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-
-
-            <TabsTrigger
-              value="pending"
-              data-testid="tab-pending"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-            >
-              Pending({filteredPendingData?.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              data-testid="tab-history"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-            >
-              History({filteredHistoryData?.length})
-            </TabsTrigger>
-          </TabsList>
-
-
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-gradient-to-br from-green-50 to-emerald-50 text-green-600... mr-10"
-            onClick={() => {
-              setSelectedTicket(null);
-              setShowMakeQuotationModal(true);
-            }}
-          >
-            <span className="font-medium">Make Quotation</span>
-          </Button>
-        </div>
-
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Quotations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
@@ -673,34 +678,52 @@ export default function Quotation() {
                           Action
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Client Name
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                           Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                          Enquiry Receiver
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Warranty Check
+                          GST No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Engineer Assign
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
+                          Service Location
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           OTP Status
@@ -717,7 +740,7 @@ export default function Quotation() {
                       {fetchLoading ? (
                         <tr>
                           <td
-                            colSpan={14}
+                            colSpan={20}
                             className="text-center py-8 bg-white"
                           >
                             <div className="flex justify-center items-center text-blue-700">
@@ -728,7 +751,7 @@ export default function Quotation() {
                       ) : filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={14}
+                            colSpan={20}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -757,39 +780,59 @@ export default function Quotation() {
                               </Button>
                             </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
+                              {ticket.sourceOfEnquiry || ""}
                             </td>
-                            <td className="px-4 py-3">{ticket.companyName}</td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.phoneNumber}
+                              {ticket.callType || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.enquiryReceiverName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.warrantyCheck || ""}
+                              {ticket.clientType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.machineName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType || ""}
+                              {ticket.category || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.engineerAssign || ""}
+                              {ticket.mentionIssue || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
+                              {ticket.serviceLocation || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.otpVarificationStatus || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.totalQutation !== null &&
-                                ticket.totalQutation !== undefined
+                              ticket.totalQutation !== undefined
                                 ? String(ticket.totalQutation).trim() || "0"
                                 : "N/A"}
                             </td>
@@ -986,32 +1029,61 @@ export default function Quotation() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">Quotation History</CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Company Name
+                          Phone Number
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Phone Number
+                          GST No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Machine Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Location
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation No.
@@ -1040,7 +1112,7 @@ export default function Quotation() {
                       {fetchLoading ? (
                         <tr>
                           <td
-                            colSpan={11}
+                            colSpan={23}
                             className="text-center py-8 bg-white"
                           >
                             <div className="flex justify-center items-center text-blue-700">
@@ -1052,7 +1124,7 @@ export default function Quotation() {
                       ) : filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={11}
+                            colSpan={23}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -1063,7 +1135,6 @@ export default function Quotation() {
                         </tr>
                       ) : (
                         [...filteredHistoryData]
-                          .reverse()
                           .map((ticket, ind) => (
                             <tr
                               key={ind}
@@ -1072,19 +1143,55 @@ export default function Quotation() {
                               }
                             >
                               <td className="px-4 py-3 font-medium text-blue-800">
-                                {ticket.ticket_id}
+                                {formatDate(ticket.timeStemp)}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-blue-800">
+                                {ticket.ticketId}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
-                                {ticket.client_name}
+                                {ticket.sourceOfEnquiry || ""}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
-                                {ticket.company_name}
+                                {ticket.callType || ""}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
-                                {ticket.phone_number}
+                                {ticket.enquiryReceiverName || ""}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
-                                {ticket["quotation_no."]}
+                                {ticket.clientType || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.companyName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.clientName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.phoneNumber || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.gstAddress || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.siteAddress || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.gstNo || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.machineName || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.category || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.mentionIssue || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket.serviceLocation || ""}
+                              </td>
+                              <td className="px-4 py-3 text-blue-900">
+                                {ticket["quotation_no."] || ticket.quotation_no || ""}
                               </td>
                               <td className="px-4 py-3 text-blue-900">
                                 ₹{ticket.basic_amount || "0"}
@@ -1265,22 +1372,23 @@ export default function Quotation() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
       </Tabs>
 
-      {/* Quotation Modal */}
+      {/* Create Quotation Modal */}
       <Modal
         isOpen={showQuotationModal}
         onClose={() => setShowQuotationModal(false)}
         title="Create Quotation"
-        size="3xl"
+        size="2xl"
       >
-        <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="max-h-[calc(100vh-200px)] overflow-y-auto px-4 pb-4">
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             <div className="flex items-center space-x-2 mb-10">
               <input
@@ -1396,15 +1504,34 @@ export default function Quotation() {
                   />
                 </div>
                 <div>
-                  <Label>Quotation PDF Link *</Label>
+                  <Label className="flex items-center gap-2">
+                    Quotation PDF Link *
+                    {isUploadingQuotation && (
+                      <LoaderIcon className="animate-spin w-4 h-4 text-blue-600" />
+                    )}
+                  </Label>
                   <Input
                     type="file"
-                    placeholder="Enter PDF link"
-                    onChange={(e) =>
-                      handleInputChange("quotationPdfLink", e.target.files[0])
-                    }
+                    disabled={isUploadingQuotation}
+                    onChange={handleQuotationChange}
                     data-testid="input-pdf-link"
                   />
+                  {isUploadingQuotation && (
+                    <p className="text-xs text-blue-600 mt-1">Uploading file, please wait...</p>
+                  )}
+                  {formData.quotationPdfUrl && (
+                    <p className="mt-1 text-sm text-green-600">
+                      Uploaded:{" "}
+                      <a
+                        href={formData.quotationPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-green-800 font-medium"
+                      >
+                        View File
+                      </a>
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>Quotation Share By *</Label>
@@ -1442,6 +1569,7 @@ export default function Quotation() {
                 <div className="md:col-span-2 flex space-x-4 pt-4 sticky bottom-0 bg-white py-4">
                   <Button
                     type="submit"
+                    disabled={isSubmitting || isUploadingQuotation}
                     data-testid="button-submit-quotation"
                     className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
                   >

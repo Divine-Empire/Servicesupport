@@ -30,20 +30,19 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
-import { storage } from "../lib/storage";
 import { useToast } from "../hooks/use-toast";
 import { Loader2Icon, LoaderIcon } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 
 export default function SiteVisitPlan() {
   const [activeTab, setActiveTab] = useState("pending");
-  const [pendingTickets, setPendingTickets] = useState([]);
-  const [historyTickets, setHistoryTickets] = useState([]);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [formData, setFormData] = useState({});
   const [searchItem, setSearchItem] = useState("");
   const [isCancelled, setIsCancelled] = useState(false);
+  const [generatedTadaLink, setGeneratedTadaLink] = useState("");
+  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
 
   const [masterData, setMasterData] = useState({});
@@ -69,81 +68,43 @@ export default function SiteVisitPlan() {
         // Process the data to match your requirements
         const allData = json.data.slice(6).map((row, index) => ({
           id: index + 1,
-          timeStemp: row[0],
-          ticketId: row[1], // Column A (assuming this is Ticket id)
-          clientName: row[2], // Column C
-          phoneNumber: row[3], // Column D
-          emailAddress: row[4], // Column E
-          category: row[5], // Column F
-          priority: row[6], // Column G
-          title: row[7], // Column H
-          description: row[8], // Column I
-          planned1: row[9], // Column J
-          actual1: row[10], // Column K
+          timeStemp: row[0] || "",
+          ticketId: row[1] || "",
+          sourceOfEnquiry: row[12] || "",
+          callType: row[13] || "",
+          enquiryReceiverName: row[14] || "",
+          clientType: row[15] || "",
+          companyName: row[16] || "",
+          clientName: row[17] || "",
+          phoneNumber: row[18] || "",
+          gstAddress: row[19] || "",
+          siteAddress: row[20] || "",
+          gstNo: row[21] || "",
+          machineName: row[22] || "",
+          category: row[23] || "",
+          mentionIssue: row[24] || "",
+          serviceLocation: row[25] || "",
 
-          delay1: row[11], // Delay1
-          callType: row[12], // Call type
-          requirementServiceCategory: row[13], // Enquiry Type (first one)
-          videoCall: row[14], // Enquiry Type (first one)
+          // Stage specific
+          emailAddress: row[4] || "",
+          title: row[7] || "",
+          description: row[8] || "",
 
-          sourceOfEnquiry: row[15], // Source of enquiry
-          enquiryReceiverName: row[16], // Enquiry Receiver Name
-          warrantyCheck: row[17], // Warranty Check
-          billNumberInput: row[18], // Bill Number Input
+          engineerAssign: row[130] || row[28] || "",
+          warrantyCheck: row[134] || "",
+          siteName: row[20] || "",
 
-          billAttachmentFile: row[19], // Bill Number Input
+          paymentTerm: row[51] || "",
+          acceptanceVia: row[52] || "",
+          paymentMode: row[54] || "",
+          seniorApproval: row[55] || "",
 
-          machineName: row[20], // Machine Name
-          enquiryType: row[21], // Enquiry Type (second one)
-          siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
-          state: row[26], // State
-          pinCode: row[27], // PIN Code
-          engineerAssign: row[28], // Engineer Name
-          serviceLocation: row[29], // Service Location
-          uploadChallan: row[30],
-
-          planned2: row[31],
-          actual2: row[32],
-          delay2: row[33],
-          videoCallServicesSolve: row[34],
-          afterVideoCallGenerateOTP: row[35],
-          otpVarificationStatus: row[36],
-
-          planned3: row[37],
-          actual3: row[38],
-          delay3: row[39],
-          quotationNo: row[40],
-          basicAmount: row[41],
-          totalAmoutWithTex: row[42],
-          quotationPdfLink: row[43],
-          quotationShareByPersonName: row[44],
-          ShareThrough: row[45],
-          quotationremarks: row[46],
-
-          planned4: row[47],
-          actual4: row[48],
-
-          stage: row[50],
-          paymentTerm: row[51],
-          acceptanceVia: row[52],
-          acceptanceAttachemntFile: row[53],
-          paymentMode: row[54],
-          seniorApproval: row[55],
-          approvalAttachmentFile: row[56],
-          whatDidTheCustomerSay: row[57],
-          nextAction: row[58],
-          nextDateOfCall: row[59],
-          followUpRemarks: row[60],
-
-          planned5: row[61],
-          actual5: row[62],
-          delay5: row[63],
-          dateOfVisit: row[64],
-          transportation: row[65],
-          CREName: row[127],
+          planned5: row[61] || "",
+          actual5: row[62] || "",
+          delay5: row[63] || "",
+          dateOfVisit: row[64] || "",
+          transportation: row[65] || "",
+          CREName: row[127] || "",
         }));
 
         // Filter data based on your conditions
@@ -217,19 +178,10 @@ export default function SiteVisitPlan() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const tickets = storage.getTickets();
-    const pending = tickets.filter((t) => t.status === "follow-up-completed");
-    const history = tickets.filter(
-      (t) => t.status === "site-visit-plan-completed"
-    );
-
-    setPendingTickets(pending);
-    setHistoryTickets(history);
-  }, []);
-
   const handlePlanClick = (ticket) => {
     setSelectedTicket(ticket);
+    setGeneratedTadaLink("");
+    setLinkCopied(false);
     setFormData({
       ticketId: ticket.ticketId,
       clientName: ticket.clientName,
@@ -237,16 +189,11 @@ export default function SiteVisitPlan() {
       enquiryReceiverName: ticket.enquiryReceiverName || "",
       warrantyCheck: ticket.warrantyCheck || "",
       machineName: ticket.machineName || "",
-      enquiryType: ticket.enquiryType || "",
       engineerAssign: ticket.engineerAssign || "",
-      siteName: ticket.siteName || "",
-      status: ticket.status || "",
+      siteName: ticket.siteAddress || ticket.siteName || "",
       paymentTerm: ticket.paymentTerm || "",
-      againstDelivery: ticket.againstDelivery || "",
       acceptanceVia: ticket.acceptanceVia || "",
-      paymentTerms: ticket.paymentTerms || "",
       paymentMode: ticket.paymentMode || "",
-      advanceAttachment: ticket.advanceAttachment || "",
       seniorApproval: ticket.seniorApproval || "",
       dateOfVisit: "",
       transportation: "",
@@ -267,6 +214,9 @@ export default function SiteVisitPlan() {
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
 
+    // Generate unique TADA deep-link for this ticket
+    const tadaLink = `${window.location.origin}/tada?ticketId=${encodeURIComponent(selectedTicket.ticketId)}`;
+
     try {
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -282,7 +232,8 @@ export default function SiteVisitPlan() {
             BK: currentDateTime,
             BM: formData.dateOfVisit,
             BN: formData.transportation || "",
-            AC: formData.engineerAssign || selectedTicket.engineerAssign,
+            EA: formData.engineerAssign || selectedTicket.engineerAssign,
+            EI: tadaLink,
           }),
         }).toString(),
       });
@@ -308,12 +259,15 @@ export default function SiteVisitPlan() {
           ...prevHistory,
         ]);
 
+        // Store the link and show it in the modal instead of closing
+        setGeneratedTadaLink(tadaLink);
+        setLinkCopied(false);
+
         toast({
           title: "Success",
           description: "Ticket details saved successfully",
         });
-        setShowPlanModal(false);
-        // fetchTickets(); // Refresh the ticket list
+        // Modal stays open to show the generated link
       } else {
         throw new Error(result.error || "Failed to save ticket details");
       }
@@ -466,59 +420,49 @@ export default function SiteVisitPlan() {
   // console.log("filteredHistoryDataa", filteredHistoryDataa);
 
   return (
-    <div className="space-y-2">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="pt-2">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone)
-              </Label>
-              <div className="relative mt-1">
-                <Input
-                  id="searchFilter"
-                  placeholder="Search by ticket ID, client, company or phone..."
-                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                  data-testid="input-search-filter"
-                  onChange={(e) => setSearchItem(e.target.value)}
-                />
+    <div >
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-2">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
+              
+              {/* Left Side: Tabs buttons */}
+              <div className="flex flex-wrap items-center gap-4">
+                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <TabsTrigger
+                    value="pending"
+                    data-testid="tab-pending"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    Pending ({filteredPendingData.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="history"
+                    data-testid="tab-history"
+                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    History ({filteredHistoryData.length})
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Right Side: Search Input */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
+                  <Input
+                    id="searchFilter"
+                    placeholder="Search by ticket ID, client, company or phone..."
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                    data-testid="input-search-filter"
+                    onChange={(e) => setSearchItem(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History ({filteredHistoryData.length})
-          </TabsTrigger>
-        </TabsList>
+            <div className="mt-6">
 
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Site Visit Plans
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
@@ -528,7 +472,25 @@ export default function SiteVisitPlan() {
                           Action
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
-                          Ticket ID
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
@@ -536,23 +498,32 @@ export default function SiteVisitPlan() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
                         </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Receiver Name
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Warranty Check
+                          GST No.
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Enquiry Type
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Service Location
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Warranty Check
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Engineer Assign
-                        </th>
-                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Payment term
@@ -572,7 +543,7 @@ export default function SiteVisitPlan() {
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={17}
+                            colSpan={23}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -607,37 +578,64 @@ export default function SiteVisitPlan() {
                               </Button>
                             </td>
                             <td className="px-4 py-3 font-medium text-blue-800">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
+                              {ticket.sourceOfEnquiry || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.phoneNumber}
+                              {ticket.callType || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryReceiverName}
+                              {ticket.enquiryReceiverName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.warrantyCheck}
+                              {ticket.clientType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.machineName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.enquiryType}
+                              {ticket.category || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.mentionIssue || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.warrantyCheck || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.engineerAssign || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
+                              {ticket.paymentTerm || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.paymentTerm}
-                            </td>
-                            <td className="px-4 py-3 text-blue-900">
-                              {ticket.acceptanceVia}
+                              {ticket.acceptanceVia || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.paymentMode || ""}
@@ -812,25 +810,34 @@ export default function SiteVisitPlan() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Site Visit Plan History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
                 <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Date
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">
+                          Ticket-ID
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Ticket ID
+                          Source of enquiry
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Call type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">
+                          Enquiry Receiver Name
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Client Type
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Client Name
@@ -838,14 +845,29 @@ export default function SiteVisitPlan() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Phone Number
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          GST Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Site Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          GST No.
+                        </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Machine Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Engineer Assign
+                          Category
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
+                          Mention Issue
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
-                          Site Name
+                          Service Location
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Engineer Assign
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Travel Date
@@ -859,7 +881,7 @@ export default function SiteVisitPlan() {
                       {filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={8}
+                            colSpan={19}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -883,22 +905,55 @@ export default function SiteVisitPlan() {
                             }
                           >
                             <td className="px-4 py-3 font-medium text-blue-800">
+                              {formatDate(ticket.timeStemp)}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-blue-800">
                               {ticket.ticketId}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.clientName}
+                              {ticket.sourceOfEnquiry || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.phoneNumber}
+                              {ticket.callType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.enquiryReceiverName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientType || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.clientName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.phoneNumber || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.gstNo || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.machineName || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.engineerAssign || ""}
+                              {ticket.category || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
-                              {ticket.siteName || ""}
+                              {ticket.mentionIssue || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.serviceLocation || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.engineerAssign || ""}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {formatDate(ticket.dateOfVisit) || ""}
@@ -1015,9 +1070,10 @@ export default function SiteVisitPlan() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
         </TabsContent>
+            </div>
+          </CardContent>
+        </Card>
       </Tabs>
 
       {/* Site Visit Plan Modal */}
@@ -1174,24 +1230,71 @@ export default function SiteVisitPlan() {
                 </Select>
               </div>
 
-              <div className="md:col-span-2 flex space-x-4 pt-4">
-                <Button
-                  type="submit"
-                  data-testid="button-submit-plan"
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
-                >
-                  {isSubmitting && <Loader2Icon className="animate-spin" />}
-                  Submit
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowPlanModal(false)}
-                  data-testid="button-cancel-plan"
-                >
-                  Cancel
-                </Button>
-              </div>
+              {/* Generated TADA Link (shown after successful submission) */}
+              {generatedTadaLink ? (
+                <div className="md:col-span-2 mt-2 p-4 bg-green-50 border border-green-200 rounded-xl space-y-3">
+                  <p className="text-sm font-semibold text-green-800">✅ Plan submitted! Share this TADA link with the engineer via WhatsApp:</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      readOnly
+                      value={generatedTadaLink}
+                      className="flex-1 text-xs bg-white border border-green-300 rounded-lg px-3 py-2 text-gray-700 font-mono select-all"
+                      onClick={(e) => e.target.select()}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedTadaLink);
+                        setLinkCopied(true);
+                        setTimeout(() => setLinkCopied(false), 3000);
+                      }}
+                      className="px-3 py-2 text-xs font-semibold rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors whitespace-nowrap"
+                    >
+                      {linkCopied ? "✓ Copied!" : "Copy Link"}
+                    </button>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Please process the TADA form for this ticket:\n${generatedTadaLink}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-center py-2 text-xs font-semibold rounded-lg bg-[#25D366] hover:bg-[#1ebe5d] text-white transition-colors"
+                    >
+                      📱 Share on WhatsApp
+                    </a>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowPlanModal(false);
+                        setGeneratedTadaLink("");
+                      }}
+                      className="flex-1 text-xs"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="md:col-span-2 flex space-x-4 pt-4">
+                  <Button
+                    type="submit"
+                    data-testid="button-submit-plan"
+                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
+                  >
+                    {isSubmitting && <Loader2Icon className="animate-spin" />}
+                    Submit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPlanModal(false)}
+                    data-testid="button-cancel-plan"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </>
           )}
 

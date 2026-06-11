@@ -26,19 +26,19 @@ const Login = () => {
 
         localStorage.setItem('currentUsername', user.username);
 
-      const pages = user.page.split(",").map((item) => item.trim());
+      const pages = user.page.split(",")
+        .map((item) => item.trim())
+        .map((item) => (item === "Client Details" || item === "Ticket & Enquiry" ? "Ticket-and-Enquiry" : item));
 
       // console.log("pages", pages);
 
       const mainPages = [
         "Dashboard",
-        "Ticket & Enquiry",
-        "Client Details",
+        "Ticket-and-Enquiry",
         "Video Call Solution",
         "Quotation",
         "Follow-Up",
         "Site Visit Plan",
-        "Warehouse1",
         "TADA",
         "Expense Approval By Senior",
         "Expense Approval By Accountant",
@@ -46,7 +46,6 @@ const Login = () => {
         "Site Visit Detail",
         "Invoice",
         "Account Verification",
-        "Warehouse2",
         "Calibration",
         "Accountability & Approvals",
         "Calibration Certificate",
@@ -64,10 +63,8 @@ const Login = () => {
 
       if (pagesss === "Dashboard") {
         navigate("/");
-      } else if (pagesss === "Ticket & Enquiry") {
-        navigate("/tickets");
-      } else if (pagesss === "Client Details") {
-        navigate("/clients");
+      } else if (pagesss === "Ticket-and-Enquiry") {
+        navigate("/ticket-and-enquiry");
       } else if (pagesss === "Video Call Solution") {
         navigate("/videocall");
       } else if (pagesss === "Quotation") {
@@ -76,8 +73,6 @@ const Login = () => {
         navigate("/followup");
       } else if (pagesss === "Site Visit Plan") {
         navigate("/siteplan");
-      } else if (pagesss === "Warehouse1") {
-        navigate("/warehouse1");
       }else if (pagesss === "TADA") {
         navigate("/tada");
       } else if (pagesss === "Expense Approval By Senior") {
@@ -92,8 +87,6 @@ const Login = () => {
         navigate("/invoice");
       } else if (pagesss === "Account Verification") {
         navigate("/account");
-      } else if (pagesss === "Warehouse2") {
-        navigate("/warehouse2");
       } else if (pagesss === "Calibration") {
         navigate("/calibration");
       }else if (pagesss === "Accountability & Approvals") {

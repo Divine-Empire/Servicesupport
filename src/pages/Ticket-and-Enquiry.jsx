@@ -65,10 +65,40 @@ export default function TicketAndEnquiry() {
     serviceLocation: ""
   });
   const [newFormSelectedMachines, setNewFormSelectedMachines] = useState([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingTicket, setEditingTicket] = useState(null);
 
   const { toast } = useToast();
 
   const sheet_url = import.meta.env.VITE_APPS_SCRIPT_API;
+
+  const handleEditClick = (ticket) => {
+    setIsEditMode(true);
+    setEditingTicket(ticket);
+    setNewEnquiryData({
+      clientType: ticket.clientType || "New",
+      sourceOfEnquiry: ticket.sourceOfEnquiry || "",
+      callType: ticket.callType || "",
+      enquiryReceiverName: ticket.enquiryReceiverName || "",
+      companyName: ticket.companyName || "",
+      clientName: ticket.clientName || "",
+      phoneNumber: ticket.phoneNumber || "",
+      gstAddress: ticket.gstAddress || "",
+      siteAddress: ticket.siteAddress || "",
+      gstNo: ticket.gstNo || "",
+      machineName: ticket.machineName || "",
+      category: ticket.category || "",
+      mentionIssue: ticket.mentionIssue || "",
+      serviceLocation: ticket.serviceLocation || ""
+    });
+
+    const machines = ticket.machineName
+      ? ticket.machineName.split(",").map((m) => m.trim()).filter(Boolean)
+      : [];
+    setNewFormSelectedMachines(machines);
+
+    setShowNewEnquiryForm(true);
+  };
 
   const fetchData = async () => {
     setFetchLoading(true);
@@ -100,12 +130,28 @@ export default function TicketAndEnquiry() {
             CREName: row[127] || "",
             planned1: row[9] || "",
             actual1: row[10] || "",
+            colAI: row[34] || "",
+            colAL: row[37] || "",
+            colDI: row[112] || "",
           };
+        });
+
+        // Records which are completed in VC/Cancelled/Invoice won't be visible
+        const filteredAllData = allData.filter((ticket) => {
+          const valAI = String(ticket.colAI).trim().toLowerCase();
+          const valAL = String(ticket.colAL).trim();
+          const valDI = String(ticket.colDI).trim();
+
+          const isAI_Yes = valAI === "yes";
+          const isAL_Empty = valAL === "";
+          const isDI_NotEmpty = valDI !== "";
+
+          return !(isAI_Yes || isAL_Empty || isDI_NotEmpty);
         });
 
         // Uniqueness check by Ticket ID, keeping the latest one
         const uniqueTicketsMap = new Map();
-        allData.forEach((ticket) => {
+        filteredAllData.forEach((ticket) => {
           if (ticket.ticketId) {
             uniqueTicketsMap.set(ticket.ticketId, ticket);
           }
@@ -275,75 +321,140 @@ export default function TicketAndEnquiry() {
     const currentDateTime = formatDateTime(new Date());
 
     try {
-      const rowData = Array(128).fill("");
-      rowData[0] = currentDateTime;
-      rowData[1] = "";
-      rowData[9] = currentDateTime;
+      if (isEditMode && editingTicket) {
+        const columnData = {
+          M: newEnquiryData.sourceOfEnquiry || "",
+          N: newEnquiryData.callType || "",
+          O: newEnquiryData.enquiryReceiverName || "",
+          P: newEnquiryData.clientType || "",
+          Q: newEnquiryData.companyName || "",
+          R: newEnquiryData.clientName || "",
+          S: newEnquiryData.phoneNumber || "",
+          T: newEnquiryData.gstAddress || "",
+          U: newEnquiryData.siteAddress || "",
+          V: newEnquiryData.gstNo || "",
+          W: newFormSelectedMachines.join(", "),
+          X: newEnquiryData.category || "",
+          Y: newEnquiryData.mentionIssue || "",
+          Z: newEnquiryData.serviceLocation || "",
+        };
 
-      rowData[12] = newEnquiryData.sourceOfEnquiry || "";
-      rowData[13] = newEnquiryData.callType || "";
-      rowData[14] = newEnquiryData.enquiryReceiverName || "";
-      rowData[15] = newEnquiryData.clientType || "";
-      rowData[16] = newEnquiryData.companyName || "";
-      rowData[17] = newEnquiryData.clientName || "";
-      rowData[18] = newEnquiryData.phoneNumber || "";
-      rowData[19] = newEnquiryData.gstAddress || "";
-      rowData[20] = newEnquiryData.siteAddress || "";
-      rowData[21] = newEnquiryData.gstNo || "";
-      rowData[22] = newFormSelectedMachines.join(", ");
-      rowData[23] = newEnquiryData.category || "";
-      rowData[24] = newEnquiryData.mentionIssue || "";
-      rowData[25] = newEnquiryData.serviceLocation || "";
-
-      rowData[117] = "No";
-      rowData[127] = userName || "";
-
-      const response = await fetch(sheet_url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          sheetName: "Ticket_Enquiry",
-          action: "insertTicket",
-          rowData: JSON.stringify(rowData),
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: `Enquiry created successfully with Ticket ID: ${result.ticketId}`,
+        const response = await fetch(sheet_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            sheetId: import.meta.env.VITE_GOOGLE_SHEET_ID,
+            sheetName: "Ticket_Enquiry",
+            action: "update",
+            rowIndex: (editingTicket.id + 6).toString(),
+            columnData: JSON.stringify(columnData),
+          }),
         });
-        setShowNewEnquiryForm(false);
-        setNewEnquiryData({
-          clientType: "New",
-          sourceOfEnquiry: "",
-          callType: "",
-          enquiryReceiverName: "",
-          companyName: "",
-          clientName: "",
-          phoneNumber: "",
-          gstAddress: "",
-          siteAddress: "",
-          gstNo: "",
-          machineName: "",
-          category: "",
-          mentionIssue: "",
-          serviceLocation: ""
-        });
-        setNewFormSelectedMachines([]);
-        fetchData();
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: `Enquiry updated successfully for Ticket ID: ${editingTicket.ticketId}`,
+          });
+          setShowNewEnquiryForm(false);
+          setNewEnquiryData({
+            clientType: "New",
+            sourceOfEnquiry: "",
+            callType: "",
+            enquiryReceiverName: "",
+            companyName: "",
+            clientName: "",
+            phoneNumber: "",
+            gstAddress: "",
+            siteAddress: "",
+            gstNo: "",
+            machineName: "",
+            category: "",
+            mentionIssue: "",
+            serviceLocation: ""
+          });
+          setNewFormSelectedMachines([]);
+          setIsEditMode(false);
+          setEditingTicket(null);
+          fetchData();
+        } else {
+          throw new Error(result.error || "Failed to update enquiry");
+        }
       } else {
-        throw new Error(result.error || "Failed to create enquiry");
+        const rowData = Array(128).fill("");
+        rowData[0] = currentDateTime;
+        rowData[1] = "";
+        rowData[9] = currentDateTime;
+
+        rowData[12] = newEnquiryData.sourceOfEnquiry || "";
+        rowData[13] = newEnquiryData.callType || "";
+        rowData[14] = newEnquiryData.enquiryReceiverName || "";
+        rowData[15] = newEnquiryData.clientType || "";
+        rowData[16] = newEnquiryData.companyName || "";
+        rowData[17] = newEnquiryData.clientName || "";
+        rowData[18] = newEnquiryData.phoneNumber || "";
+        rowData[19] = newEnquiryData.gstAddress || "";
+        rowData[20] = newEnquiryData.siteAddress || "";
+        rowData[21] = newEnquiryData.gstNo || "";
+        rowData[22] = newFormSelectedMachines.join(", ");
+        rowData[23] = newEnquiryData.category || "";
+        rowData[24] = newEnquiryData.mentionIssue || "";
+        rowData[25] = newEnquiryData.serviceLocation || "";
+
+        rowData[117] = "No";
+        rowData[127] = userName || "";
+
+        const response = await fetch(sheet_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            sheetName: "Ticket_Enquiry",
+            action: "insertTicket",
+            rowData: JSON.stringify(rowData),
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: `Enquiry created successfully with Ticket ID: ${result.ticketId}`,
+          });
+          setShowNewEnquiryForm(false);
+          setNewEnquiryData({
+            clientType: "New",
+            sourceOfEnquiry: "",
+            callType: "",
+            enquiryReceiverName: "",
+            companyName: "",
+            clientName: "",
+            phoneNumber: "",
+            gstAddress: "",
+            siteAddress: "",
+            gstNo: "",
+            machineName: "",
+            category: "",
+            mentionIssue: "",
+            serviceLocation: ""
+          });
+          setNewFormSelectedMachines([]);
+          fetchData();
+        } else {
+          throw new Error(result.error || "Failed to create enquiry");
+        }
       }
     } catch (error) {
-      console.error("Error creating enquiry:", error);
+      console.error("Error saving enquiry:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create enquiry",
+        description: error.message || "Failed to save enquiry",
         variant: "destructive",
       });
     } finally {
@@ -487,7 +598,28 @@ export default function TicketAndEnquiry() {
             )}
 
             <Button
-              onClick={() => setShowNewEnquiryForm(true)}
+              onClick={() => {
+                setIsEditMode(false);
+                setEditingTicket(null);
+                setNewEnquiryData({
+                  clientType: "New",
+                  sourceOfEnquiry: "",
+                  callType: "",
+                  enquiryReceiverName: "",
+                  companyName: "",
+                  clientName: "",
+                  phoneNumber: "",
+                  gstAddress: "",
+                  siteAddress: "",
+                  gstNo: "",
+                  machineName: "",
+                  category: "",
+                  mentionIssue: "",
+                  serviceLocation: ""
+                });
+                setNewFormSelectedMachines([]);
+                setShowNewEnquiryForm(true);
+              }}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-sm transition-all duration-300 rounded-lg px-4 py-2 flex items-center gap-1.5 group shrink-0 h-9"
             >
               <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
@@ -501,6 +633,7 @@ export default function TicketAndEnquiry() {
               <table className="hidden sm:block w-full">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[100px] sticky top-0">Actions</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">Date</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[120px] sticky top-0">Ticket-ID</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">Source of enquiry</th>
@@ -522,7 +655,7 @@ export default function TicketAndEnquiry() {
                 <tbody className="bg-white divide-y divide-blue-100">
                   {filteredPendingData.length === 0 ? (
                     <tr>
-                      <td colSpan={16} className="text-center py-8 bg-white">
+                      <td colSpan={17} className="text-center py-8 bg-white">
                         {fetchLoading ? (
                           <div className="flex justify-center items-center text-blue-700">
                             <LoaderIcon className="animate-spin w-8 h-8" />
@@ -535,6 +668,16 @@ export default function TicketAndEnquiry() {
                   ) : (
                     filteredPendingData.map((ticket, ind) => (
                       <tr key={ind} className={ind % 2 === 0 ? "bg-blue-50/50" : "bg-white"}>
+                        <td className="px-4 py-3 text-blue-900">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(ticket)}
+                            className="border-blue-200 text-blue-700 hover:bg-blue-50 h-8 px-3 shadow-sm font-semibold rounded"
+                          >
+                            Edit
+                          </Button>
+                        </td>
                         <td className="px-4 py-3 text-blue-900">{formatDate(ticket.timeStemp)}</td>
                         <td className="px-4 py-3 text-blue-900 font-semibold">{ticket.ticketId}</td>
                         <td className="px-4 py-3 text-blue-900">{ticket.sourceOfEnquiry}</td>
@@ -585,6 +728,14 @@ export default function TicketAndEnquiry() {
                             <h3 className="font-bold text-blue-800 text-lg mt-1">{ticket.companyName || "No Company"}</h3>
                             <p className="text-sm text-gray-600">{ticket.clientName}</p>
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(ticket)}
+                            className="border-blue-200 text-blue-700 hover:bg-blue-50 h-8 px-3 shadow-sm font-semibold rounded shrink-0"
+                          >
+                            Edit
+                          </Button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -657,7 +808,7 @@ export default function TicketAndEnquiry() {
         title={
           <div className="flex items-center space-x-2">
             <ClipboardList className="w-5 h-5 text-blue-600" />
-            <span>New Enquiry</span>
+            <span>{isEditMode ? `Edit Enquiry: ${editingTicket?.ticketId}` : "New Enquiry"}</span>
           </div>
         }
         size="4xl"
@@ -961,7 +1112,7 @@ export default function TicketAndEnquiry() {
               {isSubmitting && (
                 <Loader2Icon className="animate-spin w-4 h-4 mr-2" />
               )}
-              Create Enquiry
+              {isEditMode ? "Save Changes" : "Create Enquiry"}
             </Button>
           </div>
         </form>

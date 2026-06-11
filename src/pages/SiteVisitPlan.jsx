@@ -41,8 +41,6 @@ export default function SiteVisitPlan() {
   const [formData, setFormData] = useState({});
   const [searchItem, setSearchItem] = useState("");
   const [isCancelled, setIsCancelled] = useState(false);
-  const [generatedTadaLink, setGeneratedTadaLink] = useState("");
-  const [linkCopied, setLinkCopied] = useState(false);
   const { toast } = useToast();
 
   const [masterData, setMasterData] = useState({});
@@ -214,9 +212,6 @@ export default function SiteVisitPlan() {
     // console.log("currentDateTime", currentDateTime);
     const id = selectedTicket?.id;
 
-    // Generate unique TADA deep-link for this ticket
-    const tadaLink = `${window.location.origin}/tada?ticketId=${encodeURIComponent(selectedTicket.ticketId)}`;
-
     try {
       const response = await fetch(sheet_url, {
         method: "POST",
@@ -233,7 +228,6 @@ export default function SiteVisitPlan() {
             BM: formData.dateOfVisit,
             BN: formData.transportation || "",
             EA: formData.engineerAssign || selectedTicket.engineerAssign,
-            EI: tadaLink,
           }),
         }).toString(),
       });
@@ -259,15 +253,11 @@ export default function SiteVisitPlan() {
           ...prevHistory,
         ]);
 
-        // Store the link and show it in the modal instead of closing
-        setGeneratedTadaLink(tadaLink);
-        setLinkCopied(false);
-
         toast({
           title: "Success",
           description: "Ticket details saved successfully",
         });
-        // Modal stays open to show the generated link
+        setShowPlanModal(false);
       } else {
         throw new Error(result.error || "Failed to save ticket details");
       }
@@ -1230,71 +1220,24 @@ export default function SiteVisitPlan() {
                 </Select>
               </div>
 
-              {/* Generated TADA Link (shown after successful submission) */}
-              {generatedTadaLink ? (
-                <div className="md:col-span-2 mt-2 p-4 bg-green-50 border border-green-200 rounded-xl space-y-3">
-                  <p className="text-sm font-semibold text-green-800">✅ Plan submitted! Share this TADA link with the engineer via WhatsApp:</p>
-                  <div className="flex items-center gap-2">
-                    <input
-                      readOnly
-                      value={generatedTadaLink}
-                      className="flex-1 text-xs bg-white border border-green-300 rounded-lg px-3 py-2 text-gray-700 font-mono select-all"
-                      onClick={(e) => e.target.select()}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(generatedTadaLink);
-                        setLinkCopied(true);
-                        setTimeout(() => setLinkCopied(false), 3000);
-                      }}
-                      className="px-3 py-2 text-xs font-semibold rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors whitespace-nowrap"
-                    >
-                      {linkCopied ? "✓ Copied!" : "Copy Link"}
-                    </button>
-                  </div>
-                  <div className="flex gap-2 pt-1">
-                    <a
-                      href={`https://wa.me/?text=${encodeURIComponent(`Please process the TADA form for this ticket:\n${generatedTadaLink}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 text-center py-2 text-xs font-semibold rounded-lg bg-[#25D366] hover:bg-[#1ebe5d] text-white transition-colors"
-                    >
-                      📱 Share on WhatsApp
-                    </a>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowPlanModal(false);
-                        setGeneratedTadaLink("");
-                      }}
-                      className="flex-1 text-xs"
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="md:col-span-2 flex space-x-4 pt-4">
-                  <Button
-                    type="submit"
-                    data-testid="button-submit-plan"
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
-                  >
-                    {isSubmitting && <Loader2Icon className="animate-spin" />}
-                    Submit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowPlanModal(false)}
-                    data-testid="button-cancel-plan"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+              <div className="md:col-span-2 flex space-x-4 pt-4">
+                <Button
+                  type="submit"
+                  data-testid="button-submit-plan"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-70 disabled:transform-none"
+                >
+                  {isSubmitting && <Loader2Icon className="animate-spin" />}
+                  Submit
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPlanModal(false)}
+                  data-testid="button-cancel-plan"
+                >
+                  Cancel
+                </Button>
+              </div>
             </>
           )}
 

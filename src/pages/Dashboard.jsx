@@ -1,5 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "../components/ui/card";
+import React, { useEffect, useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Loader2 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import { Badge } from "../components/ui/badge";
 import {
   BarChart,
   Bar,
@@ -25,6 +36,21 @@ import {
 import { set } from "date-fns";
 import toast from "react-hot-toast";
 
+// Define all Service-Support stages
+const serviceStages = [
+  { id: 2, name: "Video Call Solution", color: "bg-purple-500", start: 31, actual: 32, delay: 33, responsible: "PIYUSH TIWARI / Assigned Engineer" },
+  { id: 3, name: "Warranty Check", color: "bg-indigo-500", start: 132, actual: 133, delay: 134, responsible: "Warranty Team" },
+  { id: 4, name: "Quotation", color: "bg-cyan-500", start: 37, actual: 38, delay: 39, responsible: "PIYUSH TIWARI" },
+  { id: 5, name: "Follow-Up", color: "bg-teal-500", start: 47, actual: 48, delay: -1, responsible: "PIYUSH TIWARI" },
+  { id: 6, name: "Site Visit Plan", color: "bg-emerald-500", start: 61, actual: 62, delay: 63, responsible: "PIYUSH TIWARI" },
+  { id: 7, name: "TADA", color: "bg-green-500", start: 79, actual: 80, delay: 81, responsible: "Assigned Engineer" },
+  { id: 8, name: "Expense Approval By Senior", color: "bg-lime-500", start: 87, actual: 88, delay: 89, responsible: "SKGOLAM MORTUJA / MOHAMMAD SHOAIB KHAN" },
+  { id: 9, name: "Expense Approval By Accountant", color: "bg-yellow-500", start: 91, actual: 92, delay: 93, responsible: "TARINI KUMBHAKAR / SHANOO SHARMA" },
+  { id: 10, name: "Site Visit (Verification OTP)", color: "bg-orange-500", start: 99, actual: 100, delay: 101, responsible: "Approved Engineer" },
+  { id: 11, name: "Site Visit Detail", color: "bg-red-500", start: 105, actual: 106, delay: 107, responsible: "Approved Engineer" }
+];
+
+
 export default function Dashboard() {
   const [allTickets, setAllTickets] = React.useState([]);
   const [fetchLoading, setFetchLoading] = React.useState(false);
@@ -35,6 +61,9 @@ export default function Dashboard() {
   const [engineerData, setEngineerData] = React.useState([]);
   const [paymentData, setPaymentData] = useState([]);
   const [warrantyCheckData, setWarrantyCheckData] = useState([]);
+  const [stageCounts, setStageCounts] = useState({});
+  const [stageOverdueCounts, setStageOverdueCounts] = useState({});
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const COLORS = ["#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
@@ -198,6 +227,84 @@ export default function Dashboard() {
 
         setAllTickets(allDataTotal);
 
+        // Calculate Pending Items by Stage
+        const counts = {};
+        const overdueCounts = {};
+        serviceStages.forEach((stage) => {
+          counts[stage.name] = 0;
+          overdueCounts[stage.name] = 0;
+        });
+
+        const cellHasValue = (val) => {
+          if (val === null || val === undefined) return false;
+          if (typeof val === 'string') return val.trim() !== "" && val.trim() !== "-";
+          return val !== "";
+        };
+
+        const parseDate = (dateStr) => {
+          if (!dateStr) return null;
+          if (dateStr instanceof Date) return dateStr;
+          const s = String(dateStr).trim();
+          const parts = s.split('/');
+          if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+          }
+          const parts2 = s.split('-');
+          if (parts2.length === 3) {
+            if (parts2[0].length === 4) {
+              return new Date(parseInt(parts2[0], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[2], 10));
+            } else {
+              return new Date(parseInt(parts2[2], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[0], 10));
+            }
+          }
+          const parsed = Date.parse(s);
+          return isNaN(parsed) ? null : new Date(parsed);
+        };
+
+        let filteredRows = json.data.slice(6);
+        if (role === "user") {
+          filteredRows = filteredRows.filter((row) => row[127] === userName);
+        } else if (role === "engineer") {
+          filteredRows = filteredRows.filter((row) => row[28] === userName);
+        }
+
+        filteredRows.forEach((row) => {
+          if (!row || !row[1]) return; // Row must have a ticket ID
+
+          serviceStages.forEach((stage) => {
+            const plannedVal = row[stage.start];
+            const actualVal = row[stage.actual];
+
+            if (cellHasValue(plannedVal) && !cellHasValue(actualVal)) {
+              counts[stage.name]++;
+              
+              if (stage.delay !== -1) {
+                const delayVal = row[stage.delay];
+                if (cellHasValue(delayVal)) {
+                  overdueCounts[stage.name]++;
+                }
+              } else {
+                // Fallback for Follow-Up which doesn't have a delay column
+                const pDate = parseDate(plannedVal);
+                if (pDate) {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  pDate.setHours(0, 0, 0, 0);
+                  if (pDate < today) {
+                    overdueCounts[stage.name]++;
+                  }
+                }
+              }
+            }
+          });
+        });
+
+        setStageCounts(counts);
+        setStageOverdueCounts(overdueCounts);
+
         // console.log("allData", allData);
 
         const priority = allData.map((item) => item.priority);
@@ -335,6 +442,171 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { ReportDocument } = await import("./report-pdf");
+
+      const response = await fetch(`${sheet_url}?sheet=Ticket_Enquiry`);
+      const json = await response.json();
+
+      if (!json.success || !Array.isArray(json.data)) {
+        throw new Error("Failed fetching comprehensive data for report");
+      }
+
+      const rows = json.data;
+
+      const userName = localStorage.getItem("currentUsername");
+      const roleStorage = localStorage.getItem("o2d-auth-storage");
+      const parsedData = JSON.parse(roleStorage);
+      const role = parsedData.state.user.role;
+
+      let filteredRows = rows.slice(6);
+      if (role === "user") {
+        filteredRows = filteredRows.filter((row) => row[127] === userName);
+      } else if (role === "engineer") {
+        filteredRows = filteredRows.filter((row) => row[28] === userName);
+      }
+
+      const cellHasValue = (val) => {
+        if (val === null || val === undefined) return false;
+        if (typeof val === 'string') return val.trim() !== "" && val.trim() !== "-";
+        return val !== "";
+      };
+
+      const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        if (dateStr instanceof Date) return dateStr;
+        const s = String(dateStr).trim();
+        const parts = s.split('/');
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const year = parseInt(parts[2], 10);
+          return new Date(year, month, day);
+        }
+        const parts2 = s.split('-');
+        if (parts2.length === 3) {
+          if (parts2[0].length === 4) {
+            return new Date(parseInt(parts2[0], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[2], 10));
+          } else {
+            return new Date(parseInt(parts2[2], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[0], 10));
+          }
+        }
+        const parsed = Date.parse(s);
+        return isNaN(parsed) ? null : new Date(parsed);
+      };
+
+      const overdueCounts = {};
+      serviceStages.forEach((s) => {
+        overdueCounts[s.name] = 0;
+      });
+
+      const detailed = [];
+
+      filteredRows.forEach((row) => {
+        if (!row || !row[1]) return;
+
+        serviceStages.forEach((stage) => {
+          const plannedVal = row[stage.start];
+          const actualVal = row[stage.actual];
+          let isOverdue = false;
+          let delayVal = 0;
+
+          if (cellHasValue(plannedVal) && !cellHasValue(actualVal)) {
+            if (stage.delay !== -1) {
+              const rawDelay = row[stage.delay];
+              if (cellHasValue(rawDelay)) {
+                isOverdue = true;
+                delayVal = parseInt(rawDelay, 10) || 0;
+              }
+            } else {
+              const pDate = parseDate(plannedVal);
+              if (pDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                pDate.setHours(0, 0, 0, 0);
+                if (pDate < today) {
+                  isOverdue = true;
+                  const diffTime = Math.abs(today.getTime() - pDate.getTime());
+                  delayVal = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                }
+              }
+            }
+          }
+
+          if (isOverdue) {
+            overdueCounts[stage.name]++;
+
+            let details = "";
+            if (stage.name === "Video Call Solution") {
+              details = row[34] ? `Solve: ${row[34]}` : "Awaiting video call solve status";
+            } else if (stage.name === "Warranty Check") {
+              details = row[17] ? `Warranty Check: ${row[17]}` : "Warranty check pending";
+            } else if (stage.name === "Quotation") {
+              details = row[40] ? `Quotation No: ${row[40]}` : "Quotation creation pending";
+            } else if (stage.name === "Follow-Up") {
+              details = row[58] ? `Next Action: ${row[58]}` : "Follow-up pending";
+            } else if (stage.name === "Site Visit Plan") {
+              details = row[65] ? `Transportation: ${row[65]}` : "Transportation details pending";
+            } else if (stage.name === "TADA") {
+              details = row[85] ? `Purpose: ${row[85]}` : "TADA details pending";
+            } else if (stage.name === "Expense Approval By Senior") {
+              details = row[90] ? `Senior Approved By: ${row[90]}` : "Approval pending";
+            } else if (stage.name === "Expense Approval By Accountant") {
+              details = row[96] ? `Pay Amount: ${row[96]}` : "Payment pending";
+            } else if (stage.name === "Site Visit (Verification OTP)") {
+              details = row[104] ? `Status: ${row[104]}` : "OTP verification pending";
+            } else if (stage.name === "Site Visit Detail") {
+              details = row[109] ? `Remarks: ${row[109]}` : "Site visit details pending";
+            } else {
+              details = row[8] || "Pending action";
+            }
+
+            detailed.push({
+              ticketId: row[1] || "-",
+              companyName: row[23] || "-",
+              clientName: row[2] || "-",
+              details: details,
+              delay: delayVal,
+              stage: stage.name
+            });
+          }
+        });
+      });
+
+      const summaryData = serviceStages
+        .filter((s) => overdueCounts[s.name] > 0)
+        .map((s) => ({
+          stage: s.name,
+          pending: overdueCounts[s.name],
+          responsible: s.responsible || "-"
+        }));
+
+      const allowedStages = serviceStages.map(s => s.name);
+      detailed.sort((a, b) => {
+        const indexA = allowedStages.indexOf(a.stage);
+        const indexB = allowedStages.indexOf(b.stage);
+        return indexA - indexB;
+      });
+
+      const blob = await pdf(<ReportDocument summaryData={summaryData} detailedData={detailed} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Service_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+    } catch (e) {
+      console.error(e);
+      toast.error(e.message || "Failed to generate report");
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   // Skeleton Components
   const SkeletonCard = () => (
     <Card className="shadow rounded-2xl p-4 flex items-center gap-3">
@@ -426,6 +698,85 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+
+      {/* Pending Items by Stage */}
+      <Card className="shadow rounded-2xl">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold">
+              Pending Items by Stage
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Track all pending items across different service stages
+            </p>
+          </div>
+          <Button
+            variant="default"
+            className="bg-blue-600 hover:bg-blue-700 h-9 text-xs flex items-center text-white gap-2 font-medium"
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport}
+          >
+            {isGeneratingReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+            {isGeneratingReport ? "Generating..." : "Generate Report"}
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs w-[250px]">Stage</TableHead>
+                <TableHead className="text-xs text-right w-[100px]">
+                  Pending
+                </TableHead>
+                <TableHead className="text-xs text-center w-[150px]">
+                  Pending Overdue
+                </TableHead>
+                <TableHead className="text-xs">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {serviceStages.map((stage) => {
+                let dynamicCount = stageCounts[stage.name] || 0;
+                let overdueCount = stageOverdueCounts[stage.name] || 0;
+
+                return (
+                  <TableRow key={stage.id} className="hover:bg-gray-50/50">
+                    <TableCell className="text-xs font-medium">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2.5 h-2.5 rounded-full ${stage.color}`}
+                        ></div>
+                        {stage.name}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-right text-muted-foreground">
+                      {dynamicCount}
+                    </TableCell>
+                    <TableCell className="text-xs text-center text-red-500 font-medium">
+                      {overdueCount > 0 ? overdueCount : "-"}
+                    </TableCell>
+                    <TableCell className="text-xs pr-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                          <div
+                            className={`h-1.5 rounded-full ${stage.color}`}
+                            style={{
+                              width: `${Math.min(
+                                (dynamicCount / 20) * 100,
+                                100
+                              )}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -109,7 +109,7 @@ export default function FollowUp() {
           nextDateOfCall: row[59] || "",
           followUpRemarks: row[60] || "",
           CREName: row[127] || "",
-          engineerAssign: row[130] || row[28] || "",
+          engineerAssign: row[138] || row[130] || row[28] || "",
         }));
 
         // Store standard lookup map for history enrichment
@@ -540,6 +540,27 @@ export default function FollowUp() {
       const result = await response.json();
 
       if (result.success) {
+        // Update the Ticket_Enquiry sheet row with the newly assigned engineer (col-EL)
+        try {
+          await fetch(sheet_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              sheetId: import.meta.env.VITE_GOOGLE_SHEET_ID,
+              sheetName: "Ticket_Enquiry",
+              action: "update",
+              rowIndex: (selectedTicket.id + 6).toString(),
+              columnData: JSON.stringify({
+                EI: formData.engineerAssign || "",
+              }),
+            }).toString(),
+          });
+        } catch (updateErr) {
+          console.error("Failed to update engineer assign on Ticket_Enquiry:", updateErr);
+        }
+
         // setTickets([...tickets, newTicket]);
         setFormData({
           clientName: "",
@@ -2093,11 +2114,37 @@ export default function FollowUp() {
           </div>
           <div>
             <Label>Engineer Assign</Label>
-            <Input
-              value={formData.engineerAssign || ""}
-              disabled
-              className="bg-slate-50"
-            />
+            <Select
+              value={formData.engineerAssign || undefined}
+              onValueChange={(value) =>
+                handleInputChange("engineerAssign", value)
+              }
+            >
+              <SelectTrigger
+                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                data-testid="select-engineer-assign"
+              >
+                <SelectValue placeholder={formData.engineerAssign || "Select Engineer"} />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
+                {masterData.length > 0 &&
+                  masterData[0]["Engineer Assign Name"] ? (
+                  masterData[0]["Engineer Assign Name"].map((item, ind) => (
+                    <SelectItem
+                      key={ind}
+                      value={item}
+                      className="hover:bg-blue-50 focus:bg-blue-50"
+                    >
+                      {item}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="Loading" disabled>
+                    Loading options...
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {!isCancelled && (

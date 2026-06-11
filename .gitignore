@@ -24,4 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+<<<<<<< HEAD
 Backend.js
+=======
+
+>>>>>>> 564f598ab150c62b9dfbde145079e1abcf4794e5

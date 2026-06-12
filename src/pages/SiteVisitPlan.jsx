@@ -178,8 +178,6 @@ export default function SiteVisitPlan() {
 
   const handlePlanClick = (ticket) => {
     setSelectedTicket(ticket);
-    setGeneratedTadaLink("");
-    setLinkCopied(false);
     setFormData({
       ticketId: ticket.ticketId,
       clientName: ticket.clientName,

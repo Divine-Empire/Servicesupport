@@ -183,12 +183,12 @@ export default function TicketAndEnquiry() {
         const headers = result.data[0];
         const structuredData = {};
 
-        headers.forEach((header) => {
+        headers.forEach((header, index) => {
           let normalizedHeader = header;
           if (header === "Enquiry-Receiver-Name") normalizedHeader = "Enquiry Receiver Name";
           if (header === "Company-Name") normalizedHeader = "Company Name";
           if (header === "GST-No.") normalizedHeader = "GST No.";
-          if (header === "Category") {
+          if (index === 92) {
             structuredData["Requirement Service Category"] = [];
           }
           structuredData[normalizedHeader] = [];
@@ -208,7 +208,7 @@ export default function TicketAndEnquiry() {
             if (structuredData[normalizedHeader]) {
               structuredData[normalizedHeader].push(stringValue);
             }
-            if (header === "Category" && structuredData["Requirement Service Category"]) {
+            if (index === 92 && structuredData["Requirement Service Category"]) {
               structuredData["Requirement Service Category"].push(stringValue);
             }
           });

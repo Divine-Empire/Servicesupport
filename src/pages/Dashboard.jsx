@@ -39,15 +39,9 @@ import toast from "react-hot-toast";
 // Define all Service-Support stages
 const serviceStages = [
   { id: 2, name: "Video Call Solution", color: "bg-purple-500", start: 31, actual: 32, delay: 33, responsible: "PIYUSH TIWARI / Assigned Engineer" },
-  { id: 3, name: "Warranty Check", color: "bg-indigo-500", start: 132, actual: 133, delay: 134, responsible: "Warranty Team" },
   { id: 4, name: "Quotation", color: "bg-cyan-500", start: 37, actual: 38, delay: 39, responsible: "PIYUSH TIWARI" },
   { id: 5, name: "Follow-Up", color: "bg-teal-500", start: 47, actual: 48, delay: -1, responsible: "PIYUSH TIWARI" },
-  { id: 6, name: "Site Visit Plan", color: "bg-emerald-500", start: 61, actual: 62, delay: 63, responsible: "PIYUSH TIWARI" },
-  { id: 7, name: "TADA", color: "bg-green-500", start: 79, actual: 80, delay: 81, responsible: "Assigned Engineer" },
-  { id: 8, name: "Expense Approval By Senior", color: "bg-lime-500", start: 87, actual: 88, delay: 89, responsible: "SKGOLAM MORTUJA / MOHAMMAD SHOAIB KHAN" },
-  { id: 9, name: "Expense Approval By Accountant", color: "bg-yellow-500", start: 91, actual: 92, delay: 93, responsible: "TARINI KUMBHAKAR / SHANOO SHARMA" },
-  { id: 10, name: "Site Visit (Verification OTP)", color: "bg-orange-500", start: 99, actual: 100, delay: 101, responsible: "Approved Engineer" },
-  { id: 11, name: "Site Visit Detail", color: "bg-red-500", start: 105, actual: 106, delay: 107, responsible: "Approved Engineer" }
+  { id: 6, name: "Site Visit Plan", color: "bg-emerald-500", start: 61, actual: 62, delay: 63, responsible: "PIYUSH TIWARI" }
 ];
 
 
@@ -63,6 +57,7 @@ export default function Dashboard() {
   const [warrantyCheckData, setWarrantyCheckData] = useState([]);
   const [stageCounts, setStageCounts] = useState({});
   const [stageOverdueCounts, setStageOverdueCounts] = useState({});
+  const [followUpCategoryBreakdown, setFollowUpCategoryBreakdown] = useState({});
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const COLORS = ["#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
@@ -230,6 +225,7 @@ export default function Dashboard() {
         // Calculate Pending Items by Stage
         const counts = {};
         const overdueCounts = {};
+        const followUpCategories = {}; // { categoryName: { pending: 0, overdue: 0 } }
         serviceStages.forEach((stage) => {
           counts[stage.name] = 0;
           overdueCounts[stage.name] = 0;
@@ -281,9 +277,11 @@ export default function Dashboard() {
             if (cellHasValue(plannedVal) && !cellHasValue(actualVal)) {
               counts[stage.name]++;
               
+              let isOverdue = false;
               if (stage.delay !== -1) {
                 const delayVal = row[stage.delay];
                 if (cellHasValue(delayVal)) {
+                  isOverdue = true;
                   overdueCounts[stage.name]++;
                 }
               } else {
@@ -294,8 +292,20 @@ export default function Dashboard() {
                   today.setHours(0, 0, 0, 0);
                   pDate.setHours(0, 0, 0, 0);
                   if (pDate < today) {
+                    isOverdue = true;
                     overdueCounts[stage.name]++;
                   }
+                }
+              }
+
+              if (stage.name === "Follow-Up") {
+                const category = row[23] || "Uncategorized";
+                if (!followUpCategories[category]) {
+                  followUpCategories[category] = { pending: 0, overdue: 0 };
+                }
+                followUpCategories[category].pending++;
+                if (isOverdue) {
+                  followUpCategories[category].overdue++;
                 }
               }
             }
@@ -304,6 +314,7 @@ export default function Dashboard() {
 
         setStageCounts(counts);
         setStageOverdueCounts(overdueCounts);
+        setFollowUpCategoryBreakdown(followUpCategories);
 
         // console.log("allData", allData);
 
@@ -442,6 +453,13 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  const formatDate = (raw) => {
+    if (!raw) return "-";
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return String(raw);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  };
+
   const handleGenerateReport = async () => {
     setIsGeneratingReport(true);
     try {
@@ -504,6 +522,7 @@ export default function Dashboard() {
       });
 
       const detailed = [];
+      const followUpCategoryOverdue = {};
 
       filteredRows.forEach((row) => {
         if (!row || !row[1]) return;
@@ -511,14 +530,14 @@ export default function Dashboard() {
         serviceStages.forEach((stage) => {
           const plannedVal = row[stage.start];
           const actualVal = row[stage.actual];
-          let isOverdue = false;
+          let isPending = false;
           let delayVal = 0;
 
           if (cellHasValue(plannedVal) && !cellHasValue(actualVal)) {
+            isPending = true;
             if (stage.delay !== -1) {
               const rawDelay = row[stage.delay];
               if (cellHasValue(rawDelay)) {
-                isOverdue = true;
                 delayVal = parseInt(rawDelay, 10) || 0;
               }
             } else {
@@ -528,7 +547,6 @@ export default function Dashboard() {
                 today.setHours(0, 0, 0, 0);
                 pDate.setHours(0, 0, 0, 0);
                 if (pDate < today) {
-                  isOverdue = true;
                   const diffTime = Math.abs(today.getTime() - pDate.getTime());
                   delayVal = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
@@ -536,54 +554,64 @@ export default function Dashboard() {
             }
           }
 
-          if (isOverdue) {
+          if (isPending) {
             overdueCounts[stage.name]++;
 
-            let details = "";
-            if (stage.name === "Video Call Solution") {
-              details = row[34] ? `Solve: ${row[34]}` : "Awaiting video call solve status";
-            } else if (stage.name === "Warranty Check") {
-              details = row[17] ? `Warranty Check: ${row[17]}` : "Warranty check pending";
-            } else if (stage.name === "Quotation") {
-              details = row[40] ? `Quotation No: ${row[40]}` : "Quotation creation pending";
-            } else if (stage.name === "Follow-Up") {
-              details = row[58] ? `Next Action: ${row[58]}` : "Follow-up pending";
-            } else if (stage.name === "Site Visit Plan") {
-              details = row[65] ? `Transportation: ${row[65]}` : "Transportation details pending";
-            } else if (stage.name === "TADA") {
-              details = row[85] ? `Purpose: ${row[85]}` : "TADA details pending";
-            } else if (stage.name === "Expense Approval By Senior") {
-              details = row[90] ? `Senior Approved By: ${row[90]}` : "Approval pending";
-            } else if (stage.name === "Expense Approval By Accountant") {
-              details = row[96] ? `Pay Amount: ${row[96]}` : "Payment pending";
-            } else if (stage.name === "Site Visit (Verification OTP)") {
-              details = row[104] ? `Status: ${row[104]}` : "OTP verification pending";
-            } else if (stage.name === "Site Visit Detail") {
-              details = row[109] ? `Remarks: ${row[109]}` : "Site visit details pending";
-            } else {
-              details = row[8] || "Pending action";
-            }
+            if (stage.name === "Follow-Up") {
+              const categoryName = row[23] || "Uncategorized";
+              if (!followUpCategoryOverdue[categoryName]) {
+                followUpCategoryOverdue[categoryName] = 0;
+              }
+              followUpCategoryOverdue[categoryName]++;
 
-            detailed.push({
-              ticketId: row[1] || "-",
-              companyName: row[23] || "-",
-              clientName: row[2] || "-",
-              details: details,
-              delay: delayVal,
-              stage: stage.name
-            });
+              detailed.push({
+                stage: "Follow-Up",
+                date: formatDate(row[47] || row[0]),
+                companyName: row[16] || "-",
+                category: row[23] || "-",
+                siteAddress: row[20] || "-",
+                followUpStage: row[50] || "-",
+                basicAmount: row[41] || "-",
+                whatDidCustomerSay: row[57] || "-",
+                dateOfLastFollowUp: formatDate(row[59]),
+                delay: delayVal
+              });
+            } else if (stage.name === "Site Visit Plan") {
+              detailed.push({
+                stage: "Site Visit Plan",
+                date: formatDate(row[61] || row[0]),
+                companyName: row[16] || "-",
+                siteAddress: row[20] || "-",
+                category: row[23] || "-",
+                delay: delayVal
+              });
+            }
           }
         });
       });
 
-      const summaryData = serviceStages
-        .filter((s) => overdueCounts[s.name] > 0)
-        .map((s) => ({
-          stage: s.name,
-          pending: overdueCounts[s.name],
-          responsible: s.responsible || "-"
-        }));
-
+      const summaryData = [];
+      serviceStages.forEach((s) => {
+        const oCount = overdueCounts[s.name] || 0;
+        if (oCount > 0) {
+          summaryData.push({
+            stage: s.name,
+            pending: oCount,
+            responsible: s.responsible || "-"
+          });
+          if (s.name === "Follow-Up") {
+            Object.entries(followUpCategoryOverdue).forEach(([category, oCount]) => {
+              if (oCount > 0) {
+                summaryData.push({
+                  stage: `  - ${category}`,
+                  pending: oCount,
+                  responsible: ""
+                });
+              }
+            });
+          }
+        }
+      });
       const allowedStages = serviceStages.map(s => s.name);
       detailed.sort((a, b) => {
         const indexA = allowedStages.indexOf(a.stage);
@@ -591,12 +619,20 @@ export default function Dashboard() {
         return indexA - indexB;
       });
 
-      const blob = await pdf(<ReportDocument summaryData={summaryData} detailedData={detailed} />).toBlob();
+      console.log("Generating report with:", {
+        summaryDataCount: summaryData.length,
+        detailedCount: detailed.length,
+        followUpCategoryBreakdown: followUpCategoryOverdue
+      });
+
+      const blob = await pdf(<ReportDocument summaryData={summaryData} detailedData={detailed} followUpCategoryBreakdown={followUpCategoryOverdue} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `Service_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
     } catch (e) {
@@ -739,7 +775,9 @@ export default function Dashboard() {
                 let dynamicCount = stageCounts[stage.name] || 0;
                 let overdueCount = stageOverdueCounts[stage.name] || 0;
 
-                return (
+                const rowsToRender = [];
+
+                rowsToRender.push(
                   <TableRow key={stage.id} className="hover:bg-gray-50/50">
                     <TableCell className="text-xs font-medium">
                       <div className="flex items-center gap-2">
@@ -772,6 +810,41 @@ export default function Dashboard() {
                     </TableCell>
                   </TableRow>
                 );
+
+                if (stage.name === "Follow-Up" && Object.keys(followUpCategoryBreakdown).length > 0) {
+                  Object.entries(followUpCategoryBreakdown).forEach(([category, data]) => {
+                    rowsToRender.push(
+                      <TableRow key={`followup-${category}`} className="bg-gray-50/30 hover:bg-gray-50/60 border-l-4 border-l-teal-500/50">
+                        <TableCell className="text-xs font-medium pl-8 text-gray-500">
+                          ↳ {category}
+                        </TableCell>
+                        <TableCell className="text-xs text-right text-gray-400">
+                          {data.pending}
+                        </TableCell>
+                        <TableCell className="text-xs text-center text-red-400 font-medium">
+                          {data.overdue > 0 ? data.overdue : "-"}
+                        </TableCell>
+                        <TableCell className="text-xs pr-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-full bg-gray-100 rounded-full h-1">
+                              <div
+                                className="h-1 rounded-full bg-teal-300"
+                                style={{
+                                  width: `${Math.min(
+                                    (data.pending / 20) * 100,
+                                    100
+                                  )}%`,
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                }
+
+                return rowsToRender;
               })}
             </TableBody>
           </Table>

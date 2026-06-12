@@ -410,51 +410,49 @@ export default function SiteVisitPlan() {
   // console.log("filteredHistoryDataa", filteredHistoryDataa);
 
   return (
-    <div >
+    <div className="space-y-2">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-2">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
-              
-              {/* Left Side: Tabs buttons */}
-              <div className="flex flex-wrap items-center gap-4">
-                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-                  <TabsTrigger
-                    value="pending"
-                    data-testid="tab-pending"
-                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    Pending ({filteredPendingData.length})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="history"
-                    data-testid="tab-history"
-                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    History ({filteredHistoryData.length})
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              {/* Right Side: Search Input */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
-                <div className="relative flex-1 max-w-md w-full">
-                  <Input
-                    id="searchFilter"
-                    placeholder="Search by ticket ID, client, company or phone..."
-                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                    data-testid="input-search-filter"
-                    onChange={(e) => setSearchItem(e.target.value)}
-                  />
-                </div>
-              </div>
+          <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-t-lg border-b border-blue-100 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Left Side: Tabs buttons */}
+            <div className="flex flex-wrap items-center gap-4">
+              <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                <TabsTrigger
+                  value="pending"
+                  data-testid="tab-pending"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  Pending ({filteredPendingData.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  data-testid="tab-history"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  History ({filteredHistoryData.length})
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            <div className="mt-6">
+            {/* Right Side: Search Input */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+              <div className="relative flex-1 max-w-md w-full">
+                <Input
+                  id="searchFilter"
+                  placeholder="Search by ticket ID, client, company or phone..."
+                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                  data-testid="input-search-filter"
+                  onChange={(e) => setSearchItem(e.target.value)}
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="mt-2">
 
               <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -804,7 +802,7 @@ export default function SiteVisitPlan() {
 
               <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">

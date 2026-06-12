@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -1106,110 +1108,109 @@ export default function FollowUp() {
 
 
   return (
-    <div >
+    <div className="space-y-2">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-2">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-6 border-b border-blue-100/70">
-              
-              {/* Left Side: Tabs buttons and Date Category Filters */}
-              <div className="flex flex-wrap items-center gap-4">
-                <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-                  <TabsTrigger
-                    value="pending"
-                    data-testid="tab-pending"
-                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    Pending ({finalFilteredPendingData.length})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="history"
-                    data-testid="tab-history"
-                    className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    History ({finalFilteredHistoryData.length})
-                  </TabsTrigger>
-                </TabsList>
+          <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-t-lg border-b border-blue-100 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            {/* Left Side: Tabs buttons and Date Category Filters */}
+            <div className="flex flex-wrap items-center gap-4">
+              <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                <TabsTrigger
+                  value="pending"
+                  data-testid="tab-pending"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  Pending ({finalFilteredPendingData.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  data-testid="tab-history"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  History ({finalFilteredHistoryData.length})
+                </TabsTrigger>
+              </TabsList>
 
-                <div className="flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterTab("")}
-                    className={`px-4 py-2 rounded-md text-sm transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500`}
-                  >
-                    Reset
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterTab("today")}
-                    className={`px-4 py-2 rounded-md text-sm transition-all ${
-                      dateFilterTab === "today"
-                        ? "bg-green-600 text-white shadow-md"
-                        : "bg-transparent text-gray-700 hover:bg-green-100"
-                    }`}
-                  >
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterTab("upcoming")}
-                    className={`px-4 py-2 rounded-md text-sm transition-all ${
-                      dateFilterTab === "upcoming"
-                        ? "bg-green-600 text-white shadow-md"
-                        : "bg-transparent text-gray-700 hover:bg-green-100"
-                    }`}
-                  >
-                    Upcoming
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilterTab("overdue")}
-                    className={`px-4 py-2 rounded-md text-sm transition-all ${
-                      dateFilterTab === "overdue"
-                        ? "bg-red-600 text-white shadow-md"
-                        : "bg-transparent text-gray-700 hover:bg-red-100"
-                    }`}
-                  >
-                    Overdue
-                  </button>
-                </div>
-              </div>
-
-              {/* Right Side: Search Input and Client Attachment Filter */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
-                <div className="relative flex-1 max-w-md w-full">
-                  <Input
-                    id="searchFilter"
-                    placeholder="Search by ticket ID, client, company, phone or quotation no..."
-                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
-                    data-testid="input-search-filter"
-                    onChange={(e) => setSearchItem(e.target.value)}
-                  />
-                </div>
-
-                {activeTab === "pending" && (
-                  <div className="w-full sm:w-56">
-                    <select
-                      id="clientAttachmentFilter"
-                      value={clientAttachmentFilter}
-                      onChange={(e) => setClientAttachmentFilter(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      data-testid="select-client-attachment-filter"
-                    >
-                      <option value="all">All Attachments</option>
-                      <option value="hasAttachment">Client Attachment Not Empty</option>
-                      <option value="noAttachment">Client Attachment Empty</option>
-                    </select>
-                  </div>
-                )}
+              <div className="flex gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 p-1 rounded-lg w-fit">
+                <button
+                  type="button"
+                  onClick={() => setDateFilterTab("")}
+                  className="px-4 py-2 rounded-md text-sm transition-all bg-transparent text-gray-700 hover:bg-green-100 border border-red-500"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilterTab("today")}
+                  className={`px-4 py-2 rounded-md text-sm transition-all ${
+                    dateFilterTab === "today"
+                      ? "bg-green-600 text-white shadow-md"
+                      : "bg-transparent text-gray-700 hover:bg-green-100"
+                  }`}
+                >
+                  Today
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilterTab("upcoming")}
+                  className={`px-4 py-2 rounded-md text-sm transition-all ${
+                    dateFilterTab === "upcoming"
+                      ? "bg-green-600 text-white shadow-md"
+                      : "bg-transparent text-gray-700 hover:bg-green-100"
+                  }`}
+                >
+                  Upcoming
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDateFilterTab("overdue")}
+                  className={`px-4 py-2 rounded-md text-sm transition-all ${
+                    dateFilterTab === "overdue"
+                      ? "bg-red-600 text-white shadow-md"
+                      : "bg-transparent text-gray-700 hover:bg-red-100"
+                  }`}
+                >
+                  Overdue
+                </button>
               </div>
             </div>
 
-            <div className="mt-6">
+            {/* Right Side: Search Input and Client Attachment Filter */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+              <div className="relative flex-1 max-w-md w-full">
+                <Input
+                  id="searchFilter"
+                  placeholder="Search by ticket ID, client, company, phone or quotation no..."
+                  className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+                  data-testid="input-search-filter"
+                  onChange={(e) => setSearchItem(e.target.value)}
+                />
+              </div>
+
+              {activeTab === "pending" && (
+                <div className="w-full sm:w-56">
+                  <select
+                    id="clientAttachmentFilter"
+                    value={clientAttachmentFilter}
+                    onChange={(e) => setClientAttachmentFilter(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    data-testid="select-client-attachment-filter"
+                  >
+                    <option value="all">All Attachments</option>
+                    <option value="hasAttachment">Client Attachment Not Empty</option>
+                    <option value="noAttachment">Client Attachment Empty</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="mt-2">
 
               <TabsContent value="pending" className="mt-0">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -1658,7 +1659,7 @@ export default function FollowUp() {
 
               <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">

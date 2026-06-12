@@ -629,7 +629,7 @@ export default function TicketAndEnquiry() {
         </CardHeader>
         <CardContent>
           <div className="relative overflow-x-auto">
-            <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+            <div className="max-h-[calc(104vh-200px)] overflow-y-auto">
               <table className="hidden sm:block w-full">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">

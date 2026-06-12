@@ -812,30 +812,25 @@ export default function Calibration() {
   // console.log("filteredHistoryData", filteredHistoryData);
 
   return (
-    <div className="space-y-2 sm:space-y-6">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="sm:pt-6">
-          <div className="flex flex-col items-end gap-4 md:flex-row">
-            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-2 font-bold text-blue-600 text-4xl">
-                <h1 className="whitespace-nowrap">
-                  Calibration
-                </h1>
-              </div>
-
-              <div className="flex flex-col md:flex-row items-center gap-4 w-full md:flex-1 md:justify-end">
-                <div className="md:max-w-xl w-full relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
+    <div className="space-y-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-t-lg border-b border-blue-100 px-6 py-4 flex flex-col gap-4">
+            
+            {/* Top row: Title, Search & Refresh */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+              <h1 className="text-2xl font-bold text-blue-800 whitespace-nowrap">Calibration</h1>
+              
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+                <div className="relative flex-1 max-w-md w-full">
                   <Input
                     id="searchFilter"
                     placeholder="Search by ticket ID, client, company, phone, quotation or invoice no..."
-                    className="w-full py-2 pl-10 bg-white border-blue-200 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 py-2 w-full rounded-md border-blue-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
                     data-testid="input-search-filter"
                     onChange={(e) => setSearchItem(e.target.value)}
                   />
                 </div>
-
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -850,16 +845,10 @@ export default function Calibration() {
                 </Button>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="mb-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-              <TabsList className="border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 w-full lg:w-auto">
+            {/* Bottom row: Tabs triggers & Filters */}
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 w-full border-t border-blue-100/50 pt-4">
+              <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 w-full lg:w-auto">
                 <TabsTrigger
                   value="pending"
                   data-testid="tab-pending"
@@ -876,7 +865,7 @@ export default function Calibration() {
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex flex-wrap items-center gap-3 lg:ml-auto">
+              <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
                 {/* Company Filter */}
                 <div className="w-[180px]">
                   <Select value={selectedCompany} onValueChange={setSelectedCompany}>
@@ -991,10 +980,13 @@ export default function Calibration() {
                 )}
               </div>
             </div>
+          </CardHeader>
 
-            <TabsContent value="pending" className="mt-0 border-0 p-0 shadow-none">
-              <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+          <CardContent>
+            <div className="mt-2">
+              <TabsContent value="pending" className="mt-0 border-0 p-0 shadow-none">
+                <div className="relative overflow-x-auto">
+                  <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden w-full sm:block">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -1356,7 +1348,7 @@ export default function Calibration() {
 
             <TabsContent value="history" className="mt-0 border-0 p-0 shadow-none">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden w-full sm:block">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -1765,9 +1757,10 @@ export default function Calibration() {
                 </div>
               </div>
             </TabsContent>
-          </CardContent>
-        </Card>
-      </Tabs>
+          </div>
+        </CardContent>
+      </Card>
+    </Tabs>
 
       {/* Calibration Modal */}
       <Modal

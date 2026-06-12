@@ -566,19 +566,33 @@ export default function CalibrationCertificate() {
   // console.log("filteredHistoryDataa", filteredHistoryDataa);
 
   return (
-    <div className="space-y-2 sm:space-y-6">
-      {/* Filter Options */}
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-        <CardContent className="sm:pt-6">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="w-full">
-              <Label
-                htmlFor="searchFilter"
-                className="text-sm font-medium text-blue-700"
-              >
-                Search (Ticket ID, Client, Company, Phone)
-              </Label>
-              <div className="relative mt-1">
+    <div className="space-y-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-t-lg border-b border-blue-100 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            {/* Left Side: Tabs buttons */}
+            <div className="flex flex-wrap items-center gap-4">
+              <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                <TabsTrigger
+                  value="pending"
+                  data-testid="tab-pending"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  Pending ({filteredPendingData.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  data-testid="tab-history"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  History ({filteredHistoryData.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* Right Side: Search Input */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
+              <div className="relative flex-1 max-w-md w-full">
                 <Input
                   id="searchFilter"
                   placeholder="Search by ticket ID, client, company or phone..."
@@ -588,39 +602,12 @@ export default function CalibrationCertificate() {
                 />
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
-          <TabsTrigger
-            value="pending"
-            data-testid="tab-pending"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            Pending ({filteredPendingData.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            data-testid="tab-history"
-            className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-          >
-            History ({filteredHistoryData.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pending">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Pending Calibrations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+          </CardHeader>
+          <CardContent>
+            <div className="mt-2">
+              <TabsContent value="pending" className="mt-0">
+                <div className="relative overflow-x-auto">
+                  <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -996,20 +983,11 @@ export default function CalibrationCertificate() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="history">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardHeader>
-              <CardTitle className="text-blue-800">
-                Calibration History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <TabsContent value="history" className="mt-0">
               <div className="relative overflow-x-auto">
-                <div className="max-h-[calc(100vh-321px)] overflow-y-auto">
+                <div className="max-h-[calc(103vh-200px)] overflow-y-auto">
                   <table className="hidden sm:block w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-gradient-to-r from-blue-600 to-indigo-600">
@@ -1512,10 +1490,11 @@ export default function CalibrationCertificate() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </div>
+        </CardContent>
+      </Card>
+    </Tabs>
 
       {/* Calibration Modal */}
       <Modal

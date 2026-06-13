@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -36,6 +36,7 @@ export default function FollowUp() {
   const [followUpData, setFollowUpData] = useState([]);
   const [searchItem, setSearchItem] = useState("");
   const [clientAttachmentFilter, setClientAttachmentFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const { toast } = useToast();
 
@@ -45,6 +46,18 @@ export default function FollowUp() {
 
   const [pendingData, setPendingData] = useState([]);
   const [historyData, setHistoryData] = useState([]);
+
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set();
+    pendingData.forEach((item) => {
+      if (item.category) categories.add(String(item.category).trim());
+    });
+    historyData.forEach((item) => {
+      if (item.category) categories.add(String(item.category).trim());
+    });
+    return Array.from(categories).sort((a, b) => a.localeCompare(b));
+  }, [pendingData, historyData]);
+
   const [ticketsMap, setTicketsMap] = useState({});
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1007,7 +1020,12 @@ export default function FollowUp() {
         String(item.companyName || "").toLowerCase().includes(q) ||
         String(item.phoneNumber || "").toLowerCase().includes(q) ||
         String(item.quotationNo || "").toLowerCase().includes(q);
-      return matchesSearch;
+
+      const matchesCategory =
+        categoryFilter === "all" ||
+        String(item.category || "").trim() === categoryFilter.trim();
+
+      return matchesSearch && matchesCategory;
     })
     .reverse();
 
@@ -1048,7 +1066,12 @@ export default function FollowUp() {
         String(item.companyName || "").toLowerCase().includes(q) ||
         String(item.phoneNumber || "").toLowerCase().includes(q) ||
         String(item.quotation_no || "").toLowerCase().includes(q);
-      return matchesSearch;
+
+      const matchesCategory =
+        categoryFilter === "all" ||
+        String(item.category || "").trim() === categoryFilter.trim();
+
+      return matchesSearch && matchesCategory;
     })
     .reverse();
 
@@ -1176,9 +1199,9 @@ export default function FollowUp() {
               </div>
             </div>
 
-            {/* Right Side: Search Input and Client Attachment Filter */}
+            {/* Right Side: Search Input, Category Filter, and Client Attachment Filter */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
-              <div className="relative flex-1 max-w-md w-full">
+              <div className="relative flex-1 max-w-xs w-full">
                 <Input
                   id="searchFilter"
                   placeholder="Search by ticket ID, client, company, phone or quotation no..."
@@ -1188,8 +1211,25 @@ export default function FollowUp() {
                 />
               </div>
 
+              <div className="w-full sm:w-44">
+                <select
+                  id="categoryFilter"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  data-testid="select-category-filter"
+                >
+                  <option value="all">All Categories</option>
+                  {uniqueCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {activeTab === "pending" && (
-                <div className="w-full sm:w-56">
+                <div className="w-full sm:w-44">
                   <select
                     id="clientAttachmentFilter"
                     value={clientAttachmentFilter}

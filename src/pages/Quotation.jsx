@@ -78,6 +78,8 @@ export default function Quotation() {
 
           planned3: row[37] || "",
           actual3: row[38] || "",
+          quotationNo: row[40] || "",
+          quotationPdfLink: row[43] || "",
           totalQutation: row[125] || row[99] || row[100] || "",
           CREName: row[127] || "",
           engineerAssign: row[130] || row[28] || "",
@@ -224,7 +226,8 @@ export default function Quotation() {
         String(item.ticketId || "").toLowerCase().includes(q) ||
         String(item.clientName || "").toLowerCase().includes(q) ||
         String(item.companyName || "").toLowerCase().includes(q) ||
-        String(item.phoneNumber || "").toLowerCase().includes(q);
+        String(item.phoneNumber || "").toLowerCase().includes(q) ||
+        String(item.quotationNo || "").toLowerCase().includes(q);
 
       // Handle totalQutation comparison - convert to string and trim
       // Include items where totalQutation is 0, "0", empty string, or any other value
@@ -281,7 +284,7 @@ export default function Quotation() {
       String(item.clientName || "").toLowerCase().includes(q) ||
       String(item.companyName || "").toLowerCase().includes(q) ||
       String(item.phoneNumber || "").toLowerCase().includes(q) ||
-      String(item["quotation_no."] || item.quotation_no || "").toLowerCase().includes(q);
+      String(item["quotation_no."] || item.quotation_no || item.quotationNo || "").toLowerCase().includes(q);
 
     return matchesSearch;
   });
@@ -727,6 +730,9 @@ export default function Quotation() {
                           OTP Status
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Quotation No.
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation Revice
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -738,7 +744,7 @@ export default function Quotation() {
                       {fetchLoading ? (
                         <tr>
                           <td
-                            colSpan={20}
+                            colSpan={21}
                             className="text-center py-8 bg-white"
                           >
                             <div className="flex justify-center items-center text-blue-700">
@@ -749,7 +755,7 @@ export default function Quotation() {
                       ) : filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={20}
+                            colSpan={21}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -827,6 +833,9 @@ export default function Quotation() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.otpVarificationStatus || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.quotationNo || "-"}
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.totalQutation !== null &&
@@ -979,28 +988,40 @@ export default function Quotation() {
                               </div>
                             </div>
 
-                            {/* OTP Status & Quotation Revice */}
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  OTP Status
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.otpVarificationStatus || "N/A"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-500 font-medium">
-                                  Quotation Revice
-                                </p>
-                                <p className="text-blue-900">
-                                  {ticket.totalQutation !== null &&
-                                    ticket.totalQutation !== undefined
-                                    ? String(ticket.totalQutation).trim() || "0"
-                                    : "N/A"}
-                                </p>
-                              </div>
-                            </div>
+                             {/* OTP Status & Quotation No. */}
+                             <div className="grid grid-cols-2 gap-3 text-sm">
+                               <div>
+                                 <p className="text-gray-500 font-medium">
+                                   OTP Status
+                                 </p>
+                                 <p className="text-blue-900">
+                                   {ticket.otpVarificationStatus || "N/A"}
+                                 </p>
+                               </div>
+                               <div>
+                                 <p className="text-gray-500 font-medium">
+                                   Quotation No.
+                                 </p>
+                                 <p className="text-blue-900">
+                                   {ticket.quotationNo || "N/A"}
+                                 </p>
+                               </div>
+                             </div>
+
+                             {/* Quotation Revice */}
+                             <div className="grid grid-cols-2 gap-3 text-sm">
+                               <div>
+                                 <p className="text-gray-500 font-medium">
+                                   Quotation Revice
+                                 </p>
+                                 <p className="text-blue-900">
+                                   {ticket.totalQutation !== null &&
+                                     ticket.totalQutation !== undefined
+                                     ? String(ticket.totalQutation).trim() || "0"
+                                     : "N/A"}
+                                 </p>
+                               </div>
+                             </div>
 
                             {/* Quotation PDF */}
                             <div className="text-sm">

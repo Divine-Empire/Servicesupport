@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -38,14 +39,16 @@ import toast from "react-hot-toast";
 
 // Define all Service-Support stages
 const serviceStages = [
-  { id: 2, name: "Video Call Solution", color: "bg-purple-500", start: 31, actual: 32, delay: 33, responsible: "PIYUSH TIWARI / Assigned Engineer" },
-  { id: 4, name: "Quotation", color: "bg-cyan-500", start: 37, actual: 38, delay: 39, responsible: "PIYUSH TIWARI" },
-  { id: 5, name: "Follow-Up", color: "bg-teal-500", start: 47, actual: 48, delay: -1, responsible: "PIYUSH TIWARI" },
-  { id: 6, name: "Site Visit Plan", color: "bg-emerald-500", start: 61, actual: 62, delay: 63, responsible: "PIYUSH TIWARI" }
+  { id: 2, name: "Video Call Solution", color: "bg-purple-500", start: 31, actual: 32, delay: 33, responsible: "PIYUSH TIWARI / Assigned Engineer", route: "/videocall" },
+  { id: 4, name: "Quotation", color: "bg-cyan-500", start: 37, actual: 38, delay: 39, responsible: "PIYUSH TIWARI", route: "/quotation" },
+  { id: 5, name: "Follow-Up", color: "bg-teal-500", start: 47, actual: 48, delay: -1, responsible: "PIYUSH TIWARI", route: "/followup" },
+  { id: 6, name: "Site Visit Plan", color: "bg-emerald-500", start: 61, actual: 62, delay: 63, responsible: "PIYUSH TIWARI", route: "/siteplan" },
+  { id: 7, name: "Invoice", color: "bg-amber-500", start: 111, actual: 112, delay: 113, responsible: "Accountant", route: "/invoice" }
 ];
 
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [allTickets, setAllTickets] = React.useState([]);
   const [fetchLoading, setFetchLoading] = React.useState(false);
   const [priorityData, setPriorityData] = React.useState([]);
@@ -778,14 +781,22 @@ export default function Dashboard() {
                 const rowsToRender = [];
 
                 rowsToRender.push(
-                  <TableRow key={stage.id} className="hover:bg-gray-50/50">
+                  <TableRow
+                    key={stage.id}
+                    className="hover:bg-gray-50/50 cursor-pointer"
+                    onClick={() => navigate(stage.route)}
+                  >
                     <TableCell className="text-xs font-medium">
-                      <div className="flex items-center gap-2">
+                      <Link
+                        to={stage.route}
+                        className="flex items-center gap-2 text-blue-600 hover:underline font-semibold"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div
                           className={`w-2.5 h-2.5 rounded-full ${stage.color}`}
                         ></div>
                         {stage.name}
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell className="text-xs text-right text-muted-foreground">
                       {dynamicCount}

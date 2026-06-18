@@ -39,11 +39,66 @@ const formatDateTime = (date) => {
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
+const formatDateOnly = (date) => {
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return date;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+const formatInputDate = (dateStr) => {
+  if (!dateStr) return "";
+  const str = String(dateStr).trim().split(" ")[0];
+  
+  // Case 1: Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return str;
+  }
+  
+  // Case 2: DD-MM-YYYY or DD/MM/YYYY
+  const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (match) {
+    const day = match[1].padStart(2, "0");
+    const month = match[2].padStart(2, "0");
+    let year = match[3];
+    if (year.length === 2) {
+      year = "20" + year;
+    }
+    return `${year}-${month}-${day}`;
+  }
+
+  // Case 3: YYYY/MM/DD
+  const matchY = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (matchY) {
+    const year = matchY[1];
+    const month = matchY[2].padStart(2, "0");
+    const day = matchY[3].padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Fallback to JS Date parser (local components to avoid timezone shifts)
+  try {
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  } catch (e) {}
+  
+  return "";
+};
+
 const ServiceInstallation = () => {
   const [installations, setInstallations] = useState([]);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDateFilter, setSelectedDateFilter] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -59,7 +114,6 @@ const ServiceInstallation = () => {
 
   const { toast } = useToast();
   const [employeeNames, setEmployeeNames] = useState([]);
-  const [masterData, setMasterData] = useState({});
   const [serviceTypes, setServiceTypes] = useState([]);
   const [serviceTypeSearch, setServiceTypeSearch] = useState("");
   const [engineerSearch, setEngineerSearch] = useState("");
@@ -108,44 +162,33 @@ const ServiceInstallation = () => {
     }
   };
 
-  const fetchMasterData = async () => {
+  const fetchDropdownData = async () => {
     try {
-      const response = await fetch(`${sheet_url}?sheetId=${Sheet_Id}&sheet=Master`);
+      const response = await fetch(`${sheet_url}?sheetId=${Sheet_Id}&sheet=DROPDOWN`);
       const result = await response.json();
       if (result.success && result.data && result.data.length > 0) {
         const headers = result.data[0];
-        const structured = {};
-        headers.forEach((h, i) => {
-          structured[h] = result.data.slice(1).map(row => row[i]).filter(Boolean);
-        });
-        setMasterData(structured);
+        
+        let engineerIdx = headers.indexOf("Engineer Assign Name");
+        if (engineerIdx === -1) engineerIdx = 94; // fallback CQ (index 94)
+        
+        let serviceIdx = headers.indexOf("Installation/Service");
+        if (serviceIdx === -1) serviceIdx = 96; // fallback CS (index 96)
 
-        // Use "Requirement Service Category" or "Call type" for service types
-        const types = structured["Requirement Service Category"] || structured["Call type"] || [];
-        setServiceTypes([...new Set(types)]);
+        const engineers = result.data.slice(1).map(row => row[engineerIdx]).filter(Boolean);
+        const services = result.data.slice(1).map(row => row[serviceIdx]).filter(Boolean);
+
+        setEmployeeNames([...new Set(engineers)]);
+        setServiceTypes([...new Set(services)]);
       }
     } catch (error) {
-      console.error("Error fetching master data:", error);
-    }
-  };
-
-  const fetchEmployeeNames = async () => {
-    try {
-      const response = await fetch(`${sheet_url}?sheetId=${Sheet_Id}&sheet=Employee Name`);
-      const result = await response.json();
-      if (result.success && result.data && result.data.length > 0) {
-        const names = result.data.slice(1).map(row => row[0]).filter(Boolean);
-        setEmployeeNames([...new Set(names)]);
-      }
-    } catch (error) {
-      console.error("Error fetching employees:", error);
+      console.error("Error fetching dropdown data:", error);
     }
   };
 
   useEffect(() => {
     fetchInstallations();
-    fetchEmployeeNames();
-    fetchMasterData();
+    fetchDropdownData();
   }, []);
 
   const handleApproveClick = (item) => {
@@ -225,9 +268,9 @@ const ServiceInstallation = () => {
         columnData.S = approvalData.serviceType; // Installation/Service
         columnData.T = approvalData.engineerName; // Engineer Name
         columnData.U = finalFileUrl; // Service Video Upload (URL)
-        columnData.X = approvalData.remarks; // Service Report (Remarks)
+        columnData.W = approvalData.remarks; // What Did Customer's Say (Remarks) (Column W instead of X)
       } else if (approvalData.clientStatus === "No") {
-        columnData.X = approvalData.remarks; // Service Report (Remarks)
+        columnData.W = approvalData.remarks; // What Did Customer's Say (Remarks) (Column W instead of X)
       } else if (approvalData.clientStatus === "Next Date for Follow-Up") {
         columnData.V = approvalData.followUpDate; // Next Date
         columnData.W = approvalData.customerSay; // What Did Customer's Say
@@ -271,6 +314,11 @@ const ServiceInstallation = () => {
       Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()));
     if (!matchesSearch) return false;
 
+    if (selectedDateFilter !== "") {
+      const itemDateNormalized = formatInputDate(item["Next Date"]);
+      if (itemDateNormalized !== selectedDateFilter) return false;
+    }
+
     if (activeTab === "pending") {
       return item._planned1 !== "" && item._actual1 === "";
     } else {
@@ -285,6 +333,10 @@ const ServiceInstallation = () => {
     return "bg-yellow-500/20 text-yellow-700 border border-yellow-500/30";
   };
 
+  const serviceTypeClean = (approvalData.serviceType || "").trim().toLowerCase();
+  const showEngineer = serviceTypeClean === "site visit" || serviceTypeClean === "video-call";
+  const showServiceReport = serviceTypeClean === "site visit";
+
   return (
     <div className="space-y-6">
       <Card className="border border-indigo-100 bg-gradient-to-br from-indigo-50 to-blue-50 shadow-md">
@@ -292,16 +344,36 @@ const ServiceInstallation = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <CardTitle className="text-2xl font-bold text-indigo-900">Service Installation</CardTitle>
-              <p className="text-indigo-600 mt-1">Manage and track service installation requests</p>
             </div>
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
-              <Input
-                placeholder="Search installations..."
-                className="pl-10 border-indigo-100 focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-start sm:items-center">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+                <Input
+                  placeholder="Search installations..."
+                  className="pl-10 border-indigo-100 focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Label className="text-xs font-bold text-indigo-600 whitespace-nowrap">Follow-Up Date:</Label>
+                <Input
+                  type="date"
+                  className="border-indigo-100 focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm text-indigo-900 cursor-pointer h-10 w-full sm:w-44"
+                  value={selectedDateFilter}
+                  onChange={(e) => setSelectedDateFilter(e.target.value)}
+                />
+                {selectedDateFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedDateFilter("")}
+                    className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold px-2"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -314,14 +386,14 @@ const ServiceInstallation = () => {
               <Clock className="h-4 w-4 mr-2" />
               Pending
               <span className="ml-2 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
-                {installations.filter(i => i._planned1 !== "" && i._actual1 === "").length}
+                {installations.filter(i => i._planned1 !== "" && i._actual1 === "" && (selectedDateFilter === "" || formatInputDate(i["Next Date"]) === selectedDateFilter)).length}
               </span>
             </TabsTrigger>
             <TabsTrigger value="history" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">
               <CheckCircle2 className="h-4 w-4 mr-2" />
               History
               <span className="ml-2 px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
-                {installations.filter(i => i._planned1 !== "" && i._actual1 !== "").length}
+                {installations.filter(i => i._planned1 !== "" && i._actual1 !== "" && (selectedDateFilter === "" || formatInputDate(i["Next Date"]) === selectedDateFilter)).length}
               </span>
             </TabsTrigger>
           </TabsList>
@@ -363,7 +435,7 @@ const ServiceInstallation = () => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Invoice Date</p>
-                    <p className="text-sm font-bold text-gray-900">{selectedItem?.["INVOICE DATE"] || "N/A"}</p>
+                    <p className="text-sm font-bold text-gray-900">{formatDateOnly(selectedItem?.["INVOICE DATE"])}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Invoice No</p>
@@ -373,6 +445,20 @@ const ServiceInstallation = () => {
                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Machine Names</p>
                     <p className="text-sm font-bold text-gray-900 leading-tight">{selectedItem?.["Item-Name"] || "N/A"}</p>
                   </div>
+                  {selectedItem?.["Next Date"] && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Last Follow-Up Date</p>
+                      <p className="text-sm font-bold text-gray-900">{formatDateOnly(selectedItem["Next Date"])}</p>
+                    </div>
+                  )}
+                  {(selectedItem?.["What Did Customer's Say (Remarks)"] || selectedItem?.["What Did Customer's Say"]) && (
+                    <div className="space-y-1 md:col-span-2">
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Last Follow-Up Remarks</p>
+                      <p className="text-sm font-bold text-gray-900 leading-tight">
+                        {selectedItem["What Did Customer's Say (Remarks)"] || selectedItem["What Did Customer's Say"]}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -405,7 +491,7 @@ const ServiceInstallation = () => {
                       <div className="h-px flex-1 bg-gray-100"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={showEngineer ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"}>
                       <div className="space-y-2">
                         <Label className="text-gray-700 font-semibold">Installation / Service *</Label>
                         <Select
@@ -416,82 +502,61 @@ const ServiceInstallation = () => {
                             <SelectValue placeholder="Select Service Type" />
                           </SelectTrigger>
                           <SelectContent className="bg-white">
-                            <div className="p-2 sticky top-0 bg-white z-10 border-b">
-                              <div className="relative">
-                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                                <input
-                                  className="w-full pl-8 pr-2 py-1.5 text-xs border rounded outline-none focus:border-indigo-400"
-                                  placeholder="Search..."
-                                  value={serviceTypeSearch}
-                                  onChange={(e) => setServiceTypeSearch(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              </div>
-                            </div>
                             <div className="max-h-[200px] overflow-y-auto">
-                              <SelectItem value="Select Service Type (All)">Select Service Type (All)</SelectItem>
-                              {serviceTypes.filter(t => t.toLowerCase().includes(serviceTypeSearch.toLowerCase())).map(type => (
+                              {serviceTypes.map(type => (
                                 <SelectItem key={type} value={type}>{type}</SelectItem>
                               ))}
                             </div>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-gray-700 font-semibold">Engineer Name *</Label>
-                        <Select
-                          value={approvalData.engineerName}
-                          onValueChange={(val) => setApprovalData({ ...approvalData, engineerName: val })}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder="Select Engineer" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white">
-                            <div className="p-2 sticky top-0 bg-white z-10 border-b">
-                              <div className="relative">
-                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                                <input
-                                  className="w-full pl-8 pr-2 py-1.5 text-xs border rounded outline-none focus:border-indigo-400"
-                                  placeholder="Search..."
-                                  value={engineerSearch}
-                                  onChange={(e) => setEngineerSearch(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
+
+                      {showEngineer && (
+                        <div className="space-y-2 animate-in fade-in duration-300">
+                          <Label className="text-gray-700 font-semibold">Engineer Name *</Label>
+                          <Select
+                            value={approvalData.engineerName}
+                            onValueChange={(val) => setApprovalData({ ...approvalData, engineerName: val })}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Select Engineer" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                              <div className="max-h-[200px] overflow-y-auto">
+                                {employeeNames.map(name => (
+                                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                                ))}
                               </div>
-                            </div>
-                            <div className="max-h-[200px] overflow-y-auto">
-                              <SelectItem value="Select Engineer (All)">Select Engineer (All)</SelectItem>
-                              {employeeNames.filter(n => n.toLowerCase().includes(engineerSearch.toLowerCase())).map(name => (
-                                <SelectItem key={name} value={name}>{name}</SelectItem>
-                              ))}
-                            </div>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-gray-700 font-semibold">Service Report (Image/Video/PDF) *</Label>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept=".jpg,.jpeg,.png,.pdf,.mp4"
-                      />
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all cursor-pointer group ${fileData.name ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-gray-50 hover:bg-indigo-50/50 hover:border-indigo-300'}`}
-                      >
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${fileData.name ? 'bg-indigo-600' : 'bg-indigo-100'}`}>
-                          {fileData.name ? <CheckCircle2 className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-indigo-600" />}
+                    {showServiceReport && (
+                      <div className="space-y-2 animate-in fade-in duration-300">
+                        <Label className="text-gray-700 font-semibold">Service Report (Image/Video/PDF) *</Label>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          onChange={handleFileChange}
+                          accept=".jpg,.jpeg,.png,.pdf,.mp4"
+                        />
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all cursor-pointer group ${fileData.name ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-gray-50 hover:bg-indigo-50/50 hover:border-indigo-300'}`}
+                        >
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform ${fileData.name ? 'bg-indigo-600' : 'bg-indigo-100'}`}>
+                            {fileData.name ? <CheckCircle2 className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-indigo-600" />}
+                          </div>
+                          <p className="text-sm font-medium text-indigo-600">
+                            {fileData.name ? fileData.name : "Upload a file"} <span className="text-gray-400 font-normal">or drag and drop</span>
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">Images, Videos, PDFs up to 10MB</p>
                         </div>
-                        <p className="text-sm font-medium text-indigo-600">
-                          {fileData.name ? fileData.name : "Upload a file"} <span className="text-gray-400 font-normal">or drag and drop</span>
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">Images, Videos, PDFs up to 10MB</p>
                       </div>
-                    </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label className="text-gray-700 font-semibold">Remarks *</Label>
@@ -658,6 +723,23 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                   )}
                 </div>
 
+                {activeTab === "pending" && (
+                  <div className="pt-2 mt-2 border-t border-gray-50 space-y-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-gray-400 font-semibold uppercase tracking-wider">Last Follow-Up Date</p>
+                        <p className="text-gray-700 font-medium">{formatDateOnly(item["Next Date"])}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 font-semibold uppercase tracking-wider">Remarks</p>
+                        <p className="text-gray-700 font-medium truncate" title={item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || ""}>
+                          {item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {activeTab === "history" && (
                   <div className="pt-2 mt-2 border-t border-gray-50 space-y-2">
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -667,7 +749,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                       </div>
                       <div>
                         <p className="text-gray-400 font-semibold uppercase tracking-wider">Service Type</p>
-                        <p className="text-gray-700 font-medium">{item["Installation/Service"] || "N/A"}</p>
+                        <p className="text-gray-700 font-medium">{item["Service-Type"] || item["Installation/Service"] || "N/A"}</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -678,14 +760,30 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                       {item["Next Date"] && (
                         <div>
                           <p className="text-gray-400 font-semibold uppercase tracking-wider">Next Follow-up</p>
-                          <p className="text-gray-700 font-medium">{item["Next Date"]}</p>
+                          <p className="text-gray-700 font-medium">{formatDateOnly(item["Next Date"])}</p>
                         </div>
                       )}
                     </div>
-                    {item["Service Report"] && (
+                    {(item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"]) && (
                       <div className="text-xs">
-                        <p className="text-gray-400 font-semibold uppercase tracking-wider">Remarks/Report</p>
-                        <p className="text-gray-700 font-medium line-clamp-2">{item["Service Report"]}</p>
+                        <p className="text-gray-400 font-semibold uppercase tracking-wider">Remarks</p>
+                        <p className="text-gray-700 font-medium line-clamp-2">
+                          {item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"]}
+                        </p>
+                      </div>
+                    )}
+                    {item["Service Report"] && item["Service Report"].toString().startsWith("http") && (
+                      <div className="text-xs pt-1">
+                        <p className="text-gray-400 font-semibold uppercase tracking-wider">Service Report File</p>
+                        <a
+                          href={item["Service Report"]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors font-semibold text-xs border border-indigo-200 mt-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          View Service File
+                        </a>
                       </div>
                     )}
                   </div>
@@ -717,6 +815,8 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Date</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice No</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Copy</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Follow-Up Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Remarks</th>
                     {/* <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Material Rcvd</th> */}
                   </>
                 ) : (
@@ -724,10 +824,9 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Client Status</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Installation/Service</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Engineer Name</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Video Upload</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Date</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">What Did Customer's Say</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Report</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Report File</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Follow-Up Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Remarks</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice Copy</th>
                   </>
                 )}
@@ -756,7 +855,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                     {activeTab === "pending" ? (
                       <>
                         <td className="px-6 py-4 text-gray-600 min-w-[200px]">{item["Item-Name"]}</td>
-                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateTime(item["INVOICE DATE"])}</td>
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateOnly(item["INVOICE DATE"])}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["INVOICE NO"]}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
                           {item["Invoice Copy"] && item["Invoice Copy"].toString().startsWith("http") ? (
@@ -773,17 +872,21 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                             item["Invoice Copy"] || "-"
                           )}
                         </td>
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateOnly(item["Next Date"])}</td>
+                        <td className="px-6 py-4 text-gray-600 truncate max-w-[150px]" title={item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || ""}>
+                          {item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || "-"}
+                        </td>
                         {/* <td className="px-6 py-4 text-gray-600 text-center">{item["Actual material rcvd"]}</td> */}
                       </>
                     ) : (
                       <>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["Client Status"] || "-"}</td>
-                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["Installation/Service"] || "-"}</td>
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["Service-Type"] || item["Installation/Service"] || "-"}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["Engineer Name"] || "-"}</td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
-                          {item["Service Video Upload"] && item["Service Video Upload"].toString().startsWith("http") ? (
+                          {item["Service Report"] && item["Service Report"].toString().startsWith("http") ? (
                             <a
-                              href={item["Service Video Upload"]}
+                              href={item["Service Report"]}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors font-semibold text-xs border border-indigo-200"
@@ -792,13 +895,12 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                               View File
                             </a>
                           ) : (
-                            item["Service Video Upload"] || "-"
+                            item["Service Report"] || "-"
                           )}
                         </td>
-                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateTime(item["Next Date"])}</td>
-                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{item["What Did Customer's Say"] || "-"}</td>
-                        <td className="px-6 py-4 text-gray-600 truncate max-w-[150px]" title={item["Service Report"]}>
-                          {item["Service Report"] || "-"}
+                        <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{formatDateOnly(item["Next Date"])}</td>
+                        <td className="px-6 py-4 text-gray-600 truncate max-w-[200px]" title={item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || ""}>
+                          {item["What Did Customer's Say (Remarks)"] || item["What Did Customer's Say"] || "-"}
                         </td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
                           {item["Invoice Copy"] && item["Invoice Copy"].toString().startsWith("http") ? (
@@ -821,7 +923,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 font-medium">
+                  <td colSpan={12} className="px-6 py-12 text-center text-gray-500 font-medium">
                     No records matching your criteria.
                   </td>
                 </tr>

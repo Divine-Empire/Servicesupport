@@ -334,8 +334,8 @@ const ServiceInstallation = () => {
   };
 
   const serviceTypeClean = (approvalData.serviceType || "").trim().toLowerCase();
-  const showEngineer = serviceTypeClean === "site visit" || serviceTypeClean === "video-call";
-  const showServiceReport = serviceTypeClean === "site visit";
+  const showEngineer = serviceTypeClean.includes("visit") || serviceTypeClean.includes("video");
+  const showServiceReport = serviceTypeClean.includes("visit");
 
   return (
     <div className="space-y-6">
@@ -493,7 +493,7 @@ const ServiceInstallation = () => {
 
                     <div className={showEngineer ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-2"}>
                       <div className="space-y-2">
-                        <Label className="text-gray-700 font-semibold">Installation / Service *</Label>
+                        <Label className="text-gray-700 font-semibold">Service Type *</Label>
                         <Select
                           value={approvalData.serviceType}
                           onValueChange={(val) => setApprovalData({ ...approvalData, serviceType: val })}
@@ -501,12 +501,10 @@ const ServiceInstallation = () => {
                           <SelectTrigger className="h-10">
                             <SelectValue placeholder="Select Service Type" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white">
-                            <div className="max-h-[200px] overflow-y-auto">
-                              {serviceTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                              ))}
-                            </div>
+                          <SelectContent className="bg-white max-h-60 overflow-y-auto">
+                            {serviceTypes.map(type => (
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -521,12 +519,10 @@ const ServiceInstallation = () => {
                             <SelectTrigger className="h-10">
                               <SelectValue placeholder="Select Engineer" />
                             </SelectTrigger>
-                            <SelectContent className="bg-white">
-                              <div className="max-h-[200px] overflow-y-auto">
-                                {employeeNames.map(name => (
-                                  <SelectItem key={name} value={name}>{name}</SelectItem>
-                                ))}
-                              </div>
+                            <SelectContent className="bg-white max-h-60 overflow-y-auto">
+                              {employeeNames.map(name => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -822,7 +818,7 @@ const InstallationTable = ({ data, loading, getStatusBadge, onApprove, activeTab
                 ) : (
                   <>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Client Status</th>
-                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Installation/Service</th>
+                    <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Type</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Engineer Name</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Service Report File</th>
                     <th className="px-6 py-4 text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Next Follow-Up Date</th>

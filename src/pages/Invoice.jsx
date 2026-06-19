@@ -95,9 +95,9 @@ export default function Invoice() {
           machineName: row[20], // Machine Name
           enquiryType: row[21], // Enquiry Type (second one)
           siteName: row[22], // Site Name
-          companyName: row[23], // Company Name
-          siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
+          companyName: row[16], // Company Name (Col Q)
+          billingAddress: row[19], // Billing Address (Col T)
+          siteAddress: row[20], // Site Address (Col U)
           state: row[26], // State
           pinCode: row[27], // PIN Code
           engineerAssign: row[28], // Engineer Name
@@ -263,6 +263,24 @@ export default function Invoice() {
   const fetchInvoiceSheet = async () => {
     setFetchLoading(true); // start loading
     try {
+      // Fetch Ticket_Enquiry to build a lookup for Company Name, Billing Address, and Site Address
+      const enquiryResponse = await fetch(`${sheet_url}?sheet=Ticket_Enquiry`);
+      const enquiryJson = await enquiryResponse.json();
+
+      let enquiryLookup = {};
+      if (enquiryJson.success && Array.isArray(enquiryJson.data)) {
+        enquiryJson.data.slice(6).forEach(row => {
+          const tId = String(row[1] || "").trim();
+          if (tId) {
+            enquiryLookup[tId] = {
+              companyName: String(row[16] || "").trim(), // Column Q (index 16)
+              billingAddress: String(row[19] || "").trim(), // Column T (index 19)
+              siteAddress: String(row[20] || "").trim(), // Column U (index 20)
+            };
+          }
+        });
+      }
+
       const response = await fetch(`${sheet_url}?sheet=Invoice`);
       const json = await response.json();
 
@@ -270,45 +288,51 @@ export default function Invoice() {
 
       if (json.success && Array.isArray(json.data)) {
         // Process the data to match your requirements
-        const allData = json.data.slice(6).map((row, index) => ({
-          id: index + 1,
-          timeStemp: row[0], // Timestamp
-          ticketId: row[1], // Ticket ID
-          quotationNo: row[2], // Quotation No.(input)
-          clientName: row[3], // Client Name
-          phoneNumber: row[4], // Phone Number
-          emailAddress: row[5], // Email Address
-          invoiceCategory: row[6], // Email Address
-          companyName: row[7], // Company Name
-          quotationPdfLink: row[8], // Quotation Pdf link
+        const allData = json.data.slice(6).map((row, index) => {
+          const tId = String(row[1] || "").trim();
+          const lookup = enquiryLookup[tId] || { companyName: "", billingAddress: "", siteAddress: "" };
+          return {
+            id: index + 1,
+            timeStemp: row[0], // Timestamp
+            ticketId: tId, // Ticket ID
+            quotationNo: row[2], // Quotation No.(input)
+            clientName: row[3], // Client Name
+            phoneNumber: row[4], // Phone Number
+            emailAddress: row[5], // Email Address
+            invoiceCategory: row[6], // Email Address
+            companyName: lookup.companyName || row[7], // Company Name from lookup or row[7]
+            billingAddress: lookup.billingAddress || "",
+            siteAddress: lookup.siteAddress || "",
+            quotationPdfLink: row[8], // Quotation Pdf link
 
-          invoicePostedBy: row[9], // Invoice Posted By(Drop-Down)
-          invoiceNoNABL: row[10], // Invoice No (NABL) (Manual)
-          invoiceNoSERVICE: row[11], // Invoice No (SERVICE)
-          invoiceNoSPARE: row[12], // Invoice No (SPARE)
-          spareInvoice: row[13], // SPARE INVOICE
-          serviceInvoice: row[14], // SERVICE INVOICE
-          nablInvoice: row[15], // NABL INVOICE
-          nonNabl: row[16], // NON NABL
-          invoiceAmountNABLBasic: row[17], // Invoice Amount NABL (Basic)
-          invoiceAmountNABLGst: row[18], // Invoice Amount NABL (gst)
-          totalInvoiceAmtNonNABLBasic: row[19], // Total Invoice Amt NON NABL BASIC
-          totalInvoiceAmtNonNABLGst: row[20], // Total Invoice Amt NON NABL gst
-          serviceAmountBasic: row[21], // Service Amount (Basic)
+            invoicePostedBy: row[9], // Invoice Posted By(Drop-Down)
+            invoiceNoNABL: row[10], // Invoice No (NABL) (Manual)
+            invoiceNoSERVICE: row[11], // Invoice No (SERVICE)
+            invoiceNoSPARE: row[12], // Invoice No (SPARE)
+            spareInvoice: row[13], // SPARE INVOICE
+            serviceInvoice: row[14], // SERVICE INVOICE
+            nablInvoice: row[15], // NABL INVOICE
+            nonNabl: row[16], // NON NABL
+            invoiceAmountNABLBasic: row[17], // Invoice Amount NABL (Basic)
+            invoiceAmountNABLGst: row[18], // Invoice Amount NABL (gst)
+            totalInvoiceAmtNonNABLBasic: row[19], // Total Invoice Amt NON NABL BASIC
+            totalInvoiceAmtNonNABLGst: row[20], // Total Invoice Amt NON NABL gst
+            serviceAmountBasic: row[21], // Service Amount (Basic)
 
-          totalServiceAmtSpare: row[22], // Total Service Amt (spare)
-          totalServiceAmtSpareGst: row[23], // Total Service Amt (spare) gst
+            totalServiceAmtSpare: row[22], // Total Service Amt (spare)
+            totalServiceAmtSpareGst: row[23], // Total Service Amt (spare) gst
 
-          attachmentService: row[24], // Attachment Service
-          attachmentSpear: row[25], // Attachment Spear
-          attachmentNABL: row[26], // Attachment NABL
+            attachmentService: row[24], // Attachment Service
+            attachmentSpear: row[25], // Attachment Spear
+            attachmentNABL: row[26], // Attachment NABL
 
-          billNo: row[27], // Attachment NABL
-          billFile: row[28], // Attachment NABL
-          basicAmount: row[29], // Attachment NABL
-          totalAmountWithTex: row[30], // Attachment NABL
-          CREName: row[73],
-        }));
+            billNo: row[27], // Attachment NABL
+            billFile: row[28], // Attachment NABL
+            basicAmount: row[29], // Attachment NABL
+            totalAmountWithTex: row[30], // Attachment NABL
+            CREName: row[73],
+          };
+        });
 
         // Filter data based on your conditions
 
@@ -352,6 +376,8 @@ export default function Invoice() {
       emailAddress: ticket.emailAddress || "",
       category: ticket.category || "",
       companyName: ticket.companyName || "",
+      billingAddress: ticket.billingAddress || "",
+      siteAddress: ticket.siteAddress || "",
       quotationPdfLink: ticket.quotationPdfLink || "",
 
       invoicePostedBy: "",
@@ -846,6 +872,12 @@ export default function Invoice() {
                           Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Billing Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Site Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation Pdf Link
                         </th>
 
@@ -876,7 +908,7 @@ export default function Invoice() {
                       {filteredPendingData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={9}
+                            colSpan={16}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-pending"
                           >
@@ -924,6 +956,12 @@ export default function Invoice() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.billingAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
                             </td>
 
                             <td className="px-4 py-3">
@@ -1081,6 +1119,26 @@ export default function Invoice() {
                               </p>
                             </div>
 
+                            {/* Billing Address & Site Address */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Billing Address
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.billingAddress || "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Site Address
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.siteAddress || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+
                             {/* Payment Details */}
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
@@ -1229,6 +1287,12 @@ export default function Invoice() {
                           Company Name
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Billing Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Site Address
+                        </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation PDF
                         </th>
                         {/* <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
@@ -1341,7 +1405,7 @@ export default function Invoice() {
                       {filteredHistoryData.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={28}
+                            colSpan={33}
                             className="text-center py-8 bg-white"
                             data-testid="text-no-history"
                           >
@@ -1381,6 +1445,12 @@ export default function Invoice() {
                             </td>
                             <td className="px-4 py-3 text-blue-900">
                               {ticket.companyName || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.billingAddress || ""}
+                            </td>
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.siteAddress || ""}
                             </td>
                             <td className="px-4 py-3">
                               {ticket.quotationPdfLink ? (
@@ -1652,6 +1722,26 @@ export default function Invoice() {
                                 </p>
                                 <p className="text-blue-900">
                                   {ticket.companyName || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Billing Address & Site Address */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Billing Address
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.billingAddress || "N/A"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Site Address
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.siteAddress || "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -1940,6 +2030,22 @@ export default function Invoice() {
             <Label>Company Name</Label>
             <Input
               value={formData.companyName || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Billing Address</Label>
+            <Input
+              value={formData.billingAddress || ""}
+              disabled
+              className="bg-slate-50"
+            />
+          </div>
+          <div>
+            <Label>Site Address</Label>
+            <Input
+              value={formData.siteAddress || ""}
               disabled
               className="bg-slate-50"
             />

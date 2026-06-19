@@ -478,6 +478,31 @@ export default function Dashboard() {
 
       const rows = json.data;
 
+      const row2 = rows[1] || [];
+      const row3 = rows[2] || [];
+
+      const getResponsiblePerson = (stage) => {
+        // Find column index dynamically
+        if (stage.start !== undefined && row2[stage.start]) {
+          const r2Val = String(row2[stage.start]).toLowerCase().replace(/[^a-z0-9]/g, "");
+          const stageNameNorm = String(stage.name).toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (r2Val.includes(stageNameNorm) || stageNameNorm.includes(r2Val)) {
+            return String(row3[stage.start] || "").trim();
+          }
+        }
+        
+        // Search row2 for matching stage name
+        const stageNameNorm = String(stage.name).toLowerCase().replace(/[^a-z0-9]/g, "");
+        for (let colIdx = 0; colIdx < row2.length; colIdx++) {
+          const val = String(row2[colIdx] || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (val && (val === stageNameNorm || val.includes(stageNameNorm) || stageNameNorm.includes(val))) {
+            return String(row3[colIdx] || "").trim();
+          }
+        }
+        
+        return stage.responsible || "-";
+      };
+
       const userName = localStorage.getItem("currentUsername");
       const roleStorage = localStorage.getItem("o2d-auth-storage");
       const parsedData = JSON.parse(roleStorage);
@@ -600,7 +625,7 @@ export default function Dashboard() {
           summaryData.push({
             stage: s.name,
             pending: oCount,
-            responsible: s.responsible || "-"
+            responsible: getResponsiblePerson(s)
           });
           if (s.name === "Follow-Up") {
             Object.entries(followUpCategoryOverdue).forEach(([category, oCount]) => {
@@ -745,9 +770,6 @@ export default function Dashboard() {
             <CardTitle className="text-lg font-semibold">
               Pending Items by Stage
             </CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              Track all pending items across different service stages
-            </p>
           </div>
           <Button
             variant="default"

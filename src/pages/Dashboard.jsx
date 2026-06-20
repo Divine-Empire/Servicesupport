@@ -63,6 +63,12 @@ export default function Dashboard() {
   const [followUpCategoryBreakdown, setFollowUpCategoryBreakdown] = useState({});
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
+  // Weekly Report state
+  const [weeklyReportLoading, setWeeklyReportLoading] = useState(false);
+  const [weeklyReportData, setWeeklyReportData] = useState(null);
+  const [weeklyStartDate, setWeeklyStartDate] = useState("");
+  const [weeklyEndDate, setWeeklyEndDate] = useState("");
+
   const COLORS = ["#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
   const sheet_url =
@@ -455,6 +461,138 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // ─── Weekly Report Fetch ───────────────────────────────────────────────────
+  const fetchWeeklyReport = async (startOverride, endOverride) => {
+    setWeeklyReportLoading(true);
+    try {
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+
+      const rawStart = startOverride !== undefined ? startOverride : weeklyStartDate;
+      const rawEnd   = endOverride  !== undefined ? endOverride  : weeklyEndDate;
+
+      let effectiveEnd = rawEnd
+        ? (() => { const d = new Date(rawEnd); d.setHours(23,59,59,999); return d; })()
+        : new Date(now);
+      let effectiveStart = rawStart
+        ? (() => { const d = new Date(rawStart); d.setHours(0,0,0,0); return d; })()
+        : (() => { const d = new Date(now); d.setDate(d.getDate() - 6); d.setHours(0,0,0,0); return d; })();
+
+      const sixtyDaysAgo = new Date(now);
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      sixtyDaysAgo.setHours(0, 0, 0, 0);
+
+      const _parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        if (dateStr instanceof Date) return dateStr;
+        const s = String(dateStr).trim();
+        const p = s.split('/');
+        if (p.length === 3) return new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
+        const p2 = s.split('-');
+        if (p2.length === 3) {
+          if (p2[0].length === 4) return new Date(parseInt(p2[0],10), parseInt(p2[1],10)-1, parseInt(p2[2],10));
+          return new Date(parseInt(p2[2],10), parseInt(p2[1],10)-1, parseInt(p2[0],10));
+        }
+        const parsed = Date.parse(s);
+        return isNaN(parsed) ? null : new Date(parsed);
+      };
+
+      const _hasVal = (v) => {
+        if (v === null || v === undefined) return false;
+        if (typeof v === 'string') return v.trim() !== '' && v.trim() !== '-';
+        return v !== '';
+      };
+
+      const _parseNum = (v) => {
+        if (v === null || v === undefined || v === '') return 0;
+        const n = parseFloat(String(v).replace(/,/g,''));
+        return isNaN(n) ? 0 : n;
+      };
+
+      const CATS = ['SPARE', 'SERVICE', 'NABL', 'NON NABL', 'OTHER'];
+      const _normCat = (cat) => {
+        if (!cat) return 'OTHER';
+        const c = String(cat).trim().toUpperCase();
+        if (c === 'SPARE')   return 'SPARE';
+        if (c === 'SERVICE') return 'SERVICE';
+        if (c === 'NABL')    return 'NABL';
+        if (c === 'NON NABL' || c === 'NON-NABL' || c === 'NONNABL') return 'NON NABL';
+        return 'OTHER';
+      };
+
+      const result = {};
+      CATS.forEach(cat => {
+        result[cat] = { outgoingEnq: 0, incomingEnq: 0, tillDatePending: 0, totalBilling: 0, invoiceValue: 0 };
+      });
+
+      const [ticketRes, invoiceRes] = await Promise.all([
+        fetch(`${sheet_url}?sheet=Ticket_Enquiry`),
+        fetch(`${sheet_url}?sheet=Invoice`),
+      ]);
+      const [ticketJson, invoiceJson] = await Promise.all([
+        ticketRes.json(),
+        invoiceRes.json(),
+      ]);
+
+      if (ticketJson.success && Array.isArray(ticketJson.data)) {
+        const rows = ticketJson.data.slice(6);
+
+        // Build ticket-to-category lookup for Invoice joining
+        const ticketCatMap = {};
+        rows.forEach(row => {
+          if (row && row[1]) ticketCatMap[String(row[1]).trim()] = _normCat(row[23]);
+        });
+
+        rows.forEach(row => {
+          if (!row || !row[1]) return;
+          const ts = _parseDate(row[0]);
+          const callType = String(row[13] || '').trim();
+          const category = _normCat(row[23]);
+
+          // Outgoing & Incoming Enquiries (date-filtered)
+          if (ts && ts >= effectiveStart && ts <= effectiveEnd) {
+            if (callType === 'Outgoing') result[category].outgoingEnq++;
+            if (callType === 'Incoming') result[category].incomingEnq++;
+          }
+
+          // Till Date Pending Enq (last 60 days — no date filter)
+          if (ts && ts >= sixtyDaysAgo) {
+            const pendingVC  = _hasVal(row[31])  && !_hasVal(row[32]);
+            const pendingWC  = _hasVal(row[132]) && !_hasVal(row[133]);
+            const pendingQuo = _hasVal(row[37])  && !_hasVal(row[38]);
+            if (pendingVC || pendingWC || pendingQuo) result[category].tillDatePending++;
+          }
+        });
+
+        // Invoice data (date-filtered)
+        if (invoiceJson.success && Array.isArray(invoiceJson.data)) {
+          invoiceJson.data.slice(6).forEach(row => {
+            if (!row || !row[1]) return;
+            const ts = _parseDate(row[0]);
+            if (!ts || ts < effectiveStart || ts > effectiveEnd) return;
+            const ticketId = String(row[1]).trim();
+            const cat = ticketCatMap[ticketId] || 'OTHER';
+            result[cat].totalBilling++;
+            if      (cat === 'SPARE')    result[cat].invoiceValue += _parseNum(row[22]);
+            else if (cat === 'SERVICE')  result[cat].invoiceValue += _parseNum(row[21]);
+            else if (cat === 'NABL')     result[cat].invoiceValue += _parseNum(row[17]);
+            else if (cat === 'NON NABL') result[cat].invoiceValue += _parseNum(row[19]);
+            // OTHER: no dedicated column
+          });
+        }
+
+        setWeeklyReportData({ result, effectiveStart, effectiveEnd });
+      }
+    } catch (err) {
+      console.error('Error fetching weekly report:', err);
+      toast.error('Failed to load weekly report');
+    } finally {
+      setWeeklyReportLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchWeeklyReport(); }, []);
 
   const formatDate = (raw) => {
     if (!raw) return "-";
@@ -884,72 +1022,136 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Enquiry Sources Pie Chart */}
-        <Card className="p-6 shadow rounded-2xl">
-          <h2 className="text-lg font-semibold mb-4">Priority Status</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={priorityData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-              >
-                {priorityData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-
-        {/* Revenue Trend Line Chart */}
-        <Card className="p-6 shadow rounded-2xl">
-          <h2 className="text-lg font-semibold mb-4">
-            Pay Right Now Revenue Trend
-          </h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={paymentData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="#3B82F6"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      {/* Quotation Status */}
-      <Card className="p-6 shadow rounded-2xl">
-        <h2 className="text-lg font-semibold mb-4">Warranty Check Status</h2>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={warrantyCheckData}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value">
-              {warrantyCheckData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
+      {/* ─── Weekly Report ──────────────────────────────────────── */}
+      <Card className="shadow rounded-2xl">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <CardTitle className="text-lg font-semibold">Weekly Report</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
+                <label className="text-xs text-gray-500 whitespace-nowrap">From:</label>
+                <input
+                  type="date"
+                  className="text-xs border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  value={weeklyStartDate}
+                  onChange={e => setWeeklyStartDate(e.target.value)}
                 />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              </div>
+              <div className="flex items-center gap-1">
+                <label className="text-xs text-gray-500 whitespace-nowrap">To:</label>
+                <input
+                  type="date"
+                  className="text-xs border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  value={weeklyEndDate}
+                  onChange={e => setWeeklyEndDate(e.target.value)}
+                />
+              </div>
+              <Button
+                size="sm"
+                variant="default"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 px-3 flex items-center gap-1"
+                onClick={() => fetchWeeklyReport()}
+                disabled={weeklyReportLoading}
+              >
+                {weeklyReportLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                Apply
+              </Button>
+              {(weeklyStartDate || weeklyEndDate) && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-7 px-2"
+                  onClick={() => { setWeeklyStartDate(''); setWeeklyEndDate(''); fetchWeeklyReport('', ''); }}
+                  disabled={weeklyReportLoading}
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
+          </div>
+          {weeklyReportData && (
+            <p className="text-xs text-gray-400 mt-1">
+              Showing:{' '}
+              {weeklyReportData.effectiveStart.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+              {' '}–{' '}
+              {weeklyReportData.effectiveEnd.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+              {' '}·{' '}TILL DATE PENDING ENQ always reflects last 60 days
+            </p>
+          )}
+        </CardHeader>
+        <CardContent className="p-0">
+          {weeklyReportLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            </div>
+          ) : weeklyReportData ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-800 hover:bg-slate-800">
+                    <TableHead className="text-xs font-bold text-white w-[210px] py-3">CATEGORY</TableHead>
+                    {['SPARE', 'SERVICE', 'NABL', 'NON NABL'].map(cat => (
+                      <TableHead key={cat} className="text-xs font-bold text-white text-center py-3">{cat}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { label: 'OUTGOING ENQUIRIES',    getVal: (cat) => weeklyReportData.result[cat].outgoingEnq },
+                    { label: 'INCOMING ENQUIRIES',    getVal: (cat) => weeklyReportData.result[cat].incomingEnq },
+                    {
+                      label: 'TILL DATE PENDING ENQ',
+                      note: '(last 60 days)',
+                      getVal: (cat) => weeklyReportData.result[cat].tillDatePending,
+                    },
+                    { label: 'TOTAL NO. BILLING',    getVal: (cat) => weeklyReportData.result[cat].totalBilling },
+                    {
+                      label: 'CONVERSION %',
+                      getVal: (cat) => {
+                        const pending = weeklyReportData.result[cat].tillDatePending;
+                        const billing = weeklyReportData.result[cat].totalBilling;
+                        if (pending === 0) return '-';
+                        return `${((billing / pending) * 100).toFixed(1)}%`;
+                      },
+                    },
+                    {
+                      label: 'INVOICE VALUE',
+                      getVal: (cat) => {
+                        if (cat === 'OTHER') return '-';
+                        const v = weeklyReportData.result[cat].invoiceValue;
+                        return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                      },
+                    },
+                    {
+                      label: 'AVG TCK SIZE',
+                      getVal: (cat) => {
+                        if (cat === 'OTHER') return '-';
+                        const billing = weeklyReportData.result[cat].totalBilling;
+                        if (billing === 0) return '-';
+                        const v = weeklyReportData.result[cat].invoiceValue / billing;
+                        return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                      },
+                    },
+                  ].map((row, rIdx) => (
+                    <TableRow key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'}>
+                      <TableCell className="text-xs font-semibold text-gray-700 py-2.5">
+                        {row.label}
+                        {row.note && <span className="text-gray-400 text-[10px] ml-1 font-normal">{row.note}</span>}
+                      </TableCell>
+                      {['SPARE', 'SERVICE', 'NABL', 'NON NABL'].map(cat => (
+                        <TableCell key={cat} className="text-xs text-center text-gray-600 py-2.5">
+                          {row.getVal(cat)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-10 text-sm text-gray-400">No report data available.</div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

@@ -513,11 +513,38 @@ export default function Dashboard() {
       const CATS = ['SPARE', 'SERVICE', 'NABL', 'NON NABL', 'OTHER'];
       const _normCat = (cat) => {
         if (!cat) return 'OTHER';
-        const c = String(cat).trim().toUpperCase();
+        const normalize = (str) => {
+          return String(str)
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, ' ')
+            .replace(/\s*,\s*/g, ',');
+        };
+        const c = normalize(cat);
         if (c === 'SPARE')   return 'SPARE';
         if (c === 'SERVICE') return 'SERVICE';
-        if (c === 'NABL')    return 'NABL';
-        if (c === 'NON NABL' || c === 'NON-NABL' || c === 'NONNABL') return 'NON NABL';
+
+        const nablList = [
+          'NABL CALIBRATION',
+          'NABL & NON-NABL',
+          'NABL,NON-NABL,SPARE',
+          'NABL & SPARE',
+          'NABL CERTIFICATE',
+          'NABL,NON-NABL,SERVICE ,SPARE',
+          'NABL,NON-NABL,SERVICE',
+          'NABL & SERVICE',
+          'NABL,SERVICE ,SPARE'
+        ].map(normalize);
+
+        const nonNablList = [
+          'NON-NABL CALIBRATION',
+          'NON-NABL CERTIFICATE',
+          'NON-NABL & SERVICE',
+          'NON-NABL & SPARE'
+        ].map(normalize);
+
+        if (c === 'NABL' || nablList.includes(c)) return 'NABL';
+        if (c === 'NON NABL' || c === 'NON-NABL' || c === 'NONNABL' || nonNablList.includes(c)) return 'NON NABL';
         return 'OTHER';
       };
 

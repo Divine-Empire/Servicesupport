@@ -596,7 +596,7 @@ export default function Dashboard() {
         if (invoiceJson.success && Array.isArray(invoiceJson.data)) {
           invoiceJson.data.slice(6).forEach(row => {
             if (!row || !row[1]) return;
-            const ts = _parseDate(row[0]);
+            const ts = _parseDate(row[15]);
             if (!ts || ts < effectiveStart || ts > effectiveEnd) return;
             const ticketId = String(row[1]).trim();
             const cat = ticketCatMap[ticketId] || 'OTHER';

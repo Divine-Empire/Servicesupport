@@ -312,6 +312,7 @@ export default function Invoice() {
             spareInvoice: row[13], // SPARE INVOICE
             serviceInvoice: row[14], // SERVICE INVOICE
             nablInvoice: row[15], // NABL INVOICE
+            invoiceDate: row[15], // Invoice-Date
             nonNabl: row[16], // NON NABL
             invoiceAmountNABLBasic: row[17], // Invoice Amount NABL (Basic)
             invoiceAmountNABLGst: row[18], // Invoice Amount NABL (gst)
@@ -381,6 +382,7 @@ export default function Invoice() {
       quotationPdfLink: ticket.quotationPdfLink || "",
 
       invoicePostedBy: "",
+      invoiceDate: new Date().toISOString().split("T")[0],
       invoiceNoNABL: "",
       invoiceNoSERVICE: "",
       invoiceNoSPARE: "",
@@ -539,6 +541,7 @@ export default function Invoice() {
         "Invoice No (NABL) (Manual)": formData.invoiceNoNABL,
         "Invoice No (SERVICE)": formData.invoiceNoSERVICE,
         "Invoice No (SPARE)": formData.invoiceNoSPARE,
+        "Invoice-Date": formatDate(formData.invoiceDate),
         "Invoice Amount SPARE (gst)": formData.totalAmtWithGST,
         "Invoice Amount SERVICE (gst)": formData.serviceAmountGST,
         // "NABL INVOICE": formData.nablInvoice,
@@ -548,9 +551,9 @@ export default function Invoice() {
         // "Total Invoice Amt NON NABL BASIC":
         // formData.totalInvoiceAmtNonNABLBasic,
         // "Total Invoice Amt NON NABL gst": formData.totalInvoiceAmtNonNABLGst,
-        "Service Amount (Basic)": formData.serviceAmountBasic,
+        "Invoice Amount SERVICE (Basic)": formData.serviceAmountBasic,
 
-        "Total Service Amt (spare)": formData.totalServiceAmtSpare,
+        "Invoice Amount SPARE (Basic)": formData.totalServiceAmtSpare,
         // "Total Service Amt (spare) gst": formData.totalServiceAmtSpareGst,
 
         "Attachment Service": attachmentServicefileUrl,
@@ -619,9 +622,9 @@ export default function Invoice() {
               newTicket["Total Invoice Amt NON NABL BASIC"],
             totalInvoiceAmtNonNABLGst:
               newTicket["Total Invoice Amt NON NABL gst"],
-            serviceAmountBasic: newTicket["Service Amount (Basic)"],
+            serviceAmountBasic: newTicket["Invoice Amount SERVICE (Basic)"],
 
-            totalServiceAmtSpare: newTicket["Total Service Amt (spare)"],
+            totalServiceAmtSpare: newTicket["Invoice Amount SPARE (Basic)"],
             totalServiceAmtSpareGst: newTicket["Total Service Amt (spare) gst"],
 
             attachmentService: newTicket["Attachment Service"],
@@ -747,8 +750,9 @@ export default function Invoice() {
     const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
     const year = date.getFullYear();
 
-    return `${day}/${month}/${year}`;
+    return `${year}-${month}-${day}`;
   };
+
 
   const formatDateTime = (date) => {
     const d = new Date(date);
@@ -1295,6 +1299,9 @@ export default function Invoice() {
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Quotation PDF
                         </th>
+                        <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
+                          Invoice Date
+                        </th>
                         {/* <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">
                           Advance Attachment
                         </th> */}
@@ -1465,6 +1472,10 @@ export default function Invoice() {
                               ) : (
                                 ""
                               )}
+                            </td>
+
+                            <td className="px-4 py-3 text-blue-900">
+                              {ticket.invoiceDate ? formatDate(ticket.invoiceDate) : ""}
                             </td>
 
                             <td className="px-4 py-3 text-blue-900">
@@ -1742,6 +1753,18 @@ export default function Invoice() {
                                 </p>
                                 <p className="text-blue-900">
                                   {ticket.siteAddress || "N/A"}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Invoice Date */}
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-gray-500 font-medium">
+                                  Invoice Date
+                                </p>
+                                <p className="text-blue-900">
+                                  {ticket.invoiceDate ? formatDate(ticket.invoiceDate) : "N/A"}
                                 </p>
                               </div>
                             </div>
@@ -2054,6 +2077,18 @@ export default function Invoice() {
           {!isCancelled && (
             <>
               {/* Editable fields */}
+              <div>
+                <Label>Invoice Date *</Label>
+                <Input
+                  type="date"
+                  value={formData.invoiceDate || ""}
+                  onChange={(e) =>
+                    handleInputChange("invoiceDate", e.target.value)
+                  }
+                  data-testid="input-invoice-date"
+                  required
+                />
+              </div>
               <div>
                 <Label>Invoice Posted By *</Label>
                 {/* <Input

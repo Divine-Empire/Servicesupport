@@ -487,6 +487,13 @@ export default function Dashboard() {
         if (!dateStr) return null;
         if (dateStr instanceof Date) return dateStr;
         const s = String(dateStr).trim();
+        // If the string has a time component (ISO datetime), parse it directly so
+        // UTC offsets are preserved correctly. e.g. "2026-06-21T18:30:00.000Z" is
+        // June 22 00:00 IST — the split('-') path would lose this offset entirely.
+        if (s.includes('T') || s.endsWith('Z')) {
+          const parsed = Date.parse(s);
+          return isNaN(parsed) ? null : new Date(parsed);
+        }
         const p = s.split('/');
         if (p.length === 3) return new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
         const p2 = s.split('-');
@@ -540,7 +547,8 @@ export default function Dashboard() {
           'NON-NABL CALIBRATION',
           'NON-NABL CERTIFICATE',
           'NON-NABL & SERVICE',
-          'NON-NABL & SPARE'
+          'NON-NABL & SPARE',
+          'NON NABL & SAPRE'
         ].map(normalize);
 
         if (c === 'NABL' || nablList.includes(c)) return 'NABL';
@@ -599,7 +607,8 @@ export default function Dashboard() {
             const ts = _parseDate(row[15]);
             if (!ts || ts < effectiveStart || ts > effectiveEnd) return;
             const ticketId = String(row[1]).trim();
-            const cat = ticketCatMap[ticketId] || 'OTHER';
+            const invoiceCatRaw = row[71];
+            const cat = invoiceCatRaw ? _normCat(invoiceCatRaw) : (ticketCatMap[ticketId] || 'OTHER');
             result[cat].totalBilling++;
             if      (cat === 'SPARE')    result[cat].invoiceValue += _parseNum(row[22]);
             else if (cat === 'SERVICE')  result[cat].invoiceValue += _parseNum(row[21]);

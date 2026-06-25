@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -277,7 +277,7 @@ export default function TicketAndEnquiry() {
       
       if (prev.clientType === "Existing" && masterData[0]) {
         const companyNames = masterData[0]["Company Name"] || [];
-        const gstAddresses = masterData[0]["GST Address"] || [];
+        const gstAddresses = masterData[0]["Billing Address"] || [];
         const gstNos = masterData[0]["GST No."] || [];
         
         const index = companyNames.findIndex(
@@ -665,7 +665,7 @@ export default function TicketAndEnquiry() {
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">Company Name</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Client Name</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Phone Number</th>
-                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">GST Address</th>
+                    <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Billing Address</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Site Address</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">GST No.</th>
                     <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">Machine Name</th>
@@ -796,7 +796,7 @@ export default function TicketAndEnquiry() {
                         </div>
 
                         <div className="text-sm space-y-1">
-                          <p className="text-gray-500 font-medium">GST Address</p>
+                          <p className="text-gray-500 font-medium">Billing Address</p>
                           <p className="text-blue-900">{ticket.gstAddress}</p>
                         </div>
 

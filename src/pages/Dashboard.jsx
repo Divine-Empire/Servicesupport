@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -114,7 +114,7 @@ export default function Dashboard() {
           siteName: row[22], // Site Name
           companyName: row[23], // Company Name
           siteAddress: row[24], // Site Address
-          gstAddress: row[25], // GST Address
+          gstAddress: row[25], // Billing Address
           state: row[26], // State
           pinCode: row[27], // PIN Code
           engineerAssign: row[28], // Engineer Name

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -128,7 +128,7 @@ export default function VideoCallSolution() {
           enquiryType: row[21] || "", // Enquiry Type (second one)
           siteName: row[22] || "", // Site Name
           companyName: row[16] || "", // Company Name (Col Q)
-          gstAddress: row[19] || "", // GST Address (Col T)
+          gstAddress: row[19] || "", // Billing Address (Col T)
           siteAddress: row[20] || "", // Site Address (Col U)
           state: row[26] || "", // State
           pinCode: row[27] || "", // PIN Code
@@ -694,7 +694,7 @@ export default function VideoCallSolution() {
                           Phone Number
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                          GST Address
+                          Billing Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                           Site Address
@@ -931,7 +931,7 @@ export default function VideoCallSolution() {
                               <p className="text-blue-900 text-sm">{ticket.siteAddress || "N/A"}</p>
                             </div>
                             <div>
-                              <p className="text-gray-500 font-medium text-xs">GST Address</p>
+                              <p className="text-gray-500 font-medium text-xs">Billing Address</p>
                               <p className="text-blue-900 text-sm">{ticket.gstAddress || "N/A"}</p>
                             </div>
                           </CardContent>
@@ -979,7 +979,7 @@ export default function VideoCallSolution() {
                           Phone Number
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                          GST Address
+                          Billing Address
                         </th>
                         <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                           Site Address
@@ -1230,7 +1230,7 @@ export default function VideoCallSolution() {
                               <p className="text-blue-900 text-sm">{ticket.siteAddress || "N/A"}</p>
                             </div>
                             <div>
-                              <p className="text-gray-500 font-medium text-xs">GST Address</p>
+                              <p className="text-gray-500 font-medium text-xs">Billing Address</p>
                               <p className="text-blue-900 text-sm">{ticket.gstAddress || "N/A"}</p>
                             </div>
 

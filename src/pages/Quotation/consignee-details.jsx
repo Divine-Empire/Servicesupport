@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { getCompanyPrefix, getNextQuotationNumber } from "./quotation-service"
 
@@ -126,7 +126,7 @@ const ConsigneeDetails = ({
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">GST Address</label>
+          <label className="block text-sm font-medium">Billing Address</label>
           <textarea
             value={quotationData.shipTo || ""}
             onChange={(e) => handleInputChange("shipTo", e.target.value)}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -420,7 +420,7 @@ export default function WarrantyCheck() {
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">Company Name</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Client Name</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Phone Number</th>
-                        <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">GST Address</th>
+                        <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Billing Address</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Site Address</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">GST No.</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Machine Name</th>
@@ -575,7 +575,7 @@ export default function WarrantyCheck() {
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[180px] sticky top-0">Company Name</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Client Name</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Phone Number</th>
-                        <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">GST Address</th>
+                        <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Billing Address</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">Site Address</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">GST No.</th>
                         <th className="border-b border-blue-500 px-4 py-3 text-left w-[150px] sticky top-0">Machine Name</th>

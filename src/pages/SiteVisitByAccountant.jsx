@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -678,7 +678,7 @@ export default function SiteVisitByAccountant() {
                             Phone Number
                           </th>
                           <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                            GST Address
+                            Billing Address
                           </th>
                           <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                             Site Address
@@ -1052,7 +1052,7 @@ export default function SiteVisitByAccountant() {
                             Phone Number
                           </th>
                           <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
-                            GST Address
+                            Billing Address
                           </th>
                           <th className="text-white border-b border-blue-500 px-4 py-3 text-left w-[200px] sticky top-0">
                             Site Address

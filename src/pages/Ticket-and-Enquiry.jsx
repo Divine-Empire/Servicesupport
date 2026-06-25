@@ -65,6 +65,8 @@ export default function TicketAndEnquiry() {
     serviceLocation: ""
   });
   const [newFormSelectedMachines, setNewFormSelectedMachines] = useState([]);
+  const [showMachineDropdown, setShowMachineDropdown] = useState(false);
+  const [machineSearchQuery, setMachineSearchQuery] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
 
@@ -235,6 +237,18 @@ export default function TicketAndEnquiry() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown-container')) {
+        setShowMachineDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -314,6 +328,14 @@ export default function TicketAndEnquiry() {
     }
     if (newEnquiryData.clientType === "Existing" && !newEnquiryData.companyName) {
       alert("Error: Company Name is required for existing clients");
+      return;
+    }
+    if (newFormSelectedMachines.length === 0) {
+      alert("Error: Machine Name is required");
+      return;
+    }
+    if (!newEnquiryData.mentionIssue || !newEnquiryData.mentionIssue.trim()) {
+      alert("Error: Mention Issue is required");
       return;
     }
 
@@ -984,11 +1006,11 @@ export default function TicketAndEnquiry() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-sm">GST Address</Label>
+                <Label className="text-sm">Billing Address</Label>
                 <Input
                   value={newEnquiryData.gstAddress || ""}
                   onChange={(e) => setNewEnquiryData(prev => ({ ...prev, gstAddress: e.target.value }))}
-                  placeholder="Enter GST Address"
+                  placeholder="Enter Billing Address"
                   disabled={newEnquiryData.clientType === "Existing" && newEnquiryData.companyName !== ""}
                   className={newEnquiryData.clientType === "Existing" && newEnquiryData.companyName !== "" ? "bg-gray-100" : ""}
                 />
@@ -1035,33 +1057,75 @@ export default function TicketAndEnquiry() {
                 </Select>
               </div>
 
-              <div className="space-y-1 md:col-span-2">
-                <Label className="text-sm">Machine Name</Label>
-                <Select
-                  onValueChange={(value) => {
-                    if (!newFormSelectedMachines.includes(value)) {
-                      setNewFormSelectedMachines(prev => [...prev, value]);
-                    }
-                  }}
-                  value=""
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select machine(s)" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-300 rounded-md shadow-lg">
-                    {[...new Set(masterData[0]?.["Machine Name"] || [])]
-                      .filter(Boolean)
-                      .map((option) => (
-                        <SelectItem
-                          key={option}
-                          value={option}
-                          disabled={newFormSelectedMachines.includes(option)}
-                        >
-                          {option}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-1 md:col-span-2 relative">
+                <Label className="text-sm">Machine Name *</Label>
+                <div className="relative dropdown-container">
+                  <button
+                    type="button"
+                    onClick={() => setShowMachineDropdown(!showMachineDropdown)}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className="text-gray-500">Select machine(s)</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 opacity-50"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  {showMachineDropdown && (
+                    <div className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white p-1 shadow-lg">
+                      <div className="px-2 py-1 sticky top-0 bg-white z-10">
+                        <Input
+                          placeholder="Search machine..."
+                          value={machineSearchQuery}
+                          onChange={(e) => setMachineSearchQuery(e.target.value)}
+                          className="h-8 text-xs border-gray-200"
+                        />
+                      </div>
+                      <div className="mt-1">
+                        {[...new Set(masterData[0]?.["Machine Name"] || [])]
+                          .filter(Boolean)
+                          .filter(option =>
+                            option.toLowerCase().includes(machineSearchQuery.toLowerCase())
+                          )
+                          .map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              disabled={newFormSelectedMachines.includes(option)}
+                              onClick={() => {
+                                if (!newFormSelectedMachines.includes(option)) {
+                                  setNewFormSelectedMachines(prev => [...prev, option]);
+                                }
+                                setMachineSearchQuery("");
+                                setShowMachineDropdown(false);
+                              }}
+                              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        {[...new Set(masterData[0]?.["Machine Name"] || [])]
+                          .filter(Boolean)
+                          .filter(option =>
+                            option.toLowerCase().includes(machineSearchQuery.toLowerCase())
+                          ).length === 0 && (
+                          <p className="text-xs text-gray-500 text-center py-2">No machine found</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 {newFormSelectedMachines.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {newFormSelectedMachines.map((machine) => (
@@ -1086,7 +1150,7 @@ export default function TicketAndEnquiry() {
               </div>
 
               <div className="space-y-1 md:col-span-2">
-                <Label className="text-sm">Mention Issue</Label>
+                <Label className="text-sm">Mention Issue *</Label>
                 <Textarea
                   value={newEnquiryData.mentionIssue || ""}
                   onChange={(e) => setNewEnquiryData(prev => ({ ...prev, mentionIssue: e.target.value }))}

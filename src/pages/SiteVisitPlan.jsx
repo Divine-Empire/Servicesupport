@@ -31,8 +31,9 @@ import {
 } from "../components/ui/tabs";
 import { Modal } from "../components/ui/modal";
 import { useToast } from "../hooks/use-toast";
-import { Loader2Icon, LoaderIcon } from "lucide-react";
+import { Loader2Icon, LoaderIcon, Calendar } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
+import VisitCalendarModal from "../components/VisitCalendarModal";
 
 export default function SiteVisitPlan() {
   const [activeTab, setActiveTab] = useState("pending");
@@ -41,6 +42,7 @@ export default function SiteVisitPlan() {
   const [formData, setFormData] = useState({});
   const [searchItem, setSearchItem] = useState("");
   const [isCancelled, setIsCancelled] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const { toast } = useToast();
 
   const [masterData, setMasterData] = useState({});
@@ -430,7 +432,17 @@ export default function SiteVisitPlan() {
                   History ({filteredHistoryData.length})
                 </TabsTrigger>
               </TabsList>
+              <Button
+                onClick={() => setIsCalendarModalOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md flex items-center gap-2"
+                data-testid="btn-view-visit-calendar"
+              >
+                <Calendar className="h-4 w-4" />
+                View Visit Calendar
+              </Button>
             </div>
+
+            
 
             {/* Right Side: Search Input */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1 md:justify-end w-full md:w-auto">
@@ -1267,6 +1279,14 @@ export default function SiteVisitPlan() {
           )}
         </form>
       </Modal>
+
+      {/* Visit Calendar Modal */}
+      <VisitCalendarModal
+        isOpen={isCalendarModalOpen}
+        onClose={() => setIsCalendarModalOpen(false)}
+        allData={role === "user" ? historyData.filter((item) => item["CREName"] === userName) : historyData}
+        masterData={masterData}
+      />
     </div>
   );
 }

@@ -1554,7 +1554,13 @@ export default function VideoCallSolution() {
                                     onChange={(e) => handleItemRowChange(index, "item", e.target.value)}
                                     className="w-full border-gray-200 rounded focus:ring-1 focus:ring-blue-500 text-sm h-8"
                                     required={index === 0}
+                                    list={`item-options-${index}`}
                                   />
+                                  <datalist id={`item-options-${index}`}>
+                                    {masterData[0]?.["Item-Name"]?.map((option) => (
+                                      <option key={option} value={option} />
+                                    ))}
+                                  </datalist>
                                 </td>
                                 <td className="px-4 py-2">
                                   <Input

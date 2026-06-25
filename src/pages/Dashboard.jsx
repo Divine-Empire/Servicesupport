@@ -558,7 +558,16 @@ export default function Dashboard() {
 
       const result = {};
       CATS.forEach(cat => {
-        result[cat] = { outgoingEnq: 0, incomingEnq: 0, tillDatePending: 0, totalBilling: 0, invoiceValue: 0 };
+        result[cat] = { 
+          outgoingEnq: 0, 
+          outgoingValue: 0, 
+          incomingEnq: 0, 
+          incomingValue: 0, 
+          tillDatePending: 0, 
+          tillDatePendingValue: 0, 
+          totalBilling: 0, 
+          invoiceValue: 0 
+        };
       });
 
       const [ticketRes, invoiceRes] = await Promise.all([
@@ -584,11 +593,18 @@ export default function Dashboard() {
           const ts = _parseDate(row[0]);
           const callType = String(row[13] || '').trim();
           const category = _normCat(row[23]);
+          const basicValue = _parseNum(row[41]);
 
           // Outgoing & Incoming Enquiries (date-filtered)
           if (ts && ts >= effectiveStart && ts <= effectiveEnd) {
-            if (callType === 'Outgoing') result[category].outgoingEnq++;
-            if (callType === 'Incoming') result[category].incomingEnq++;
+            if (callType === 'Outgoing') {
+              result[category].outgoingEnq++;
+              result[category].outgoingValue += basicValue;
+            }
+            if (callType === 'Incoming') {
+              result[category].incomingEnq++;
+              result[category].incomingValue += basicValue;
+            }
           }
 
           // Till Date Pending Enq (last 60 days — no date filter)
@@ -596,7 +612,10 @@ export default function Dashboard() {
             const pendingVC  = _hasVal(row[31])  && !_hasVal(row[32]);
             const pendingWC  = _hasVal(row[132]) && !_hasVal(row[133]);
             const pendingQuo = _hasVal(row[37])  && !_hasVal(row[38]);
-            if (pendingVC || pendingWC || pendingQuo) result[category].tillDatePending++;
+            if (pendingVC || pendingWC || pendingQuo) {
+              result[category].tillDatePending++;
+              result[category].tillDatePendingValue += basicValue;
+            }
           }
         });
 
@@ -939,12 +958,10 @@ export default function Dashboard() {
 
       {/* Pending Items by Stage */}
       <Card className="shadow rounded-2xl">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold">
-              Pending Items by Stage
-            </CardTitle>
-          </div>
+        <CardHeader className="pb-1 flex flex-row items-center justify-between">
+          <CardTitle className="text-lg font-semibold">
+            Pending Items by Stage
+          </CardTitle>
           <Button
             variant="default"
             className="bg-blue-600 hover:bg-blue-700 h-9 text-xs flex items-center text-white gap-2 font-medium"
@@ -959,14 +976,13 @@ export default function Dashboard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-xs w-[250px]">Stage</TableHead>
-                <TableHead className="text-xs text-right w-[100px]">
+                <TableHead className="text-xs w-[300px]">Stage</TableHead>
+                <TableHead className="text-xs text-right w-[120px]">
                   Pending
                 </TableHead>
-                <TableHead className="text-xs text-center w-[150px]">
+                <TableHead className="text-xs text-center w-[180px]">
                   Pending Overdue
                 </TableHead>
-                <TableHead className="text-xs">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1000,21 +1016,6 @@ export default function Dashboard() {
                     <TableCell className="text-xs text-center text-red-500 font-medium">
                       {overdueCount > 0 ? overdueCount : "-"}
                     </TableCell>
-                    <TableCell className="text-xs pr-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-full bg-gray-100 rounded-full h-1.5">
-                          <div
-                            className={`h-1.5 rounded-full ${stage.color}`}
-                            style={{
-                              width: `${Math.min(
-                                (dynamicCount / 20) * 100,
-                                100
-                              )}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    </TableCell>
                   </TableRow>
                 );
 
@@ -1030,21 +1031,6 @@ export default function Dashboard() {
                         </TableCell>
                         <TableCell className="text-xs text-center text-red-400 font-medium">
                           {data.overdue > 0 ? data.overdue : "-"}
-                        </TableCell>
-                        <TableCell className="text-xs pr-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-full bg-gray-100 rounded-full h-1">
-                              <div
-                                className="h-1 rounded-full bg-teal-300"
-                                style={{
-                                  width: `${Math.min(
-                                    (data.pending / 20) * 100,
-                                    100
-                                  )}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -1134,11 +1120,35 @@ export default function Dashboard() {
                 <TableBody>
                   {[
                     { label: 'OUTGOING ENQUIRIES',    getVal: (cat) => weeklyReportData.result[cat].outgoingEnq },
+                    {
+                      label: '↳ Total Value',
+                      isSubRow: true,
+                      getVal: (cat) => {
+                        const v = weeklyReportData.result[cat].outgoingValue;
+                        return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                      },
+                    },
                     { label: 'INCOMING ENQUIRIES',    getVal: (cat) => weeklyReportData.result[cat].incomingEnq },
+                    {
+                      label: '↳ Total Value',
+                      isSubRow: true,
+                      getVal: (cat) => {
+                        const v = weeklyReportData.result[cat].incomingValue;
+                        return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                      },
+                    },
                     {
                       label: 'TILL DATE PENDING ENQ',
                       note: '(last 60 days)',
                       getVal: (cat) => weeklyReportData.result[cat].tillDatePending,
+                    },
+                    {
+                      label: '↳ Total Value',
+                      isSubRow: true,
+                      getVal: (cat) => {
+                        const v = weeklyReportData.result[cat].tillDatePendingValue;
+                        return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                      },
                     },
                     { label: 'TOTAL NO. BILLING',    getVal: (cat) => weeklyReportData.result[cat].totalBilling },
                     {
@@ -1169,13 +1179,25 @@ export default function Dashboard() {
                       },
                     },
                   ].map((row, rIdx) => (
-                    <TableRow key={rIdx} className={rIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'}>
-                      <TableCell className="text-xs font-semibold text-gray-700 py-2.5">
+                    <TableRow 
+                      key={rIdx} 
+                      className={
+                        row.isSubRow 
+                          ? 'bg-gray-50/20 hover:bg-gray-50/40 border-l-2 border-l-blue-400/50' 
+                          : rIdx % 2 === 0 
+                            ? 'bg-white' 
+                            : 'bg-gray-50/60'
+                      }
+                    >
+                      <TableCell className={`text-xs py-2.5 ${row.isSubRow ? 'pl-6 text-gray-500 font-medium' : 'font-semibold text-gray-700'}`}>
                         {row.label}
                         {row.note && <span className="text-gray-400 text-[10px] ml-1 font-normal">{row.note}</span>}
                       </TableCell>
                       {['SPARE', 'SERVICE', 'NABL', 'NON NABL'].map(cat => (
-                        <TableCell key={cat} className="text-xs text-center text-gray-600 py-2.5">
+                        <TableCell 
+                          key={cat} 
+                          className={`text-xs text-center py-2.5 ${row.isSubRow ? 'text-gray-500 font-normal' : 'text-gray-600 font-medium'}`}
+                        >
                           {row.getVal(cat)}
                         </TableCell>
                       ))}

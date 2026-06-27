@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -135,6 +135,7 @@ export default function TicketAndEnquiry() {
             colAI: row[34] || "",
             colAL: row[37] || "",
             colDI: row[112] || "",
+            otp: row[35] || "",
           };
         });
 
@@ -269,6 +270,14 @@ export default function TicketAndEnquiry() {
     const seconds = String(d.getSeconds()).padStart(2, "0");
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  const generateSixDigitOTP = () => {
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      result += Math.floor(Math.random() * 10).toString();
+    }
+    return result;
   };
 
   const handleNewEnquiryCompanyChange = (value) => {
@@ -426,6 +435,9 @@ export default function TicketAndEnquiry() {
         rowData[23] = newEnquiryData.category || "";
         rowData[24] = newEnquiryData.mentionIssue || "";
         rowData[25] = newEnquiryData.serviceLocation || "";
+
+        // Generate and assign OTP to column AJ (index 35)
+        rowData[35] = generateSixDigitOTP();
 
         rowData[117] = "No";
         rowData[127] = userName || "";

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -131,6 +131,8 @@ export default function TADA() {
           purposeOfTravel: row[85] || "",
           amount: row[86] || "",
           CREName: row[127] || "",
+          expectedCompletionDate: row[149] || "",
+          expectedCompletionTime: row[150] || "",
         }));
 
         const pending = allData.filter(
@@ -238,6 +240,8 @@ export default function TADA() {
       destination: "",
       purposeOfTravel: "",
       amount: "",
+      expectedCompletionDate: "",
+      expectedCompletionTime: "",
     });
     setShowTADAModal(true);
   };
@@ -273,6 +277,8 @@ export default function TADA() {
             CG: formData.destination || "",
             CH: formData.purposeOfTravel || "",
             CI: formData.amount || "",
+            ET: formData.expectedCompletionDate || "",
+            EU: formData.expectedCompletionTime || "",
           }),
         }).toString(),
       });
@@ -297,6 +303,8 @@ export default function TADA() {
             destinationInput: formData.destination,
             purposeOfTravel: formData.purposeOfTravel,
             amount: formData.amount,
+            expectedCompletionDate: formData.expectedCompletionDate,
+            expectedCompletionTime: formData.expectedCompletionTime,
           },
           ...prevHistory,
         ]);
@@ -1333,6 +1341,38 @@ export default function TADA() {
                         handleInputChange("purposeOfTravel", e.target.value)
                       }
                       data-testid="input-purpose"
+                      className="border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-gray-600 font-medium">
+                      Expected Completion Date *
+                    </Label>
+                    <Input
+                      type="date"
+                      value={formData.expectedCompletionDate || ""}
+                      onChange={(e) =>
+                        handleInputChange("expectedCompletionDate", e.target.value)
+                      }
+                      required
+                      data-testid="input-expected-completion-date"
+                      className="border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-gray-600 font-medium">
+                      Expected Completion Time *
+                    </Label>
+                    <Input
+                      type="time"
+                      value={formData.expectedCompletionTime || ""}
+                      onChange={(e) =>
+                        handleInputChange("expectedCompletionTime", e.target.value)
+                      }
+                      required
+                      data-testid="input-expected-completion-time"
                       className="border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>

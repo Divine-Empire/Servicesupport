@@ -105,11 +105,63 @@ const parseIST = (dateStr) => {
 };
 
 
+const getComparisonVal = (parsed) => {
+  if (!parsed) return 0;
+  return parsed.year * 10000 + (parsed.month + 1) * 100 + parsed.day;
+};
+
+const getRelativeMinutes = (timeStr) => {
+  if (!timeStr) return 600;
+  const parts = timeStr.split(":");
+  if (parts.length < 2) return 600;
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  if (isNaN(hours) || isNaN(minutes)) return 600;
+  const totalMinutes = hours * 60 + minutes;
+  const nineAM = 9 * 60; // 540
+  return Math.max(0, Math.min(600, totalMinutes - nineAM));
+};
+
+const formatDateLabel = (dateStr) => {
+  if (!dateStr) return "";
+  const parsed = parseIST(dateStr);
+  if (!parsed) return dateStr;
+  const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${parsed.day} ${monthsShort[parsed.month]}`;
+};
+
+const formatTime12h = (timeStr) => {
+  if (!timeStr) return "";
+  const parts = timeStr.split(":");
+  if (parts.length < 2) return timeStr;
+  let hrs = parseInt(parts[0], 10);
+  const mins = parseInt(parts[1], 10);
+  if (isNaN(hrs) || isNaN(mins)) return timeStr;
+  const ampm = hrs >= 12 ? "PM" : "AM";
+  hrs = hrs % 12;
+  if (hrs === 0) hrs = 12;
+  const minsStr = String(mins).padStart(2, "0");
+  return `${hrs}:${minsStr} ${ampm}`;
+};
+
+const formatMinutesToTime = (min) => {
+  const totalMin = min + 9 * 60;
+  let hrs = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
+  const ampm = hrs >= 12 ? "PM" : "AM";
+  hrs = hrs % 12;
+  if (hrs === 0) hrs = 12;
+  const minStr = String(mins).padStart(2, "0");
+  return `${hrs}:${minStr} ${ampm}`;
+};
+
 export default function VisitCalendarModal({ isOpen, onClose, allData = [], masterData = [] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEngineer, setSelectedEngineer] = useState("all");
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState("week"); // "month" | "week"
+  const [activeModalTab, setActiveModalTab] = useState("timeline"); // "timeline" | "visits"
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -128,16 +180,23 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
     }
   }, [isOpen]);
 
-  // Show spinner briefly when month changes
-  const handlePrevMonth = () => {
+  const handlePrev = () => {
     setIsLoading(true);
-    setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+    if (viewMode === "month") {
+      setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+    } else {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 7));
+    }
     setTimeout(() => setIsLoading(false), 200);
   };
 
-  const handleNextMonth = () => {
+  const handleNext = () => {
     setIsLoading(true);
-    setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+    if (viewMode === "month") {
+      setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+    } else {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 7));
+    }
     setTimeout(() => setIsLoading(false), 200);
   };
 
@@ -148,53 +207,91 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
   }, [masterData, allData]);
 
   const calendarCells = useMemo(() => {
-    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-    const numDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const numDaysPrev = new Date(currentYear, currentMonth, 0).getDate();
-    const cells = [];
+    if (viewMode === "month") {
+      const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+      const numDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const numDaysPrev = new Date(currentYear, currentMonth, 0).getDate();
+      const cells = [];
 
-    for (let i = firstDayIndex - 1; i >= 0; i--) {
-      cells.push({
-        day: numDaysPrev - i,
-        month: currentMonth === 0 ? 11 : currentMonth - 1,
-        year: currentMonth === 0 ? currentYear - 1 : currentYear,
-        isCurrentMonth: false,
-      });
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        cells.push({
+          day: numDaysPrev - i,
+          month: currentMonth === 0 ? 11 : currentMonth - 1,
+          year: currentMonth === 0 ? currentYear - 1 : currentYear,
+          isCurrentMonth: false,
+        });
+      }
+      for (let i = 1; i <= numDays; i++) {
+        cells.push({ day: i, month: currentMonth, year: currentYear, isCurrentMonth: true });
+      }
+      const remaining = 42 - cells.length;
+      for (let i = 1; i <= remaining; i++) {
+        cells.push({
+          day: i,
+          month: currentMonth === 11 ? 0 : currentMonth + 1,
+          year: currentMonth === 11 ? currentYear + 1 : currentYear,
+          isCurrentMonth: false,
+        });
+      }
+      return cells;
+    } else {
+      const cells = [];
+      const dayOfWeek = currentDate.getDay();
+      const sunday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - dayOfWeek);
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i);
+        cells.push({
+          day: date.getDate(),
+          month: date.getMonth(),
+          year: date.getFullYear(),
+          isCurrentMonth: date.getMonth() === currentMonth,
+        });
+      }
+      return cells;
     }
-    for (let i = 1; i <= numDays; i++) {
-      cells.push({ day: i, month: currentMonth, year: currentYear, isCurrentMonth: true });
-    }
-    const remaining = 42 - cells.length;
-    for (let i = 1; i <= remaining; i++) {
-      cells.push({
-        day: i,
-        month: currentMonth === 11 ? 0 : currentMonth + 1,
-        year: currentMonth === 11 ? currentYear + 1 : currentYear,
-        isCurrentMonth: false,
-      });
-    }
-    return cells;
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, viewMode, currentDate]);
 
-  /**
-   * KEY OPTIMIZATION: Pre-compute a lookup map of { "YYYY-M-D": [tickets] }
-   * for the currently visible months, instead of scanning all tickets 42 times.
-   * Also pre-applies the engineer filter so each cell lookup is O(1).
-   */
+  const getDatesInRange = (startComp, endComp) => {
+    const dates = [];
+    const start = new Date(startComp.year, startComp.month, startComp.day);
+    const end = new Date(endComp.year, endComp.month, endComp.day);
+    let count = 0;
+    const current = new Date(start);
+    while (current <= end && count < 31) {
+      dates.push({
+        year: current.getFullYear(),
+        month: current.getMonth(),
+        day: current.getDate()
+      });
+      current.setDate(current.getDate() + 1);
+      count++;
+    }
+    return dates;
+  };
+
   const visitsLookup = useMemo(() => {
     const map = {};
     const engFilter = selectedEngineer !== "all" ? selectedEngineer.toLowerCase() : null;
 
     for (const ticket of allData) {
-      if (!ticket.dateOfVisit) continue;
-      const comp = parseIST(ticket.dateOfVisit);
-      if (!comp) continue;
+      const startStr = ticket.travelDate || ticket.dateOfVisit;
+      if (!startStr) continue;
+      const startComp = parseIST(startStr);
+      if (!startComp) continue;
+
+      const endStr = ticket.returnDate || ticket.expectedCompletionDate || startStr;
+      const endComp = parseIST(endStr) || startComp;
 
       if (engFilter && String(ticket.engineerAssign).toLowerCase() !== engFilter) continue;
 
-      const key = `${comp.year}-${comp.month}-${comp.day}`;
-      if (!map[key]) map[key] = [];
-      map[key].push(ticket);
+      const range = getDatesInRange(startComp, endComp);
+      for (const d of range) {
+        const key = `${d.year}-${d.month}-${d.day}`;
+        if (!map[key]) map[key] = [];
+        if (!map[key].some(t => t.ticketId === ticket.ticketId)) {
+          map[key].push(ticket);
+        }
+      }
     }
     return map;
   }, [allData, selectedEngineer]);
@@ -202,7 +299,94 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
   const todayIST = useMemo(() => getISTComponents(new Date()), []);
 
   const handleCellClick = (cell, visits) => {
-    if (visits.length > 0) setSelectedDayDetails({ cell, visits });
+    setSelectedDayDetails({ cell, visits });
+    setActiveModalTab("timeline");
+  };
+
+  const getEngineerAvailability = (engineer, cellDate) => {
+    const busyMinutes = new Array(600).fill(false);
+    let statusText = "Available all day (9 AM - 7 PM)";
+    let isPendingTADA = false;
+
+    // Filter tickets assigned to this engineer
+    const engVisits = allData.filter(ticket => 
+      ticket.engineerAssign && 
+      String(ticket.engineerAssign).toLowerCase() === String(engineer).toLowerCase()
+    );
+
+    const cellVal = cellDate.year * 10000 + (cellDate.month + 1) * 100 + cellDate.day;
+
+    for (const ticket of engVisits) {
+      if (!ticket.dateOfVisit) continue;
+      const parsedVisit = parseIST(ticket.dateOfVisit);
+      if (!parsedVisit) continue;
+      const visitVal = getComparisonVal(parsedVisit);
+
+      const rawCompDate = ticket.expectedCompletionDate;
+      const rawCompTime = ticket.expectedCompletionTime;
+
+      let compVal = visitVal;
+
+      if (rawCompDate) {
+        const parsedComp = parseIST(rawCompDate);
+        if (parsedComp) {
+          compVal = getComparisonVal(parsedComp);
+        }
+      }
+
+      // If selected date is outside of [visitVal, compVal], ignore this ticket
+      if (cellVal < visitVal || cellVal > compVal) {
+        continue;
+      }
+
+      if (cellVal > visitVal && cellVal < compVal) {
+        for (let m = 0; m < 600; m++) busyMinutes[m] = true;
+        statusText = `Busy: expected completion on ${formatDateLabel(rawCompDate)}`;
+      } else if (cellVal === visitVal && cellVal === compVal) {
+        if (rawCompTime) {
+          const relMins = getRelativeMinutes(rawCompTime);
+          for (let m = 0; m < relMins; m++) busyMinutes[m] = true;
+          statusText = `Busy until ${formatTime12h(rawCompTime)}`;
+        } else {
+          for (let m = 0; m < 600; m++) busyMinutes[m] = true;
+          isPendingTADA = true;
+          statusText = "Busy (Times Pending)";
+        }
+      } else if (cellVal === visitVal && cellVal < compVal) {
+        for (let m = 0; m < 600; m++) busyMinutes[m] = true;
+        statusText = `Busy: starts today, expected completion ${formatDateLabel(rawCompDate)}`;
+      } else if (cellVal === compVal && cellVal > visitVal) {
+        if (rawCompTime) {
+          const relMins = getRelativeMinutes(rawCompTime);
+          for (let m = 0; m < relMins; m++) busyMinutes[m] = true;
+          statusText = `Busy until ${formatTime12h(rawCompTime)}`;
+        } else {
+          for (let m = 0; m < 600; m++) busyMinutes[m] = true;
+          isPendingTADA = true;
+          statusText = "Busy (Times Pending)";
+        }
+      }
+    }
+
+    const segments = [];
+    let currentType = busyMinutes[0];
+    let start = 0;
+    for (let i = 1; i <= 600; i++) {
+      if (i === 600 || busyMinutes[i] !== currentType) {
+        segments.push({
+          type: currentType ? "busy" : "free",
+          start,
+          end: i,
+          widthPercent: ((i - start) / 600) * 100,
+        });
+        if (i < 600) {
+          currentType = busyMinutes[i];
+          start = i;
+        }
+      }
+    }
+
+    return { segments, statusText, isPendingTADA };
   };
 
   return (
@@ -220,27 +404,65 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
 
         {/* Header Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevMonth}
-              className="h-9 w-9 text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all rounded-lg"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <h2 className="text-lg font-bold text-slate-800 min-w-[145px] text-center flex items-center justify-center gap-2">
-              <Calendar className="h-4 w-4 text-blue-600" />
-              {months[currentMonth]} {currentYear}
-            </h2>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNextMonth}
-              className="h-9 w-9 text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all rounded-lg"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrev}
+                className="h-9 w-9 text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all rounded-lg"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <h2 className="text-lg font-bold text-slate-800 min-w-[145px] text-center flex items-center justify-center gap-2">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                {months[currentMonth]} {currentYear}
+              </h2>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNext}
+                className="h-9 w-9 text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all rounded-lg"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Monthly/Weekly Toggle */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <Button
+                variant={viewMode === "month" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setViewMode("month");
+                  setIsLoading(true);
+                  setTimeout(() => setIsLoading(false), 200);
+                }}
+                className={`text-xs px-3 py-1.5 h-8 font-semibold rounded-md transition-all ${
+                  viewMode === "month"
+                    ? "bg-white text-blue-600 shadow-sm hover:bg-white"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+              >
+                Month
+              </Button>
+              <Button
+                variant={viewMode === "week" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setViewMode("week");
+                  setIsLoading(true);
+                  setTimeout(() => setIsLoading(false), 200);
+                }}
+                className={`text-xs px-3 py-1.5 h-8 font-semibold rounded-md transition-all ${
+                  viewMode === "week"
+                    ? "bg-white text-blue-600 shadow-sm hover:bg-white"
+                    : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                }`}
+              >
+                Week
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -281,12 +503,8 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
                 <div
                   key={index}
                   onClick={() => handleCellClick(cell, visits)}
-                  className={`bg-white p-1.5 flex flex-col justify-start gap-0.5 transition-all duration-150 ${
+                  className={`bg-white p-1.5 flex flex-col justify-start gap-0.5 transition-all duration-150 cursor-pointer hover:bg-blue-50/40 ring-1 ring-transparent hover:ring-blue-300 ${
                     cell.isCurrentMonth ? "text-slate-800" : "bg-slate-50/60 text-slate-400"
-                  } ${
-                    visits.length > 0
-                      ? "cursor-pointer hover:bg-blue-50/40 ring-1 ring-transparent hover:ring-blue-300"
-                      : ""
                   } relative`}
                 >
                   <div className="flex items-center justify-between leading-none mb-0.5">
@@ -332,12 +550,12 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
         {/* Detailed Visits Overlay Popup */}
         {selectedDayDetails && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-            <div className="bg-white rounded-xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white rounded-xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150">
               <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-blue-600" />
                   <span className="font-bold text-slate-800 text-sm">
-                    Visits on {selectedDayDetails.cell.day} {months[selectedDayDetails.cell.month]} {selectedDayDetails.cell.year}
+                    Visits & Availability on {selectedDayDetails.cell.day} {months[selectedDayDetails.cell.month]} {selectedDayDetails.cell.year}
                   </span>
                 </div>
                 <Button
@@ -350,45 +568,138 @@ export default function VisitCalendarModal({ isOpen, onClose, allData = [], mast
                 </Button>
               </div>
 
-              <div className="p-4 overflow-y-auto space-y-3 flex-1">
-                {selectedDayDetails.visits.map((visit, idx) => {
-                  const color = getEngineerColor(visit.engineerAssign);
-                  return (
-                    <div
-                      key={idx}
-                      className="border border-slate-100 rounded-xl p-3 bg-gradient-to-r from-slate-50/50 to-white hover:border-blue-100 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-100">
-                        <div className="flex items-center gap-1.5">
-                          <Ticket className="h-3.5 w-3.5 text-blue-500" />
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            #{visit.ticketId || "N/A"}
-                          </span>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${color.badge}`}>
-                          {visit.engineerAssign || "Unassigned"}
-                        </span>
-                      </div>
+              {/* Tab Header Toggle */}
+              <div className="flex border-b border-slate-100 bg-slate-50 px-5">
+                <button
+                  onClick={() => setActiveModalTab("timeline")}
+                  className={`text-xs font-bold px-4 py-2 border-b-2 transition-all ${
+                    activeModalTab === "timeline"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Availability Timeline
+                </button>
+                <button
+                  onClick={() => setActiveModalTab("visits")}
+                  className={`text-xs font-bold px-4 py-2 border-b-2 transition-all ${
+                    activeModalTab === "visits"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  Scheduled Visits ({selectedDayDetails.visits.length})
+                </button>
+              </div>
 
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                        <div>
-                          <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Company</span>
-                          <span className="font-semibold text-slate-700">{visit.companyName || "N/A"}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Client</span>
-                          <span className="font-semibold text-slate-700">{visit.clientName || "N/A"}</span>
-                        </div>
-                        <div className="col-span-2 mt-0.5">
-                          <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Issue</span>
-                          <p className="text-slate-600 italic mt-0.5 leading-relaxed bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 max-h-14 overflow-y-auto">
-                            {visit.mentionIssue || "No details provided"}
-                          </p>
-                        </div>
+              <div className="p-4 overflow-y-auto space-y-3 flex-1 bg-slate-50/50">
+                {activeModalTab === "timeline" ? (
+                  <div className="space-y-4 py-1">
+                    {engineersList
+                      .filter(eng => selectedEngineer === "all" || String(eng).toLowerCase() === String(selectedEngineer).toLowerCase())
+                      .map((eng, idx) => {
+                        const { segments, statusText, isPendingTADA } = getEngineerAvailability(eng, selectedDayDetails.cell);
+                        const color = getEngineerColor(eng);
+                        return (
+                          <div key={idx} className="border border-slate-100 rounded-xl p-3.5 bg-white hover:border-blue-100 hover:shadow-sm transition-all duration-200">
+                            <div className="flex items-center justify-between gap-2 mb-2 pb-1">
+                              <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                <span className={`w-2.5 h-2.5 rounded-full ${color.badge.split(" ")[0]}`}></span>
+                                {eng}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isPendingTADA 
+                                  ? "bg-amber-100 text-amber-800" 
+                                  : statusText.includes("Available") 
+                                    ? "bg-emerald-100 text-emerald-800" 
+                                    : "bg-rose-100 text-rose-800"
+                              }`}>
+                                {statusText}
+                              </span>
+                            </div>
+
+                            {/* Timeline progress bar */}
+                            <div className="relative h-6 bg-slate-100 rounded-lg overflow-hidden border border-slate-200/50 flex">
+                              {segments.map((seg, sIdx) => {
+                                const isBusy = seg.type === "busy";
+                                const bgClass = isBusy 
+                                  ? (isPendingTADA ? "bg-amber-100 hover:bg-amber-200 text-amber-800" : "bg-rose-100 hover:bg-rose-200 text-rose-800")
+                                  : "bg-emerald-100 hover:bg-emerald-200 text-emerald-800";
+                                
+                                return (
+                                  <div 
+                                    key={sIdx}
+                                    style={{ width: `${seg.widthPercent}%` }}
+                                    className={`h-full flex items-center justify-center text-[10px] font-bold transition-all border-r border-slate-200/20 relative group cursor-help ${bgClass}`}
+                                    title={`${isBusy ? (isPendingTADA ? "Busy (Times Pending)" : "Work/Travel (Busy)") : "Available"} (${formatMinutesToTime(seg.start)} - ${formatMinutesToTime(seg.end)})`}
+                                  >
+                                    {seg.widthPercent > 12 && (
+                                      <span>{isBusy ? (isPendingTADA ? "Busy" : "Work") : "Free"}</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="flex justify-between text-[8px] text-slate-400 font-semibold mt-1 px-1">
+                              <span>9 AM</span>
+                              <span>11 AM</span>
+                              <span>1 PM</span>
+                              <span>3 PM</span>
+                              <span>5 PM</span>
+                              <span>7 PM</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedDayDetails.visits.length === 0 ? (
+                      <div className="text-center py-8 text-slate-500 text-sm">
+                        No visits scheduled for this date.
                       </div>
-                    </div>
-                  );
-                })}
+                    ) : (
+                      selectedDayDetails.visits.map((visit, idx) => {
+                        const color = getEngineerColor(visit.engineerAssign);
+                        return (
+                          <div
+                            key={idx}
+                            className="border border-slate-100 rounded-xl p-3 bg-gradient-to-r from-slate-50/50 to-white hover:border-blue-100 hover:shadow-md transition-all duration-200"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-100">
+                              <div className="flex items-center gap-1.5">
+                                <Ticket className="h-3.5 w-3.5 text-blue-500" />
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                  #{visit.ticketId || "N/A"}
+                                </span>
+                              </div>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${color.badge}`}>
+                                {visit.engineerAssign || "Unassigned"}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                              <div>
+                                <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Company</span>
+                                <span className="font-semibold text-slate-700">{visit.companyName || "N/A"}</span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Client</span>
+                                <span className="font-semibold text-slate-700">{visit.clientName || "N/A"}</span>
+                              </div>
+                              <div className="col-span-2 mt-0.5">
+                                <span className="text-slate-400 font-medium block text-[10px] uppercase tracking-wide">Issue</span>
+                                <p className="text-slate-600 italic mt-0.5 leading-relaxed bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 max-h-14 overflow-y-auto">
+                                  {visit.mentionIssue || "No details provided"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -25,6 +25,7 @@ import {
   Search,
   Calendar,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { Textarea } from "../components/ui/textarea";
 import {
@@ -62,13 +63,21 @@ export default function TicketAndEnquiry() {
     machineName: "",
     category: "",
     mentionIssue: "",
-    serviceLocation: ""
+    serviceLocation: "",
+    challanCopy: "",
+    machinePhoto: "",
+    serialNumOfMachines: ""
   });
   const [newFormSelectedMachines, setNewFormSelectedMachines] = useState([]);
   const [showMachineDropdown, setShowMachineDropdown] = useState(false);
   const [machineSearchQuery, setMachineSearchQuery] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingTicket, setEditingTicket] = useState(null);
+  const [serialNumbers, setSerialNumbers] = useState([""]);
+  const [uploadingFiles, setUploadingFiles] = useState({
+    challanCopy: false,
+    machinePhoto: false
+  });
 
   const { toast } = useToast();
 
@@ -91,7 +100,10 @@ export default function TicketAndEnquiry() {
       machineName: ticket.machineName || "",
       category: ticket.category || "",
       mentionIssue: ticket.mentionIssue || "",
-      serviceLocation: ticket.serviceLocation || ""
+      serviceLocation: ticket.serviceLocation || "",
+      challanCopy: ticket.challanCopy || "",
+      machinePhoto: ticket.machinePhoto || "",
+      serialNumOfMachines: ticket.serialNumOfMachines || ""
     });
 
     const machines = ticket.machineName
@@ -99,7 +111,62 @@ export default function TicketAndEnquiry() {
       : [];
     setNewFormSelectedMachines(machines);
 
+    const serials = ticket.serialNumOfMachines
+      ? ticket.serialNumOfMachines.split(",").map(s => s.trim()).filter(Boolean)
+      : [""];
+    setSerialNumbers(serials.length > 0 ? serials : [""]);
+
     setShowNewEnquiryForm(true);
+  };
+
+  const uploadFileToDrive = async (file, field) => {
+    setUploadingFiles(prev => ({ ...prev, [field]: true }));
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      const base64Data = await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result.split(",")[1];
+          resolve(result);
+        };
+        reader.onerror = () => {
+          reject(new Error("Failed to read file"));
+        };
+      });
+
+      const response = await fetch(`${sheet_url}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          action: "uploadFile",
+          fileName: `Warehouse_${field}_${Date.now()}_${file.name}`,
+          base64Data: base64Data,
+          mimeType: file.type,
+          folderId: import.meta.env.VITE_DRIVE_FOLDER_ID,
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to upload file");
+      }
+      setNewEnquiryData(prev => ({ ...prev, [field]: result.fileUrl }));
+      toast({
+        title: "Upload Success",
+        description: `${field === "challanCopy" ? "Challan Copy" : "Machine Photo"} uploaded successfully.`,
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Upload Error",
+        description: error.message || "Failed to upload file to Google Drive.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, [field]: false }));
+    }
   };
 
   const fetchData = async () => {
@@ -128,6 +195,9 @@ export default function TicketAndEnquiry() {
             category: row[23] || "",
             mentionIssue: row[24] || "",
             serviceLocation: row[25] || "",
+            challanCopy: row[26] || "",
+            machinePhoto: row[27] || "",
+            serialNumOfMachines: row[28] || "",
             engineerAssign: row[28] || "",
             CREName: row[127] || "",
             planned1: row[9] || "",
@@ -353,6 +423,7 @@ export default function TicketAndEnquiry() {
 
     try {
       if (isEditMode && editingTicket) {
+        const isLocWarehouse = newEnquiryData.serviceLocation?.trim() === "Warehouse";
         const columnData = {
           M: newEnquiryData.sourceOfEnquiry || "",
           N: newEnquiryData.callType || "",
@@ -368,6 +439,9 @@ export default function TicketAndEnquiry() {
           X: newEnquiryData.category || "",
           Y: newEnquiryData.mentionIssue || "",
           Z: newEnquiryData.serviceLocation || "",
+          AA: isLocWarehouse ? (newEnquiryData.challanCopy || "") : "",
+          AB: isLocWarehouse ? (newEnquiryData.machinePhoto || "") : "",
+          AC: isLocWarehouse ? serialNumbers.map(s => s.trim()).filter(Boolean).join(", ") : "",
         };
 
         const response = await fetch(sheet_url, {
@@ -406,9 +480,13 @@ export default function TicketAndEnquiry() {
             machineName: "",
             category: "",
             mentionIssue: "",
-            serviceLocation: ""
+            serviceLocation: "",
+            challanCopy: "",
+            machinePhoto: "",
+            serialNumOfMachines: ""
           });
           setNewFormSelectedMachines([]);
+          setSerialNumbers([""]);
           setIsEditMode(false);
           setEditingTicket(null);
           fetchData();
@@ -435,6 +513,11 @@ export default function TicketAndEnquiry() {
         rowData[23] = newEnquiryData.category || "";
         rowData[24] = newEnquiryData.mentionIssue || "";
         rowData[25] = newEnquiryData.serviceLocation || "";
+
+        const isLocWarehouse = newEnquiryData.serviceLocation?.trim() === "Warehouse";
+        rowData[26] = isLocWarehouse ? (newEnquiryData.challanCopy || "") : "";
+        rowData[27] = isLocWarehouse ? (newEnquiryData.machinePhoto || "") : "";
+        rowData[28] = isLocWarehouse ? serialNumbers.map(s => s.trim()).filter(Boolean).join(", ") : "";
 
         // Generate and assign OTP to column AJ (index 35)
         rowData[35] = generateSixDigitOTP();
@@ -476,9 +559,13 @@ export default function TicketAndEnquiry() {
             machineName: "",
             category: "",
             mentionIssue: "",
-            serviceLocation: ""
+            serviceLocation: "",
+            challanCopy: "",
+            machinePhoto: "",
+            serialNumOfMachines: ""
           });
           setNewFormSelectedMachines([]);
+          setSerialNumbers([""]);
           fetchData();
         } else {
           throw new Error(result.error || "Failed to create enquiry");
@@ -649,9 +736,13 @@ export default function TicketAndEnquiry() {
                   machineName: "",
                   category: "",
                   mentionIssue: "",
-                  serviceLocation: ""
+                  serviceLocation: "",
+                  challanCopy: "",
+                  machinePhoto: "",
+                  serialNumOfMachines: ""
                 });
                 setNewFormSelectedMachines([]);
+                setSerialNumbers([""]);
                 setShowNewEnquiryForm(true);
               }}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-sm transition-all duration-300 rounded-lg px-4 py-2 flex items-center gap-1.5 group shrink-0 h-9"
@@ -1068,6 +1159,133 @@ export default function TicketAndEnquiry() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {newEnquiryData.serviceLocation?.trim() === "Warehouse" && (
+                <div className="md:col-span-2 border border-blue-100 rounded-lg p-4 bg-blue-50/20 space-y-4">
+                  <h4 className="text-sm font-semibold text-blue-800 border-b border-blue-100 pb-2">
+                    Warehouse Service Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Challan Copy File Input */}
+                    <div className="space-y-1">
+                      <Label className="text-sm">Challan Copy</Label>
+                      {newEnquiryData.challanCopy ? (
+                        <div className="flex items-center justify-between border border-emerald-200 rounded-md p-2 bg-emerald-50 text-emerald-800 text-sm">
+                          <a href={newEnquiryData.challanCopy} target="_blank" rel="noopener noreferrer" className="font-semibold underline truncate max-w-[200px]">
+                            View Challan Copy
+                          </a>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setNewEnquiryData(prev => ({ ...prev, challanCopy: "" }))}
+                            className="text-red-500 hover:text-red-700 h-8 px-2 py-1 text-xs font-semibold hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                uploadFileToDrive(e.target.files[0], "challanCopy");
+                              }
+                            }}
+                            disabled={uploadingFiles.challanCopy}
+                          />
+                          {uploadingFiles.challanCopy && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-blue-600 text-xs">
+                              <Loader2Icon className="animate-spin w-4 h-4 mr-1" />
+                              Uploading...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Machine Photo File Input */}
+                    <div className="space-y-1">
+                      <Label className="text-sm">Machine Photo</Label>
+                      {newEnquiryData.machinePhoto ? (
+                        <div className="flex items-center justify-between border border-emerald-200 rounded-md p-2 bg-emerald-50 text-emerald-800 text-sm">
+                          <a href={newEnquiryData.machinePhoto} target="_blank" rel="noopener noreferrer" className="font-semibold underline truncate max-w-[200px]">
+                            View Machine Photo
+                          </a>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setNewEnquiryData(prev => ({ ...prev, machinePhoto: "" }))}
+                            className="text-red-500 hover:text-red-700 h-8 px-2 py-1 text-xs font-semibold hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                uploadFileToDrive(e.target.files[0], "machinePhoto");
+                              }
+                            }}
+                            disabled={uploadingFiles.machinePhoto}
+                          />
+                          {uploadingFiles.machinePhoto && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center text-blue-600 text-xs">
+                              <Loader2Icon className="animate-spin w-4 h-4 mr-1" />
+                              Uploading...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Serial Number(s) Dynamic Text Fields */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Serial Number(s)</Label>
+                    <div className="space-y-2">
+                      {serialNumbers.map((serial, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <Input
+                            value={serial}
+                            onChange={(e) => {
+                              const updated = [...serialNumbers];
+                              updated[idx] = e.target.value;
+                              setSerialNumbers(updated);
+                            }}
+                            placeholder={`Serial Number #${idx + 1}`}
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={serialNumbers.length <= 1}
+                            onClick={() => {
+                              setSerialNumbers(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 h-9 w-9 flex items-center justify-center rounded-md disabled:opacity-40"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setSerialNumbers(prev => [...prev, ""])}
+                      className="border-dashed border-blue-300 text-blue-700 hover:bg-blue-50/50 mt-1"
+                    >
+                      <Plus className="w-4 h-4 mr-1 text-blue-600" />
+                      Add Serial Number
+                    </Button>
+                  </div>
+                </div>
+              )}
+
 
               <div className="space-y-1 md:col-span-2 relative">
                 <Label className="text-sm">Machine Name *</Label>

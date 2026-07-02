@@ -10,6 +10,7 @@ import VideoCallSolution from "./pages/VideoCallSolution";
 import WarrantyCheck from "./pages/Warranty-Check";
 import Quotation from "./pages/Quotation";
 import FollowUp from "./pages/FollowUp";
+import Warehouse from "./pages/Warehouse";
 import SiteVisitPlan from "./pages/SiteVisitPlan";
 import TADA from "./pages/TADA";
 import SiteVisit from "./pages/SiteVisitBySinior";
@@ -51,6 +52,7 @@ function App() {
           <Route path="/warranty-check" element={<WarrantyCheck />} />
           <Route path="/quotation" element={<Quotation />} />
           <Route path="/followup" element={<FollowUp />} />
+          <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/siteplan" element={<SiteVisitPlan />} />
           <Route path="/tada" element={<TADA />} />
           <Route path="/sitevisit" element={<SiteVisit />} />

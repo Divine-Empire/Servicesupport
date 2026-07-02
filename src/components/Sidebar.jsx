@@ -29,6 +29,7 @@ const navigation = [
   { name: "Warranty Check", href: "/warranty-check", icon: CheckCircle },
   { name: "Quotation", href: "/quotation", icon: FileText },
   { name: "Follow-Up", href: "/followup", icon: Phone },
+  { name: "Warehouse", href: "/warehouse", icon: Warehouse },
   { name: "Site Visit Plan", href: "/siteplan", icon: MapPin },
   { name: "TADA", href: "/tada", icon: Plane },
   { name: "Expense Approval By Senior", href: "/sitevisit", icon: Wrench },

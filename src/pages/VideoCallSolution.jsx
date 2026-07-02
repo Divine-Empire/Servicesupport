@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -256,6 +256,12 @@ export default function VideoCallSolution() {
 
     if (formData.videoCallServicesSolve === "no" && !formData.serviceType) {
       alert("Please Select Service Type");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (formData.videoCallServicesSolve === "no" && !formData.remarks?.trim()) {
+      alert("Please Enter Remarks (Mandatory when video call services are not solved)");
       setIsSubmitting(false);
       return;
     }
@@ -1591,7 +1597,7 @@ export default function VideoCallSolution() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-gray-600 font-medium">Remarks</Label>
+                        <Label className="text-gray-600 font-medium">Remarks *</Label>
                         <Textarea
                           placeholder="Enter remarks..."
                           value={formData.remarks || ""}
